@@ -13,6 +13,7 @@ Autoridad de la carrera que designa tutores y tribunales y programa las evaluaci
 - Designar el tribunal evaluador (UC-006)
 - Programar la predefensa y la defensa final (UC-009)
 - Conocer el estado y las estadísticas de titulación (UC-012, UC-013, UC-014, UC-015)
+- Mantener actualizada su foto de perfil (UC-016)
 
 ## Responsibilities
 

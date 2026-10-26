@@ -9,7 +9,8 @@ Responsable técnico que crea y mantiene las cuentas de usuario y sus roles. Usa
 
 ## Goals
 
-- Mantener las cuentas de usuario con su rol y foto de perfil (UC-001)
+- Mantener las cuentas de usuario con sus roles (UC-001)
+- Mantener actualizada su foto de perfil (UC-016)
 
 ## Responsibilities
 

@@ -6,7 +6,7 @@
 
 ## Description
 
-Docente de la materia Taller de Grado que evalúa la viabilidad del perfil de proyecto. Usa el sistema para registrar su evaluación del perfil.
+Docente de la materia Taller de Grado, único en la carrera, que evalúa la viabilidad de todos los perfiles de proyecto. Usa el sistema para registrar su evaluación del perfil.
 
 ## Goals
 

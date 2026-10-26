@@ -7,6 +7,7 @@
 | SRC-001 | Entrevista con el secretario de dirección de carrera ([docs/sources/2026-09-13.md](../../sources/2026-09-13.md)) | Interview | 2026-09-13 |
 | SRC-002 | Requisitos funcionales del equipo de desarrollo y casos de uso aprobados por el docente de Tecnología Web ([docs/sources/2026-10-06.md](../../sources/2026-10-06.md)) | Document | 2026-10-06 |
 | SRC-003 | Restricciones y requisitos de calidad indicados por el equipo de desarrollo | Sesión en I1 | 2026-10-26 |
+| SRC-004 | Detalle de UC-001 acordado con el equipo de desarrollo | Workshop | 2026-10-26 |
 
 ## Functional Requirements
 
@@ -37,13 +38,25 @@
 | FR-023 | El sistema debe registrar un nuevo perfil de proyecto cuando el anterior fue rechazado u observado | UC-003 Registrar perfil de proyecto | Must | SRC-001 | Candidate |
 | FR-024 | El sistema debe controlar el plazo de revisión de cada versión del documento del proyecto | UC-008 Revisar documento del proyecto | Must | SRC-002 | Candidate |
 | FR-025 | El sistema debe registrar la entrega del documento del proyecto para la defensa final | UC-007 Entregar documento del proyecto | Must | SRC-001 | Candidate |
-| FR-026 | El sistema debe administrar las cuentas de usuario con su rol y su foto de perfil | UC-001 Administrar usuarios | Must | SRC-002 | Candidate |
+| FR-026 | El sistema debe crear cuentas de usuario con nombre completo, dirección de correo y uno o más roles, y para un estudiante además registro universitario, cédula de identidad y teléfono | UC-001 Administrar usuarios | Must | SRC-002, SRC-004 | Candidate |
 | FR-027 | El sistema debe mostrar el calendario académico con las predefensas y defensas finales programadas | UC-013 Consultar calendario académico | Must | SRC-002 | Candidate |
 | FR-028 | El sistema debe mostrar un dashboard con indicadores de los trámites de titulación | UC-014 Consultar dashboard | Must | SRC-002 | Candidate |
 | FR-029 | El sistema debe generar reportes y estadísticas de titulación | UC-015 Generar reportes y estadísticas | Must | SRC-002 | Candidate |
+| FR-030 | El sistema debe mostrar los datos de una cuenta de usuario y la lista de cuentas de usuario con sus roles y su estado | UC-001 Administrar usuarios | Must | SRC-004 | Candidate |
+| FR-031 | El sistema debe modificar los datos y los roles de una cuenta de usuario | UC-001 Administrar usuarios | Must | SRC-004 | Candidate |
+| FR-032 | El sistema debe desactivar y reactivar cuentas de usuario; una cuenta desactivada no puede usar el sistema y conserva su historial | UC-001 Administrar usuarios | Must | SRC-004 | Candidate |
+| FR-033 | El sistema debe rechazar una cuenta de usuario cuya dirección de correo o registro universitario ya pertenece a otra | UC-001 Administrar usuarios | Must | SRC-004 | Candidate |
+| FR-034 | El sistema debe advertir al administrador cuando la cuenta de usuario que desactiva, o el rol que quita, participa en trámites en curso, y dejar esos trámites pendientes de reasignación | UC-001 Administrar usuarios | Must | SRC-004 | Candidate |
+| FR-035 | El sistema debe notificar al usuario por correo la creación, desactivación y reactivación de su cuenta de usuario y los cambios de sus roles | UC-001 Administrar usuarios | Must | SRC-004 | Candidate |
+| FR-036 | El sistema debe rechazar las combinaciones de roles no permitidas: el estudiante, el secretario(a) de dirección de carrera y el administrador tienen un solo rol, y el docente de Taller de Grado solo se combina con el rol de docente | UC-001 Administrar usuarios | Must | SRC-004 | Candidate |
+| FR-037 | El sistema debe permitir que cada usuario cargue o cambie la foto de perfil de su propia cuenta de usuario | UC-016 Actualizar foto de perfil | Must | SRC-004 | Candidate |
+| FR-038 | El sistema debe rechazar que se desactive, o que pierda el rol de administrador, la única cuenta de administrador activa | UC-001 Administrar usuarios | Must | SRC-004 | Candidate |
+| FR-039 | El sistema debe rechazar que una segunda cuenta de usuario activa tenga el rol de docente de Taller de Grado | UC-001 Administrar usuarios | Must | SRC-004 | Candidate |
 
 ### Notes
 
+- FR-026, FR-036: una cuenta de usuario puede tener varios roles. Un docente puede tener además el rol de director de carrera, y un director de carrera puede tener o no el rol de docente; solo con el rol de docente puede ser designado tutor o miembro del tribunal. El estudiante, el secretario(a) y el administrador tienen un solo rol: quien administra y además participa en el trámite usa dos cuentas de usuario distintas. Docente de Taller de Grado es un rol de cuenta: la carrera tiene uno solo y revisa todos los perfiles de proyecto (FR-039). Ser tutor o miembro del tribunal sale de las designaciones de cada trámite, no de la cuenta de usuario.
+- FR-037: la foto de perfil es opcional y solo la carga el propio usuario.
 - FR-001 a FR-019 vienen de RF01 a RF19 de SRC-002, con el mismo número. Se ajustó su texto según lo acordado con el equipo de desarrollo el 2026-10-26:
   - Cada acción la registra quien la realiza: el estudiante presenta el perfil (FR-004) y entrega el documento (FR-008); el docente de Taller de Grado registra su visto bueno (FR-005); el tribunal y el tutor registran sus observaciones (FR-009). El secretario(a) solo transcribe las observaciones que llegan por carta.
   - El director de carrera fija las fechas de la predefensa y la defensa final (FR-012, FR-015), como dice SRC-001.
@@ -83,6 +96,7 @@
 | CON-005 | Los documentos iniciales del trámite se entregan como imagen PNG o JPG/JPEG, o como PDF, con un tamaño máximo de 1 MB por archivo | El sistema rechaza archivos que no son PNG, JPG/JPEG o PDF, o que superan 1 MB | UC-002 | Must | SRC-003 |
 | CON-006 (A) | Para la presentación del proyecto, el sistema usa el servidor de correo provisto por el docente de Tecnología Web, `mail.tecnoweb.org.bo`: recibe por POP3 y envía por SMTP, en los puertos por defecto (110 y 25), sin cifrado. El SMTP no pide contraseña y valida al remitente por su dirección IP: el equipo pide al docente que agregue a la lista de direcciones permitidas su dirección IP pública para las pruebas y la de su servidor de despliegue de contingencia; la presentación se hace desde la dirección IP del laboratorio | El sistema recibe y envía todos sus correos a través de `mail.tecnoweb.org.bo` con esa configuración | Global | Must | SRC-003 |
 | CON-007 (A) | Para la presentación del proyecto, el sistema usa la base de datos PostgreSQL provista por el docente de Tecnología Web: base `db_grupo03sc` en el servidor `db.tecnoweb.org.bo`, puerto por defecto (5432), con el usuario y la contraseña que entrega el docente | El sistema guarda todos sus datos en `db_grupo03sc` de `db.tecnoweb.org.bo` | Global | Must | SRC-003 |
+| CON-008 | La foto de perfil se entrega como imagen PNG o JPG/JPEG con un tamaño máximo de 1 MB | El sistema rechaza fotos que no son PNG o JPG/JPEG, o que superan 1 MB | UC-016 | Must | SRC-004 |
 
 ## Out of Scope
 
@@ -90,6 +104,7 @@
 
 ## Open Questions
 
+- [ ] FR-034: un trámite queda pendiente de reasignación cuando se desactiva la cuenta de su tutor o de un miembro del tribunal; ¿UC-004 y UC-006 deben permitir reasignarlos? ¿Qué pasa con el trámite de un estudiante desactivado? (ask: Secretario(a) de dirección de carrera)
 - [ ] CON-003: ¿cuáles son las fechas de la primera y la segunda entrega? (ask: Docente de Tecnología Web)
 - [ ] NFR-US-001, NFR-SE-001, NFR-IN-001: criterios de aceptación medibles (ask: Docente de Tecnología Web)
 - [ ] FR-024: ¿cuánto dura el plazo de revisión, quién lo fija y qué hace el sistema cuando vence? (ask: Secretario(a) de dirección de carrera)
@@ -97,6 +112,7 @@
 - [ ] FR-016: ¿qué datos lleva el acta de graduación? (ask: Secretario(a) de dirección de carrera)
 - [ ] FR-028: ¿qué indicadores muestra el dashboard? (ask: Director de carrera)
 - [ ] FR-029: ¿qué reportes y estadísticas necesita la dirección? (ask: Director de carrera)
+- [x] FR-005, FR-022: ¿quién designa al docente de Taller de Grado y en qué momento? Respuesta: no se designa por trámite; es un rol de cuenta que asigna el administrador (UC-001), y la carrera tiene uno solo, que revisa todos los perfiles de proyecto.
 - [x] CON-001, CON-002: ¿qué casos de uso entran en la primera entrega (por correo) y cuáles en la segunda (web)? Respuesta: todos los casos de uso en ambas entregas, primero la de correo electrónico (ver Scope en `vision.md`).
 - [x] CON-002: ¿la aplicación web reemplaza al sistema por correo o ambos canales funcionan a la vez sobre los mismos datos? Respuesta: la reemplaza; el sistema por correo es una prueba de concepto y la aplicación web es la versión final (ver CON-001, CON-002).
 - [x] CON-005: ¿qué formatos de imagen se aceptan? Respuesta: PNG y JPG/JPEG.
