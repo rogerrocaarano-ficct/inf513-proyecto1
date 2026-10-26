@@ -32,6 +32,7 @@
 | Predefensa | Presentación preliminar del proyecto y revisión del prototipo ante el tribunal evaluador, que habilita la defensa final | Revisión de prototipo (avoid) | Defensa final |  | | SRC-001 |
 | Proyecto de Grado | Modalidad de Graduación en la que el estudiante desarrolla y defiende un proyecto |  | Modalidad de Graduación |  | | SRC-001 |
 | Registro universitario | Código que la universidad asigna a cada estudiante y que no se repite entre estudiantes | Registro (avoid) | Estudiante | | | SRC-001 |
+| Revisión | Resultado que un revisor registra sobre una versión del documento del proyecto: aprobada u observada, con sus observaciones en texto y un PDF anotado opcional | | Revisor, Observación, Versión del documento | | | SRC-006 |
 | Revisor | Tutor o miembro del tribunal evaluador designado en un trámite para revisar el documento del proyecto | | Tutor, Miembro del tribunal, Versión del documento | | | SRC-005 |
 | Rol | Función general que una cuenta de usuario tiene en el sistema, una o varias por cuenta: estudiante, docente, docente de Taller de Grado, secretario(a) de dirección de carrera, director de carrera o administrador | | Cuenta de usuario, Tutor, Miembro del tribunal | | | SRC-004 |
 | Secretario(a) de dirección de carrera | Personal de la Dirección de Carrera que recibe los documentos del trámite y lleva el expediente de titulación | Secretaria (avoid) | Dirección de Carrera | ACT-002 Secretario(a) de dirección de carrera | | SRC-001 |
