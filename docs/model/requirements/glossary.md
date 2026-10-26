@@ -32,6 +32,7 @@
 | Predefensa | Presentación preliminar del proyecto y revisión del prototipo ante el tribunal evaluador, que habilita la defensa final | Revisión de prototipo (avoid) | Defensa final |  | | SRC-001 |
 | Proyecto de Grado | Modalidad de Graduación en la que el estudiante desarrolla y defiende un proyecto |  | Modalidad de Graduación |  | | SRC-001 |
 | Registro universitario | Código que la universidad asigna a cada estudiante y que no se repite entre estudiantes | Registro (avoid) | Estudiante | | | SRC-001 |
+| Revisor | Tutor o miembro del tribunal evaluador designado en un trámite para revisar el documento del proyecto | | Tutor, Miembro del tribunal, Versión del documento | | | SRC-005 |
 | Rol | Función general que una cuenta de usuario tiene en el sistema, una o varias por cuenta: estudiante, docente, docente de Taller de Grado, secretario(a) de dirección de carrera, director de carrera o administrador | | Cuenta de usuario, Tutor, Miembro del tribunal | | | SRC-004 |
 | Secretario(a) de dirección de carrera | Personal de la Dirección de Carrera que recibe los documentos del trámite y lleva el expediente de titulación | Secretaria (avoid) | Dirección de Carrera | ACT-002 Secretario(a) de dirección de carrera | | SRC-001 |
 | Servicio de correo | Servicio de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones |  |  | ACT-009 Servicio de correo | | SRC-003 |
@@ -40,7 +41,7 @@
 | Tribunal evaluador | Grupo de tres docentes que revisa el documento del proyecto y evalúa la predefensa y la defensa final de un estudiante | Tribunal calificador (avoid), Cuerpo de tribunales (avoid) | Miembro del tribunal |  | | SRC-001 |
 | Tutor | Docente que guía al estudiante en su proyecto y revisa el documento del proyecto junto al tribunal evaluador | Docente tutor (avoid), Tutor académico (avoid) | Docente | ACT-006 Tutor | | SRC-001 |
 | Usuario | Persona con una cuenta de usuario en el sistema |  | Administrador |  | | SRC-002 |
-| Versión del documento | Cada entrega sucesiva del documento del proyecto, que conserva su historial de observaciones |  | Documento del proyecto, Observación |  | | SRC-001 |
+| Versión del documento | Cada entrega sucesiva del documento del proyecto, con un comentario general del estudiante y sus observaciones; la última entregada es la versión vigente |  | Documento del proyecto, Observación |  | | SRC-001 |
 | Visto bueno | Aprobación formal que emite un docente sobre el perfil de proyecto o el documento del proyecto | Aprobación (avoid) | Perfil de proyecto, Documento del proyecto |  | | SRC-001 |
 
 ## Acronyms and Abbreviations

@@ -8,6 +8,7 @@
 | SRC-002 | Requisitos funcionales del equipo de desarrollo y casos de uso aprobados por el docente de Tecnología Web ([docs/sources/2026-10-06.md](../../sources/2026-10-06.md)) | Document | 2026-10-06 |
 | SRC-003 | Restricciones y requisitos de calidad indicados por el equipo de desarrollo | Sesión en I1 | 2026-10-26 |
 | SRC-004 | Detalle de UC-001 acordado con el equipo de desarrollo | Workshop | 2026-10-26 |
+| SRC-005 | Detalle de UC-007 acordado con el equipo de desarrollo | Workshop | 2026-10-26 |
 
 ## Functional Requirements
 
@@ -22,7 +23,7 @@
 | FR-007 | El sistema debe notificar a cada miembro del tribunal su designación | UC-006 Designar tribunal evaluador | Must | SRC-002 | Candidate |
 | FR-008 | El sistema debe registrar la entrega del documento del proyecto por el estudiante para su revisión | UC-007 Entregar documento del proyecto | Must | SRC-001, SRC-002 | Candidate |
 | FR-009 | El sistema debe registrar las observaciones de los miembros del tribunal y del tutor al documento del proyecto, incluidas las que el secretario(a) transcribe de la carta dirigida a la Dirección de Carrera | UC-008 Revisar documento del proyecto | Must | SRC-001, SRC-002 | Candidate |
-| FR-010 | El sistema debe registrar las correcciones del estudiante a las observaciones y conservar el historial de versiones del documento del proyecto | UC-007 Entregar documento del proyecto | Must | SRC-001, SRC-002 | Candidate |
+| FR-010 | El sistema debe registrar cada versión corregida del documento del proyecto con un comentario general del estudiante y conservar el historial de versiones | UC-007 Entregar documento del proyecto | Must | SRC-001, SRC-002, SRC-005 | Candidate |
 | FR-011 | El sistema debe registrar la aprobación del documento del proyecto por cada miembro del tribunal y por el tutor | UC-008 Revisar documento del proyecto | Must | SRC-001, SRC-002 | Candidate |
 | FR-012 | El sistema debe registrar la fecha, hora y lugar de la predefensa y revisión de prototipo que fija el director de carrera | UC-009 Programar evaluación | Must | SRC-001, SRC-002 | Candidate |
 | FR-013 | El sistema debe notificar al estudiante y al tribunal evaluador la programación de la predefensa | UC-009 Programar evaluación | Must | SRC-001, SRC-002 | Candidate |
@@ -52,9 +53,17 @@
 | FR-037 | El sistema debe permitir que cada usuario cargue o cambie la foto de perfil de su propia cuenta de usuario | UC-016 Actualizar foto de perfil | Must | SRC-004 | Candidate |
 | FR-038 | El sistema debe rechazar que se desactive, o que pierda el rol de administrador, la única cuenta de administrador activa | UC-001 Administrar usuarios | Must | SRC-004 | Candidate |
 | FR-039 | El sistema debe rechazar que una segunda cuenta de usuario activa tenga el rol de docente de Taller de Grado | UC-001 Administrar usuarios | Must | SRC-004 | Candidate |
+| FR-040 | El sistema debe admitir una versión nueva del documento del proyecto solo cuando el tutor observó la versión vigente, o cuando todos los miembros del tribunal la revisaron y al menos uno registró observaciones | UC-007 Entregar documento del proyecto | Must | SRC-005 | Candidate |
+| FR-041 | El sistema debe notificar al tutor cada versión entregada del documento del proyecto | UC-007 Entregar documento del proyecto | Must | SRC-005 | Candidate |
+| FR-042 | El sistema debe notificar a los miembros del tribunal recién designados cuando hay una versión vigente del documento del proyecto aprobada por el tutor para revisar | UC-006 Designar tribunal evaluador | Must | SRC-005 | Candidate |
+| FR-043 | El sistema debe registrar la revisión y aprobación de la versión para la defensa final por el tutor y por los miembros del tribunal evaluador | UC-008 Revisar documento del proyecto | Must | SRC-005 | Candidate |
+| FR-044 | El sistema debe pasar una versión del documento del proyecto a los miembros del tribunal y notificarlos solo cuando el tutor la aprueba | UC-008 Revisar documento del proyecto | Must | SRC-005 | Candidate |
 
 ### Notes
 
+- FR-008, FR-040: el estudiante puede entregar la primera versión desde que tiene tutor asignado. Si el tribunal se designa después, revisa la versión vigente que el tutor ya aprobó (FR-042).
+- FR-040, FR-044: cada versión se revisa en dos etapas. Primero la revisa el tutor, como filtro previo; si la observa, el estudiante entrega otra sin que el tribunal la vea. Si la aprueba, pasa a los miembros del tribunal evaluador.
+- FR-025, FR-043: la versión para la defensa final se entrega después de aprobar la predefensa y se revisa en las mismas dos etapas.
 - FR-026, FR-036: una cuenta de usuario puede tener varios roles. Un docente puede tener además el rol de director de carrera, y un director de carrera puede tener o no el rol de docente; solo con el rol de docente puede ser designado tutor o miembro del tribunal. El estudiante, el secretario(a) y el administrador tienen un solo rol: quien administra y además participa en el trámite usa dos cuentas de usuario distintas. Docente de Taller de Grado es un rol de cuenta: la carrera tiene uno solo y revisa todos los perfiles de proyecto (FR-039). Ser tutor o miembro del tribunal sale de las designaciones de cada trámite, no de la cuenta de usuario.
 - FR-037: la foto de perfil es opcional y solo la carga el propio usuario.
 - FR-001 a FR-019 vienen de RF01 a RF19 de SRC-002, con el mismo número. Se ajustó su texto según lo acordado con el equipo de desarrollo el 2026-10-26:
