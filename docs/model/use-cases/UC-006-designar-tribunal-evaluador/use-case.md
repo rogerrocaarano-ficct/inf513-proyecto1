@@ -9,7 +9,7 @@
 | Priority | Must |
 | Architecturally significant | No: la notificación usa el mismo envío por correo que la respuesta de cualquier caso de uso |
 | Feature | FEAT-004 |
-| Functional requirements (derived) | FR-006, FR-007, FR-021 |
+| Functional requirements (derived) | FR-006, FR-007, FR-021, FR-042 |
 
 ## Brief Description
 

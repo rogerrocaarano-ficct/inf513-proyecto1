@@ -10,7 +10,7 @@
 | [UC-004](UC-004-asignar-tutor/use-case.md) | Asignar tutor | ACT-003, ACT-009 | Must | No | Briefly described | — | — | I1 |
 | [UC-005](UC-005-evaluar-viabilidad-del-perfil/use-case.md) | Evaluar viabilidad del perfil | ACT-005 | Must | No | Briefly described | — | — | I1 |
 | [UC-006](UC-006-designar-tribunal-evaluador/use-case.md) | Designar tribunal evaluador | ACT-003, ACT-009 | Must | No | Briefly described | — | — | I1 |
-| [UC-007](UC-007-entregar-documento-del-proyecto/use-case.md) | Entregar documento del proyecto | ACT-001 | Must | Yes | Briefly described | — | — | I1 |
+| [UC-007](UC-007-entregar-documento-del-proyecto/use-case.md) | Entregar documento del proyecto | ACT-001, ACT-009 | Must | Yes | Detailed | — | — | I1 |
 | [UC-008](UC-008-revisar-documento-del-proyecto/use-case.md) | Revisar documento del proyecto | ACT-007, ACT-006, ACT-002 | Must | Yes | Briefly described | — | — | I1 |
 | [UC-009](UC-009-programar-evaluacion/use-case.md) | Programar evaluación | ACT-003, ACT-009 | Must | No | Briefly described | — | — | I1 |
 | [UC-010](UC-010-registrar-resultado-de-evaluacion/use-case.md) | Registrar resultado de evaluación | ACT-007 | Must | No | Briefly described | — | — | I1 |

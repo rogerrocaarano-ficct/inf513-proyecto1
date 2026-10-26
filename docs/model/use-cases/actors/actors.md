@@ -12,7 +12,7 @@
 | [ACT-006](ACT-006-tutor.md) | Tutor | Primary | Human | Docente que guía al estudiante y revisa el documento del proyecto junto al tribunal evaluador. | UC-008 |
 | [ACT-007](ACT-007-miembro-del-tribunal.md) | Miembro del tribunal | Primary | Human | Docente designado como uno de los tres integrantes del tribunal evaluador de un estudiante. | UC-008, UC-010 |
 | [ACT-008](ACT-008-administrador.md) | Administrador | Primary | Human | Responsable técnico que crea y mantiene las cuentas de usuario y sus roles. | UC-001, UC-016 |
-| [ACT-009](ACT-009-servicio-de-correo.md) | Servicio de correo | Supporting | External system | Servicio externo de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones. | UC-001, UC-004, UC-006, UC-009 |
+| [ACT-009](ACT-009-servicio-de-correo.md) | Servicio de correo | Supporting | External system | Servicio externo de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones. | UC-001, UC-004, UC-006, UC-007, UC-009 |
 
 ## Actor Generalization
 

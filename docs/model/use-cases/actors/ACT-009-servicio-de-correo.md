@@ -9,7 +9,7 @@ Servicio externo de correo electrónico por el que el sistema recibe las solicit
 
 ## Goals
 
-- Entregar las notificaciones de cuentas de usuario, designación y programación (UC-001, UC-004, UC-006, UC-009)
+- Entregar las notificaciones de cuentas de usuario, entregas, designación y programación (UC-001, UC-004, UC-006, UC-007, UC-009)
 
 ## Responsibilities
 
