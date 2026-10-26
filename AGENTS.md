@@ -20,8 +20,8 @@ follows the applications defined in `docs/model/design/architecture.md`.
 
 | Setting | Value |
 | --- | --- |
-| Documentation language | <!-- e.g. Spanish --> |
-| Code language | <!-- e.g. English --> |
+| Documentation language | Spanish |
+| Code language | English |
 
 `/requirements` sets both values the first time it runs. While one is
 still a placeholder, ask the user for it before writing anything it covers.
