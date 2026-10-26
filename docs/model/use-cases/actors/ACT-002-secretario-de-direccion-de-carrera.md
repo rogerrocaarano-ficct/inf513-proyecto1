@@ -13,6 +13,7 @@ Personal de la Dirección de Carrera que recibe los documentos del trámite y ll
 - Transcribir las observaciones recibidas por carta (UC-008)
 - Cerrar y archivar el expediente (UC-011)
 - Seguir el estado de los trámites (UC-012, UC-013, UC-014)
+- Mantener actualizada su foto de perfil (UC-016)
 
 ## Responsibilities
 

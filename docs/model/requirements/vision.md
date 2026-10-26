@@ -21,7 +21,7 @@ Con el sistema, cada etapa del trámite queda registrada en un expediente digita
 
 | ID | Feature | Need it addresses | Use cases (derived) | Priority |
 | --- | --- | --- | --- | --- |
-| FEAT-001 | Gestión de usuarios | Todos los participantes del trámite necesitan una cuenta con su rol y su foto de perfil para usar el sistema (CU1, SRC-002) | UC-001 | Must |
+| FEAT-001 | Gestión de usuarios | Todos los participantes del trámite necesitan una cuenta con sus roles para usar el sistema (CU1, SRC-002) | UC-001, UC-016 | Must |
 | FEAT-002 | Habilitación académica de solicitudes | La solicitud y los documentos iniciales del estudiante se reciben en papel y no se sabe si el trámite fue habilitado (CU2, SRC-002) | UC-002 | Must |
 | FEAT-003 | Asignación de tutor y registro del perfil de proyecto | La designación del tutor y la entrega del perfil de proyecto no quedan registradas en ningún lugar consultable (CU3, SRC-002) | UC-003, UC-004 | Must |
 | FEAT-004 | Evaluación de viabilidad y conformación del tribunal | La evaluación del perfil y la designación de los tres miembros del tribunal se comunican por papel o en persona (CU4, SRC-002) | UC-005, UC-006 | Must |

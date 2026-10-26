@@ -11,6 +11,7 @@ Docente de la carrera que participa en uno o más trámites de titulación como 
 
 - Seguir el estado de los trámites en los que participa (UC-012)
 - Conocer las fechas de las evaluaciones (UC-013)
+- Mantener actualizada su foto de perfil (UC-016)
 
 ## Responsibilities
 

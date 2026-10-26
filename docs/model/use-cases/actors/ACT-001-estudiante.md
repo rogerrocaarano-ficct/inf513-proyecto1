@@ -14,6 +14,7 @@ Postulante que realiza el trámite de titulación por Proyecto de Grado. Usa el 
 - Entregar el documento del proyecto y sus correcciones (UC-007)
 - Saber en qué etapa está su trámite (UC-012)
 - Conocer las fechas de sus evaluaciones (UC-013)
+- Mantener actualizada su foto de perfil (UC-016)
 
 ## Responsibilities
 
