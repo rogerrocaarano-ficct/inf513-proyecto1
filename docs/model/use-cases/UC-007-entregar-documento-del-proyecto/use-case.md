@@ -5,7 +5,7 @@
 | Status | Detailed |
 | Iteration | I1 |
 | Primary actor | ACT-001 Estudiante |
-| Supporting actors | ACT-009 Servicio de correo |
+| Supporting actors | None |
 | Priority | Must |
 | Architecturally significant | Yes: recepción de adjuntos de hasta 25 MB por POP3, almacenamiento de archivos y versionado del documento del proyecto; no se sabe si el servidor de correo acepta ese tamaño |
 | Feature | FEAT-005 |
@@ -25,7 +25,7 @@ El estudiante entrega el documento del proyecto para su revisión, y entrega ver
 2. El sistema verifica que el trámite admita una entrega: es la primera, el tutor registró observaciones a la versión vigente, o todos los miembros del tribunal revisaron la versión vigente y al menos uno registró observaciones.
 3. El sistema verifica que el archivo cumpla CON-004.
 4. El sistema registra el documento como una versión nueva, la deja como versión vigente para revisión y conserva las anteriores en el historial de versiones.
-5. El sistema notifica al tutor, a través del Servicio de correo, que hay una versión para revisar.
+5. El sistema notifica al tutor que hay una versión para revisar.
 6. El sistema confirma al estudiante la entrega con el número de la versión.
 
 ## Alternative Flows
