@@ -9,6 +9,7 @@
 | SRC-003 | Restricciones y requisitos de calidad indicados por el equipo de desarrollo | Sesión en I1 | 2026-10-26 |
 | SRC-004 | Detalle de UC-001 acordado con el equipo de desarrollo | Workshop | 2026-10-26 |
 | SRC-005 | Detalle de UC-007 acordado con el equipo de desarrollo | Workshop | 2026-10-26 |
+| SRC-006 | Detalle de UC-008 acordado con el equipo de desarrollo | Workshop | 2026-10-26 |
 
 ## Functional Requirements
 
@@ -22,7 +23,7 @@
 | FR-006 | El sistema debe registrar los tres docentes que el director de carrera designa como tribunal evaluador del estudiante | UC-006 Designar tribunal evaluador | Must | SRC-001, SRC-002 | Candidate |
 | FR-007 | El sistema debe notificar a cada miembro del tribunal su designación | UC-006 Designar tribunal evaluador | Must | SRC-002 | Candidate |
 | FR-008 | El sistema debe registrar la entrega del documento del proyecto por el estudiante para su revisión | UC-007 Entregar documento del proyecto | Must | SRC-001, SRC-002 | Candidate |
-| FR-009 | El sistema debe registrar las observaciones de los miembros del tribunal y del tutor al documento del proyecto, incluidas las que el secretario(a) transcribe de la carta dirigida a la Dirección de Carrera | UC-008 Revisar documento del proyecto | Must | SRC-001, SRC-002 | Candidate |
+| FR-009 | El sistema debe registrar la revisión del tutor y de cada miembro del tribunal sobre cada versión del documento del proyecto: aprobada u observada, con sus observaciones en texto y un PDF anotado opcional | UC-008 Revisar documento del proyecto | Must | SRC-001, SRC-002, SRC-006 | Candidate |
 | FR-010 | El sistema debe registrar cada versión corregida del documento del proyecto con un comentario general del estudiante y conservar el historial de versiones | UC-007 Entregar documento del proyecto | Must | SRC-001, SRC-002, SRC-005 | Candidate |
 | FR-011 | El sistema debe registrar la aprobación del documento del proyecto por cada miembro del tribunal y por el tutor | UC-008 Revisar documento del proyecto | Must | SRC-001, SRC-002 | Candidate |
 | FR-012 | El sistema debe registrar la fecha, hora y lugar de la predefensa y revisión de prototipo que fija el director de carrera | UC-009 Programar evaluación | Must | SRC-001, SRC-002 | Candidate |
@@ -37,7 +38,7 @@
 | FR-021 | El sistema debe notificar al estudiante la designación de su tribunal evaluador | UC-006 Designar tribunal evaluador | Must | SRC-001 | Candidate |
 | FR-022 | El sistema debe registrar el rechazo o las observaciones del docente de Taller de Grado al perfil de proyecto | UC-005 Evaluar viabilidad del perfil | Must | SRC-001 | Candidate |
 | FR-023 | El sistema debe registrar un nuevo perfil de proyecto cuando el anterior fue rechazado u observado | UC-003 Registrar perfil de proyecto | Must | SRC-001 | Candidate |
-| FR-024 | El sistema debe controlar el plazo de revisión de cada versión del documento del proyecto | UC-008 Revisar documento del proyecto | Must | SRC-002 | Candidate |
+| FR-024 | El sistema debe controlar el plazo de revisión del tutor y de cada miembro del tribunal sobre cada versión del documento del proyecto | UC-008 Revisar documento del proyecto | Must | SRC-002, SRC-006 | Candidate |
 | FR-025 | El sistema debe registrar la entrega del documento del proyecto para la defensa final | UC-007 Entregar documento del proyecto | Must | SRC-001 | Candidate |
 | FR-026 | El sistema debe crear cuentas de usuario con nombre completo, dirección de correo y uno o más roles, y para un estudiante además registro universitario, cédula de identidad y teléfono | UC-001 Administrar usuarios | Must | SRC-002, SRC-004 | Candidate |
 | FR-027 | El sistema debe mostrar el calendario académico con las predefensas y defensas finales programadas | UC-013 Consultar calendario académico | Must | SRC-002 | Candidate |
@@ -58,6 +59,10 @@
 | FR-042 | El sistema debe notificar a los miembros del tribunal recién designados cuando hay una versión vigente del documento del proyecto aprobada por el tutor para revisar | UC-006 Designar tribunal evaluador | Must | SRC-005 | Candidate |
 | FR-043 | El sistema debe registrar la revisión y aprobación de la versión para la defensa final por el tutor y por los miembros del tribunal evaluador | UC-008 Revisar documento del proyecto | Must | SRC-005 | Candidate |
 | FR-044 | El sistema debe pasar una versión del documento del proyecto a los miembros del tribunal y notificarlos solo cuando el tutor la aprueba | UC-008 Revisar documento del proyecto | Must | SRC-005 | Candidate |
+| FR-045 | El sistema debe admitir una sola revisión por revisor sobre cada versión del documento del proyecto | UC-008 Revisar documento del proyecto | Must | SRC-006 | Candidate |
+| FR-046 | El sistema debe notificar al estudiante las observaciones del tutor cuando este observa una versión | UC-008 Revisar documento del proyecto | Must | SRC-006 | Candidate |
+| FR-047 | El sistema debe notificar al estudiante el resultado y las observaciones de cada miembro del tribunal cuando los tres revisaron una versión | UC-008 Revisar documento del proyecto | Must | SRC-006 | Candidate |
+| FR-048 | El sistema debe notificar al estudiante, al secretario(a) de dirección de carrera y al director de carrera cuando el documento del proyecto queda aprobado | UC-008 Revisar documento del proyecto | Must | SRC-006 | Candidate |
 
 ### Notes
 
@@ -67,7 +72,7 @@
 - FR-026, FR-036: una cuenta de usuario puede tener varios roles. Un docente puede tener además el rol de director de carrera, y un director de carrera puede tener o no el rol de docente; solo con el rol de docente puede ser designado tutor o miembro del tribunal. El estudiante, el secretario(a) y el administrador tienen un solo rol: quien administra y además participa en el trámite usa dos cuentas de usuario distintas. Docente de Taller de Grado es un rol de cuenta: la carrera tiene uno solo y revisa todos los perfiles de proyecto (FR-039). Ser tutor o miembro del tribunal sale de las designaciones de cada trámite, no de la cuenta de usuario.
 - FR-037: la foto de perfil es opcional y solo la carga el propio usuario.
 - FR-001 a FR-019 vienen de RF01 a RF19 de SRC-002, con el mismo número. Se ajustó su texto según lo acordado con el equipo de desarrollo el 2026-10-26:
-  - Cada acción la registra quien la realiza: el estudiante presenta el perfil (FR-004) y entrega el documento (FR-008); el docente de Taller de Grado registra su visto bueno (FR-005); el tribunal y el tutor registran sus observaciones (FR-009). El secretario(a) solo transcribe las observaciones que llegan por carta.
+  - Cada acción la registra quien la realiza: el estudiante presenta el perfil (FR-004) y entrega el documento (FR-008); el docente de Taller de Grado registra su visto bueno (FR-005); el tutor y el tribunal registran sus observaciones (FR-009). Las observaciones solo se registran en el sistema: no se aceptan por carta, a diferencia de lo que decían RF09 y SRC-001.
   - El director de carrera fija las fechas de la predefensa y la defensa final (FR-012, FR-015), como dice SRC-001.
   - El tutor revisa y aprueba el documento junto al tribunal (FR-009, FR-011), como dice SRC-001.
 - FR-002: SRC-001 incluye la carta de solicitud entre los documentos iniciales; RF02 la omitía. Los documentos iniciales llegan al sistema por dos caminos: el secretario(a) digitaliza los que recibe en papel, o el estudiante los sube directamente.
@@ -101,7 +106,7 @@
 | CON-001 (A) | La primera entrega es una prueba de concepto que se opera completamente por correo electrónico, construida en Java con Spring Boot | Cada caso de uso se ejecuta solo enviando y recibiendo correos; el código usa Java y Spring Boot | Global | Must | SRC-003 |
 | CON-002 (A) | La segunda entrega, posterior a la primera, es la versión final del sistema: una aplicación web con backend en Laravel y frontend en React que reemplaza a la prueba de concepto por correo | El backend usa Laravel y el frontend usa React | Global | Must | SRC-003 |
 | CON-003 | Fechas de la primera y la segunda entrega | TBD | Global | Must | SRC-003 |
-| CON-004 | El perfil de proyecto y el documento del proyecto se entregan en PDF con un tamaño máximo de 25 MB | El sistema rechaza archivos que no son PDF o que superan 25 MB | UC-003, UC-007 | Must | SRC-003 |
+| CON-004 | El perfil de proyecto, el documento del proyecto y el PDF anotado de una revisión se entregan en PDF con un tamaño máximo de 25 MB | El sistema rechaza archivos que no son PDF o que superan 25 MB | UC-003, UC-007, UC-008 | Must | SRC-003, SRC-006 |
 | CON-005 | Los documentos iniciales del trámite se entregan como imagen PNG o JPG/JPEG, o como PDF, con un tamaño máximo de 1 MB por archivo | El sistema rechaza archivos que no son PNG, JPG/JPEG o PDF, o que superan 1 MB | UC-002 | Must | SRC-003 |
 | CON-006 (A) | Para la presentación del proyecto, el sistema usa el servidor de correo provisto por el docente de Tecnología Web, `mail.tecnoweb.org.bo`: recibe por POP3 y envía por SMTP, en los puertos por defecto (110 y 25), sin cifrado. El SMTP no pide contraseña y valida al remitente por su dirección IP: el equipo pide al docente que agregue a la lista de direcciones permitidas su dirección IP pública para las pruebas y la de su servidor de despliegue de contingencia; la presentación se hace desde la dirección IP del laboratorio | El sistema recibe y envía todos sus correos a través de `mail.tecnoweb.org.bo` con esa configuración | Global | Must | SRC-003 |
 | CON-007 (A) | Para la presentación del proyecto, el sistema usa la base de datos PostgreSQL provista por el docente de Tecnología Web: base `db_grupo03sc` en el servidor `db.tecnoweb.org.bo`, puerto por defecto (5432), con el usuario y la contraseña que entrega el docente | El sistema guarda todos sus datos en `db_grupo03sc` de `db.tecnoweb.org.bo` | Global | Must | SRC-003 |
@@ -116,7 +121,7 @@
 - [ ] FR-034: un trámite queda pendiente de reasignación cuando se desactiva la cuenta de su tutor o de un miembro del tribunal; ¿UC-004 y UC-006 deben permitir reasignarlos? ¿Qué pasa con el trámite de un estudiante desactivado? (ask: Secretario(a) de dirección de carrera)
 - [ ] CON-003: ¿cuáles son las fechas de la primera y la segunda entrega? (ask: Docente de Tecnología Web)
 - [ ] NFR-US-001, NFR-SE-001, NFR-IN-001: criterios de aceptación medibles (ask: Docente de Tecnología Web)
-- [ ] FR-024: ¿cuánto dura el plazo de revisión, quién lo fija y qué hace el sistema cuando vence? (ask: Secretario(a) de dirección de carrera)
+- [ ] FR-024: ¿cuánto dura el plazo de revisión del tutor y de cada miembro del tribunal, quién lo fija y qué hace el sistema cuando vence? (ask: Secretario(a) de dirección de carrera)
 - [ ] FR-013, FR-015: ¿se notifica también la programación de la defensa final? (ask: Secretario(a) de dirección de carrera)
 - [ ] FR-016: ¿qué datos lleva el acta de graduación? (ask: Secretario(a) de dirección de carrera)
 - [ ] FR-028: ¿qué indicadores muestra el dashboard? (ask: Director de carrera)
