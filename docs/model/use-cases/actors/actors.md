@@ -12,7 +12,6 @@
 | [ACT-006](ACT-006-tutor.md) | Tutor | Primary | Human | Docente que guía al estudiante y revisa el documento del proyecto junto al tribunal evaluador. | UC-008 |
 | [ACT-007](ACT-007-miembro-del-tribunal.md) | Miembro del tribunal | Primary | Human | Docente designado como uno de los tres integrantes del tribunal evaluador de un estudiante. | UC-008, UC-010 |
 | [ACT-008](ACT-008-administrador.md) | Administrador | Primary | Human | Responsable técnico que crea y mantiene las cuentas de usuario y sus roles. | UC-001, UC-016 |
-| [ACT-009](ACT-009-servicio-de-correo.md) | Servicio de correo | Supporting | External system | Servicio externo de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones. | UC-001, UC-004, UC-006, UC-007, UC-008, UC-009 |
 
 ## Actor Generalization
 
@@ -26,4 +25,3 @@
 
 - [ ] ACT-001, ACT-002, ACT-003, ACT-004, ACT-005, ACT-006, ACT-007, ACT-008: ¿cuántos usuarios hay de cada rol, con qué frecuencia usan el sistema y qué experiencia técnica tienen? (ask: Secretario(a) de dirección de carrera)
 - [ ] ACT-008: ¿quién cumple el rol de administrador en la carrera? (ask: Director de carrera)
-- [x] ACT-009: ¿qué servicio de correo se usa (institucional u otro) y quién es su responsable? Respuesta: el servidor `mail.tecnoweb.org.bo` provisto por el docente de Tecnología Web (CON-006).

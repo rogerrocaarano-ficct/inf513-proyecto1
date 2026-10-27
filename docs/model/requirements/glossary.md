@@ -36,7 +36,7 @@
 | Revisor | Tutor o miembro del tribunal evaluador designado en un trámite para revisar el documento del proyecto | | Tutor, Miembro del tribunal, Versión del documento | | | SRC-005 |
 | Rol | Función general que una cuenta de usuario tiene en el sistema, una o varias por cuenta: estudiante, docente, docente de Taller de Grado, secretario(a) de dirección de carrera, director de carrera o administrador | | Cuenta de usuario, Tutor, Miembro del tribunal | | | SRC-004 |
 | Secretario(a) de dirección de carrera | Personal de la Dirección de Carrera que recibe los documentos del trámite y lleva el expediente de titulación | Secretaria (avoid) | Dirección de Carrera | ACT-002 Secretario(a) de dirección de carrera | | SRC-001 |
-| Servicio de correo | Servicio de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones |  |  | ACT-009 Servicio de correo | | SRC-003 |
+| Servicio de correo | Servicio de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones |  |  | | | SRC-003 |
 | Solicitud de titulación | Pedido del estudiante para iniciar el trámite de titulación, que acompaña a los documentos iniciales |  | Documentos iniciales, Trámite de titulación |  | | SRC-001 |
 | Trámite de titulación | Proceso que sigue un estudiante desde su solicitud de titulación hasta el archivo de su expediente | Proceso de titulación (avoid) | Expediente de titulación |  | | SRC-001 |
 | Tribunal evaluador | Grupo de tres docentes que revisa el documento del proyecto y evalúa la predefensa y la defensa final de un estudiante | Tribunal calificador (avoid), Cuerpo de tribunales (avoid) | Miembro del tribunal |  | | SRC-001 |

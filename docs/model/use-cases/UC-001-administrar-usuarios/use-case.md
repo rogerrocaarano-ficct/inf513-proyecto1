@@ -5,7 +5,7 @@
 | Status | Detailed |
 | Iteration | I1 |
 | Primary actor | ACT-008 Administrador |
-| Supporting actors | ACT-009 Servicio de correo |
+| Supporting actors | None |
 | Priority | Must |
 | Architecturally significant | Yes: el sistema identifica a cada remitente por su dirección de correo y lo autoriza según su rol (NFR-SE-001); todos los demás casos de uso dependen de esto |
 | Feature | FEAT-001 |
@@ -25,7 +25,7 @@ El administrador crea, consulta, modifica, desactiva y reactiva las cuentas de u
 2. El sistema verifica que estén todos los datos que los roles exigen, que la combinación de roles esté permitida y, si uno de los roles es docente de Taller de Grado, que ninguna otra cuenta de usuario activa lo tenga.
 3. El sistema verifica que la dirección de correo y, para un estudiante, el registro universitario no pertenezcan a otra cuenta de usuario.
 4. El sistema crea la cuenta de usuario activa.
-5. El sistema notifica al usuario, a través del Servicio de correo, que su cuenta de usuario fue creada y con qué roles.
+5. El sistema notifica al usuario que su cuenta de usuario fue creada y con qué roles.
 6. El sistema confirma al administrador que la cuenta de usuario fue creada.
 
 ## Alternative Flows
@@ -47,7 +47,7 @@ En el paso 1 del flujo básico, si el administrador solicita modificar una cuent
 3. Si el administrador quita un rol con el que el usuario participa en trámites de titulación en curso, el sistema le advierte y le muestra esos trámites.
 4. El administrador confirma los cambios.
 5. El sistema guarda los cambios. Los trámites en curso en los que el usuario participaba con el rol quitado quedan pendientes de reasignación.
-6. Si cambiaron los roles, el sistema notifica al usuario, a través del Servicio de correo, sus roles nuevos.
+6. Si cambiaron los roles, el sistema notifica al usuario sus roles nuevos.
 7. El sistema confirma al administrador que la cuenta de usuario fue modificada.
 8. El caso de uso termina.
 
@@ -59,7 +59,7 @@ En el paso 1 del flujo básico, si el administrador solicita desactivar una cuen
 2. Si el usuario participa en trámites de titulación en curso, el sistema advierte al administrador y le muestra esos trámites.
 3. El administrador confirma la desactivación.
 4. El sistema desactiva la cuenta de usuario: el usuario ya no puede usar el sistema y su historial se conserva. Los trámites en curso en los que participa quedan pendientes de reasignación.
-5. El sistema notifica al usuario, a través del Servicio de correo, que su cuenta de usuario fue desactivada.
+5. El sistema notifica al usuario que su cuenta de usuario fue desactivada.
 6. El sistema confirma al administrador que la cuenta de usuario fue desactivada.
 7. El caso de uso termina.
 
@@ -69,7 +69,7 @@ En el paso 1 del flujo básico, si el administrador solicita reactivar una cuent
 
 1. El administrador indica la cuenta de usuario desactivada que desea reactivar.
 2. El sistema reactiva la cuenta de usuario.
-3. El sistema notifica al usuario, a través del Servicio de correo, que su cuenta de usuario fue reactivada.
+3. El sistema notifica al usuario que su cuenta de usuario fue reactivada.
 4. El sistema confirma al administrador que la cuenta de usuario fue reactivada.
 5. El caso de uso termina.
 

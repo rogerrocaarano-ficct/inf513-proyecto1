@@ -78,6 +78,7 @@
 - FR-002: SRC-001 incluye la carta de solicitud entre los documentos iniciales; RF02 la omitía. Los documentos iniciales llegan al sistema por dos caminos: el secretario(a) digitaliza los que recibe en papel, o el estudiante los sube directamente.
 - FR-003: el tutor se asigna después del visto bueno del perfil, junto con el tribunal (paso 5 de SRC-001).
 - FR-011: el documento queda apto para la predefensa solo cuando lo aprueban los tres miembros del tribunal y el tutor.
+- NFR-IN-001, CON-006: el servidor de correo es infraestructura, no un actor. Los destinatarios de las notificaciones son los usuarios; cómo se envían se resuelve en el diseño.
 
 ## Non-Functional Requirements
 
@@ -97,7 +98,7 @@
 
 | ID | Requirement | Fit criterion | Scope | Priority | Source |
 | --- | --- | --- | --- | --- | --- |
-| NFR-IN-001 (A) | El sistema recibe las solicitudes de los usuarios y les envía respuestas y notificaciones por correo electrónico a través del Servicio de correo. Cada solicitud es un comando que el usuario escribe en el asunto del correo con la forma de una llamada a función, `Comando(arg1; arg2; …)`, con los argumentos separados por punto y coma. Los archivos se envían como adjuntos del correo y el comando los nombra por su nombre de archivo como argumento. El sistema identifica al usuario por la dirección de correo del remitente | TBD | Global | Must | SRC-003 |
+| NFR-IN-001 (A) | El sistema recibe las solicitudes de los usuarios y les envía respuestas y notificaciones por correo electrónico. Cada solicitud es un comando que el usuario escribe en el asunto del correo con la forma de una llamada a función, `Comando(arg1; arg2; …)`, con los argumentos separados por punto y coma. Los archivos se envían como adjuntos del correo y el comando los nombra por su nombre de archivo como argumento. El sistema identifica al usuario por la dirección de correo del remitente | TBD | Global | Must | SRC-003 |
 
 ### Constraints
 

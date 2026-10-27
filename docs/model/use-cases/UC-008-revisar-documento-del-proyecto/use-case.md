@@ -5,7 +5,7 @@
 | Status | Detailed |
 | Iteration | I1 |
 | Primary actor | ACT-006 Tutor, ACT-007 Miembro del tribunal |
-| Supporting actors | ACT-009 Servicio de correo |
+| Supporting actors | None |
 | Priority | Must |
 | Architecturally significant | Yes: aprobación de los tres miembros del tribunal y del tutor sobre cada versión y control de plazos de revisión |
 | Feature | FEAT-005 |
@@ -26,7 +26,7 @@ Los revisores revisan la versión vigente del documento del proyecto en dos etap
 2. El sistema verifica que la versión esté en la etapa de revisión que le corresponde al revisor (primero el tutor, luego el tribunal evaluador) y que el revisor todavía no la haya revisado.
 3. El sistema verifica que una revisión observada tenga observaciones y que el PDF anotado, si lo hay, cumpla CON-004.
 4. El sistema registra la revisión.
-5. Si el revisor es el tutor y aprobó la versión, el sistema la pasa a la etapa del tribunal evaluador y notifica a sus miembros, a través del Servicio de correo, que hay una versión para revisar.
+5. Si el revisor es el tutor y aprobó la versión, el sistema la pasa a la etapa del tribunal evaluador y notifica a sus miembros que hay una versión para revisar.
 6. El sistema confirma al revisor que su revisión quedó registrada.
 
 ## Alternative Flows
@@ -35,7 +35,7 @@ Los revisores revisan la versión vigente del documento del proyecto en dos etap
 
 En el paso 5 del flujo básico, si el revisor es el tutor y observó la versión:
 
-1. El sistema notifica al estudiante, a través del Servicio de correo, las observaciones del tutor y el PDF anotado, si lo hay.
+1. El sistema notifica al estudiante las observaciones del tutor y el PDF anotado, si lo hay.
 2. La versión queda observada; el estudiante puede entregar una versión nueva (UC-007).
 3. El caso de uso continúa en el paso 6 del flujo básico.
 
@@ -44,14 +44,14 @@ En el paso 5 del flujo básico, si el revisor es el tutor y observó la versión
 En el paso 5 del flujo básico, si el revisor es miembro del tribunal, con su revisión ya revisaron los tres y los tres aprobaron:
 
 1. El sistema registra el documento del proyecto como aprobado.
-2. El sistema notifica, a través del Servicio de correo, al estudiante, al secretario(a) de dirección de carrera y al director de carrera que el documento fue aprobado y puede programarse la predefensa o, si es la versión para la defensa final, la defensa final.
+2. El sistema notifica al estudiante, al secretario(a) de dirección de carrera y al director de carrera que el documento fue aprobado y puede programarse la predefensa o, si es la versión para la defensa final, la defensa final.
 3. El caso de uso continúa en el paso 6 del flujo básico.
 
 ### A3 El tribunal observa la versión
 
 En el paso 5 del flujo básico, si el revisor es miembro del tribunal, con su revisión ya revisaron los tres y al menos uno observó:
 
-1. El sistema notifica al estudiante, a través del Servicio de correo, el resultado de cada miembro del tribunal con sus observaciones y PDF anotados.
+1. El sistema notifica al estudiante el resultado de cada miembro del tribunal con sus observaciones y PDF anotados.
 2. La versión queda observada; el estudiante puede entregar una versión nueva (UC-007).
 3. El caso de uso continúa en el paso 6 del flujo básico.
 

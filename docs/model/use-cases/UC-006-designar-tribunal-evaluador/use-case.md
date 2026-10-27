@@ -5,7 +5,7 @@
 | Status | Briefly described |
 | Iteration | I1 |
 | Primary actor | ACT-003 Director de carrera |
-| Supporting actors | ACT-009 Servicio de correo |
+| Supporting actors | None |
 | Priority | Must |
 | Architecturally significant | No: la notificación usa el mismo envío por correo que la respuesta de cualquier caso de uso |
 | Feature | FEAT-004 |

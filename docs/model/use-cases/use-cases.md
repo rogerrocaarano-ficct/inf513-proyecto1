@@ -4,15 +4,15 @@
 
 | ID | Use case | Actors (derived) | Priority (derived) | Arch. significant (derived) | Requirements (derived) | Analysis (derived) | Design (derived) | Iteration (derived) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [UC-001](UC-001-administrar-usuarios/use-case.md) | Administrar usuarios | ACT-008, ACT-009 | Must | Yes | Detailed | — | — | I1 |
+| [UC-001](UC-001-administrar-usuarios/use-case.md) | Administrar usuarios | ACT-008 | Must | Yes | Detailed | — | — | I1 |
 | [UC-002](UC-002-registrar-solicitud-de-titulacion/use-case.md) | Registrar solicitud de titulación | ACT-002, ACT-001 | Must | No | Briefly described | — | — | I1 |
 | [UC-003](UC-003-registrar-perfil-de-proyecto/use-case.md) | Registrar perfil de proyecto | ACT-001 | Must | No | Briefly described | — | — | I1 |
-| [UC-004](UC-004-asignar-tutor/use-case.md) | Asignar tutor | ACT-003, ACT-009 | Must | No | Briefly described | — | — | I1 |
+| [UC-004](UC-004-asignar-tutor/use-case.md) | Asignar tutor | ACT-003 | Must | No | Briefly described | — | — | I1 |
 | [UC-005](UC-005-evaluar-viabilidad-del-perfil/use-case.md) | Evaluar viabilidad del perfil | ACT-005 | Must | No | Briefly described | — | — | I1 |
-| [UC-006](UC-006-designar-tribunal-evaluador/use-case.md) | Designar tribunal evaluador | ACT-003, ACT-009 | Must | No | Briefly described | — | — | I1 |
-| [UC-007](UC-007-entregar-documento-del-proyecto/use-case.md) | Entregar documento del proyecto | ACT-001, ACT-009 | Must | Yes | Detailed | — | — | I1 |
-| [UC-008](UC-008-revisar-documento-del-proyecto/use-case.md) | Revisar documento del proyecto | ACT-006, ACT-007, ACT-009 | Must | Yes | Detailed | — | — | I1 |
-| [UC-009](UC-009-programar-evaluacion/use-case.md) | Programar evaluación | ACT-003, ACT-009 | Must | No | Briefly described | — | — | I1 |
+| [UC-006](UC-006-designar-tribunal-evaluador/use-case.md) | Designar tribunal evaluador | ACT-003 | Must | No | Briefly described | — | — | I1 |
+| [UC-007](UC-007-entregar-documento-del-proyecto/use-case.md) | Entregar documento del proyecto | ACT-001 | Must | Yes | Detailed | — | — | I1 |
+| [UC-008](UC-008-revisar-documento-del-proyecto/use-case.md) | Revisar documento del proyecto | ACT-006, ACT-007 | Must | Yes | Detailed | — | — | I1 |
+| [UC-009](UC-009-programar-evaluacion/use-case.md) | Programar evaluación | ACT-003 | Must | No | Briefly described | — | — | I1 |
 | [UC-010](UC-010-registrar-resultado-de-evaluacion/use-case.md) | Registrar resultado de evaluación | ACT-007 | Must | No | Briefly described | — | — | I1 |
 | [UC-011](UC-011-cerrar-expediente-de-titulacion/use-case.md) | Cerrar expediente de titulación | ACT-002 | Must | No | Briefly described | — | — | I1 |
 | [UC-012](UC-012-consultar-estado-del-tramite/use-case.md) | Consultar estado del trámite | ACT-001, ACT-004, ACT-002, ACT-003 | Must | No | Briefly described | — | — | I1 |
