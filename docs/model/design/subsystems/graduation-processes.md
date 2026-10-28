@@ -16,11 +16,16 @@ Lleva los trámites de titulación desde la solicitud hasta el archivo del exped
 ### GraduationParticipation
 
 - **Used by (derived):** Users
-- **Use cases (derived):** None
+- **Use cases (derived):** UC-001
 
 | Operation | Description | Errors |
 | --- | --- | --- |
-| Pending | Las operaciones se agregan con las realizaciones de diseño que las usan | — |
+| markPendingReassignment(userAccountId: UUID, kinds: Set<ParticipantKind>): List<GraduationProcessSummary> | Busca los trámites en curso en los que la cuenta de usuario participa con alguno de esos tipos de participación, los marca pendientes de reasignación y los devuelve | None |
+
+Tipos que forman parte de la interfaz:
+
+- `ParticipantKind` (enum): `STUDENT`, `TUTOR`, `TRIBUNAL_MEMBER`.
+- `GraduationProcessSummary` (record): `id: UUID`, `studentName: String`.
 
 ## Required Interfaces
 
