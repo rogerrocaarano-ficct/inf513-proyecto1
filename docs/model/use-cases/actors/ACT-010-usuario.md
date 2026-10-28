@@ -1,20 +1,19 @@
-# ACT-006 Tutor
+# ACT-010 Usuario
 
 - **Type:** Primary
 - **Kind:** Human
-- **Generalizes:** ACT-004 Docente
 
 ## Description
 
-Docente que guía al estudiante y revisa el documento del proyecto junto al tribunal evaluador. Usa el sistema para registrar sus observaciones y su aprobación del documento.
+Actor abstracto: persona con una cuenta de usuario en el sistema. Generaliza a todos los actores humanos y reúne lo que cualquier usuario puede hacer con su propia cuenta.
 
 ## Goals
 
-- Revisar, observar y aprobar el documento del proyecto (UC-008)
+- Mantener sus datos personales (UC-002)
 
 ## Responsibilities
 
-- Revisar el documento del proyecto y registrar sus observaciones
+- Mantener al día los datos de contacto de su cuenta de usuario
 
 ## User Characteristics
 

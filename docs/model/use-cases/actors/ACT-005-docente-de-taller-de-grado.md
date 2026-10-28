@@ -10,7 +10,7 @@ Docente de la materia Taller de Grado, único en la carrera, que evalúa la viab
 
 ## Goals
 
-- Aprobar, observar o rechazar el perfil de proyecto (UC-005)
+- Evaluar la viabilidad del perfil de proyecto (UC-006)
 
 ## Responsibilities
 

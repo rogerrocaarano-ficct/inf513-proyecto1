@@ -2,16 +2,15 @@
 
 - **Type:** Primary
 - **Kind:** Human
+- **Generalizes:** ACT-010 Usuario
 
 ## Description
 
-Docente de la carrera que participa en uno o más trámites de titulación como docente de Taller de Grado, tutor o miembro del tribunal. Usa el sistema para seguir los trámites en los que participa.
+Actor abstracto: docente de la carrera que participa en trámites de titulación como docente de Taller de Grado, tutor o miembro del tribunal. Usa el sistema para seguir los trámites en los que participa.
 
 ## Goals
 
-- Seguir el estado de los trámites en los que participa (UC-012)
-- Conocer las fechas de las evaluaciones (UC-013)
-- Mantener actualizada su foto de perfil (UC-016)
+- Seguir el estado de los trámites de titulación en los que participa (UC-008)
 
 ## Responsibilities
 

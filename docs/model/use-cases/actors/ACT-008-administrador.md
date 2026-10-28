@@ -2,6 +2,7 @@
 
 - **Type:** Primary
 - **Kind:** Human
+- **Generalizes:** ACT-010 Usuario
 
 ## Description
 
@@ -10,7 +11,7 @@ Responsable técnico que crea y mantiene las cuentas de usuario y sus roles. Usa
 ## Goals
 
 - Mantener las cuentas de usuario con sus roles (UC-001)
-- Mantener actualizada su foto de perfil (UC-016)
+- Auditar los cambios de las cuentas de usuario (UC-009)
 
 ## Responsibilities
 

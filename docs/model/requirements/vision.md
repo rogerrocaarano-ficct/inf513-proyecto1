@@ -21,14 +21,14 @@ Con el sistema, cada etapa del trámite queda registrada en un expediente digita
 
 | ID | Feature | Need it addresses | Use cases (derived) | Priority |
 | --- | --- | --- | --- | --- |
-| FEAT-001 | Gestión de usuarios | Todos los participantes del trámite necesitan una cuenta con sus roles para usar el sistema (CU1, SRC-002) | UC-001, UC-016 | Must |
-| FEAT-002 | Habilitación académica de solicitudes | La solicitud y los documentos iniciales del estudiante se reciben en papel y no se sabe si el trámite fue habilitado (CU2, SRC-002) | UC-002 | Must |
-| FEAT-003 | Asignación de tutor y registro del perfil de proyecto | La designación del tutor y la entrega del perfil de proyecto no quedan registradas en ningún lugar consultable (CU3, SRC-002) | UC-003, UC-004 | Must |
+| FEAT-001 | Gestión de usuarios | Todos los participantes del trámite necesitan una cuenta con sus roles para usar el sistema (CU1, SRC-002) | UC-001, UC-002 | Must |
+| FEAT-002 | Habilitación académica de solicitudes | La solicitud y los documentos iniciales del estudiante se reciben en papel y no se sabe si el trámite fue habilitado (CU2, SRC-002) | UC-003 | Must |
+| FEAT-003 | Asignación de tutor y registro del perfil de proyecto | La designación del tutor y la entrega del perfil de proyecto no quedan registradas en ningún lugar consultable (CU3, SRC-002) | UC-004, UC-005 | Must |
 | FEAT-004 | Evaluación de viabilidad y conformación del tribunal | La evaluación del perfil y la designación de los tres miembros del tribunal se comunican por papel o en persona (CU4, SRC-002) | UC-005, UC-006 | Must |
-| FEAT-005 | Revisión, versionado y control de plazos del tribunal | Las observaciones del tribunal, las correcciones del estudiante y sus plazos quedan dispersos en cartas y versiones impresas (CU5, SRC-002) | UC-007, UC-008 | Must |
-| FEAT-006 | Programación y registro de evaluaciones | La programación de la predefensa y la defensa final, sus resultados, el acta de graduación, la entrega de ejemplares y el cierre del expediente se registran en papel (CU6, SRC-002) | UC-009, UC-010, UC-011 | Must |
-| FEAT-007 | Monitoreo, trazabilidad, dashboard y calendario académico | Nadie sabe en qué etapa está un trámite ni qué evaluaciones vienen sin preguntar en la secretaría (CU7, SRC-002) | UC-012, UC-013, UC-014 | Must |
-| FEAT-008 | Reportes y estadísticas | La dirección no puede obtener estadísticas de titulación sin revisar las carpetas una por una (CU8, SRC-002) | UC-015 | Must |
+| FEAT-005 | Revisión, versionado y control de plazos del tribunal | Las observaciones del tribunal, las correcciones del estudiante y sus plazos quedan dispersos en cartas y versiones impresas (CU5, SRC-002) | UC-004, UC-006 | Must |
+| FEAT-006 | Programación y registro de evaluaciones | La programación de la predefensa y la defensa final, sus resultados, el acta de graduación, la entrega de ejemplares y el cierre del expediente se registran en papel (CU6, SRC-002) | UC-003, UC-006, UC-007 | Must |
+| FEAT-007 | Monitoreo, trazabilidad, dashboard y calendario académico | Nadie sabe en qué etapa está un trámite ni qué evaluaciones vienen sin preguntar en la secretaría (CU7, SRC-002) | UC-008, UC-009, UC-010 | Must |
+| FEAT-008 | Reportes y estadísticas | La dirección no puede obtener estadísticas de titulación sin revisar las carpetas una por una (CU8, SRC-002) | UC-010 | Must |
 
 ## Scope
 

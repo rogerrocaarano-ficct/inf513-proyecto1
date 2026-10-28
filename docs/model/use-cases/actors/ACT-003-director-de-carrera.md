@@ -2,18 +2,19 @@
 
 - **Type:** Primary
 - **Kind:** Human
+- **Generalizes:** ACT-004 Docente
 
 ## Description
 
-Autoridad de la carrera que designa tutores y tribunales y programa las evaluaciones. Usa el sistema para registrar sus designaciones y fechas y conocer el estado de la titulación en la carrera.
+Autoridad de la carrera, y también docente, que designa tutores y tribunales y programa las defensas. Usa el sistema para registrar sus designaciones y fechas y conocer el estado de la titulación en la carrera.
 
 ## Goals
 
-- Asignar el tutor del estudiante (UC-004)
-- Designar el tribunal evaluador (UC-006)
-- Programar la predefensa y la defensa final (UC-009)
-- Conocer el estado y las estadísticas de titulación (UC-012, UC-013, UC-014, UC-015)
-- Mantener actualizada su foto de perfil (UC-016)
+- Gestionar las cuentas de usuario de los docentes (UC-001)
+- Designar al tutor y al tribunal evaluador (UC-005)
+- Programar la predefensa y la defensa final (UC-007)
+- Auditar los cambios de los trámites de titulación (UC-009)
+- Conocer las estadísticas de titulación (UC-010)
 
 ## Responsibilities
 

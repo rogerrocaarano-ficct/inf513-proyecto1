@@ -1,4 +1,4 @@
-# UC-015 Generar reportes y estadísticas
+# UC-010 Consultar estadísticas
 
 | | |
 | --- | --- |
@@ -7,13 +7,13 @@
 | Primary actor | ACT-003 Director de carrera |
 | Supporting actors | None |
 | Priority | Must |
-| Architecturally significant | No: consulta sobre datos ya registrados |
-| Feature | FEAT-008 |
-| Functional requirements (derived) | FR-029 |
+| Architecturally significant | No: consulta de datos ya registrados |
+| Feature | FEAT-007, FEAT-008 |
+| Functional requirements (derived) | FR-028, FR-029 |
 
 ## Brief Description
 
-El director de carrera genera reportes y estadísticas de titulación de la carrera a partir de los expedientes registrados.
+El director de carrera consulta los indicadores del dashboard y los reportes y estadísticas de titulación de la carrera, obtenidos de los trámites registrados, sin revisar las carpetas una por una.
 
 ## Preconditions
 
@@ -42,4 +42,4 @@ None.
 
 ## Open Questions
 
-- [ ] ¿Qué reportes y estadísticas necesita la dirección? (ask: Director de carrera)
+None.
