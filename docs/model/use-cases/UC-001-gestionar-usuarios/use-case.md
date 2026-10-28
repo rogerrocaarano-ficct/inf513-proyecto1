@@ -5,7 +5,7 @@
 | Status | Detailed |
 | Iteration | I1 |
 | Primary actor | ACT-008 Administrador, ACT-003 Director de carrera |
-| Supporting actors | None |
+| Supporting actors | ACT-010 Usuario |
 | Priority | Must |
 | Architecturally significant | Yes: el sistema identifica a cada remitente por su dirección de correo y lo autoriza según sus roles (NFR-SE-001); todos los demás casos de uso dependen de esto |
 | Feature | FEAT-001 |

@@ -12,7 +12,7 @@
 | [ACT-006](ACT-006-docente-tutor.md) | Docente Tutor | Primary | Human | Docente designado como tutor del proyecto de grado de un estudiante, que lo guía y revisa el documento del proyecto antes que el tribunal evaluador. | UC-006 |
 | [ACT-007](ACT-007-docente-del-tribunal.md) | Docente del Tribunal | Primary | Human | Docente designado como uno de los tres miembros del tribunal evaluador de un estudiante. | UC-006 |
 | [ACT-008](ACT-008-administrador.md) | Administrador | Primary | Human | Responsable técnico que crea y mantiene las cuentas de usuario y sus roles. | UC-001, UC-009 |
-| [ACT-010](ACT-010-usuario.md) | Usuario | Primary | Human | Actor abstracto: persona con una cuenta de usuario en el sistema. | UC-002 |
+| [ACT-010](ACT-010-usuario.md) | Usuario | Primary | Human | Actor abstracto: persona con una cuenta de usuario en el sistema. | UC-001, UC-002 |
 
 ## Actor Generalization
 

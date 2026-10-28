@@ -68,7 +68,7 @@
 | FR-049 | El sistema debe permitir que cada usuario modifique la dirección de correo y el teléfono de su propia cuenta de usuario | UC-002 Gestionar datos personales | Must | SRC-007 | Candidate |
 | FR-050 | El sistema debe permitir que el director de carrera gestione las cuentas de usuario cuyos roles son docente, docente de Taller de Grado o secretario(a) de dirección de carrera | UC-001 Gestionar usuarios | Must | SRC-007, SRC-008 | Candidate |
 | FR-051 | El sistema debe crear la cuenta de usuario del estudiante cuando el secretario(a) de dirección de carrera abre su trámite de titulación, una vez verificados sus documentos iniciales | UC-003 Gestionar trámite de titulación | Must | SRC-007 | Candidate |
-| FR-052 | El sistema debe registrar quién realizó cada cambio, cuándo y sobre qué dato, y mostrar el registro de cambios al administrador, al director de carrera y al secretario(a) de dirección de carrera, a cada uno dentro de su alcance | UC-009 Consultar registro de cambios | Must | SRC-007 | Candidate |
+| FR-052 | El sistema debe mostrar el registro de cambios al administrador, al director de carrera y al secretario(a) de dirección de carrera, a cada uno dentro de su alcance | UC-009 Consultar registro de cambios | Must | SRC-007 | Candidate |
 | FR-053 | El sistema debe permitir que solo el administrador asigne o quite los roles de director de carrera y de administrador, y gestione las cuentas de usuario que los tienen | UC-001 Gestionar usuarios | Must | SRC-008 | Candidate |
 
 ### Notes
@@ -103,6 +103,7 @@
 | ID | Requirement | Fit criterion | Scope | Priority | Source |
 | --- | --- | --- | --- | --- | --- |
 | NFR-SE-001 (A) | Cada usuario solo consulta y modifica la información que su rol le permite, y solo de los trámites en los que participa | TBD | Global | Must | SRC-003 |
+| NFR-SE-002 (A) | Cada cambio en el sistema queda registrado con quién lo hizo, cuándo y sobre qué dato | TBD | Global | Must | SRC-007 |
 
 ### Interfaces
 
@@ -132,7 +133,7 @@
 - [ ] FR-002, CON-005: con el trámite abierto por el secretario(a), ¿los documentos iniciales se digitalizan y suben al sistema, o solo se registra su recepción? (ask: Secretario(a) de dirección de carrera)
 - [ ] FR-034: un trámite queda pendiente de reasignación cuando se desactiva la cuenta de su tutor o de un miembro del tribunal; ¿UC-005 debe permitir reasignarlos? ¿Qué pasa con el trámite de un estudiante desactivado? (ask: Secretario(a) de dirección de carrera)
 - [ ] CON-003: ¿cuáles son las fechas de la primera y la segunda entrega? (ask: Docente de Tecnología Web)
-- [ ] NFR-US-001, NFR-SE-001, NFR-IN-001: criterios de aceptación medibles (ask: Docente de Tecnología Web)
+- [ ] NFR-US-001, NFR-SE-001, NFR-SE-002, NFR-IN-001: criterios de aceptación medibles (ask: Docente de Tecnología Web)
 - [ ] FR-024: ¿cuánto dura el plazo de revisión del tutor y de cada miembro del tribunal, quién lo fija y qué hace el sistema cuando vence? (ask: Secretario(a) de dirección de carrera)
 - [ ] FR-013, FR-015: ¿se notifica también la programación de la defensa final? (ask: Secretario(a) de dirección de carrera)
 - [ ] FR-016: ¿qué datos lleva el acta de graduación? (ask: Secretario(a) de dirección de carrera)
