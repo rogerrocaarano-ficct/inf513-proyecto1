@@ -77,8 +77,9 @@ yes, it belongs to analysis. If only a programmer cares, leave it for design.
 
 Split in analysis only for conceptual reasons:
 
-- **Different actors:** a boundary class used by two actors is two boundary
-  classes.
+- **Different interaction:** split a boundary class by actor only when the
+  actors exchange different information or interact in a different way.
+  Several actors may share one boundary class.
 - **Hidden domain concept:** a control class that keeps data or has
   attributes is missing an entity class.
 - **Logic shared by several use cases:** it may justify a shared control
@@ -187,9 +188,15 @@ must solve once, the same way, for all of them.
 Classes that model the interaction between an actor and the system: screens,
 forms, reports, interfaces to external systems or devices.
 
-- Usually one per actor–use case pair, and one per external system.
-- Name them after what they do for the actor (`SaleForm`,
-  `PaymentGatewayInterface`), not after a technology (`SaleWebPage`).
+- Usually one per use case, shared by its actors when they interact in the
+  same way (see Granularity), and one per external system.
+- Name them after what they do for the actor, not after a technology
+  (`SaleWebPage`) or the stereotype (`SaleBoundary`), following the USDP
+  convention:
+  - **Human actor:** the `UI` suffix (`SaleRegistrationUI`). The design turns
+    it into one class per presentation (e.g. mail or web).
+  - **External system or device:** the `Interface` suffix
+    (`PaymentGatewayInterface`).
 - Describe what information is exchanged, not how it is presented.
 - **Actor:** the actor (`ACT-xxx`) that interacts through it.
 - **Responsibilities:** each one followed by the use case that requires it.
