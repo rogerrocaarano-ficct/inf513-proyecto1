@@ -16,11 +16,15 @@ Guarda el registro de cambios de todo el sistema (AD-008). Es general: guarda el
 ### ChangeLog
 
 - **Used by (derived):** Users
-- **Use cases (derived):** None
+- **Use cases (derived):** UC-001
 
 | Operation | Description | Errors |
 | --- | --- | --- |
-| Pending | Las operaciones se agregan con las realizaciones de diseño que las usan | — |
+| record(actorId: UUID, targetType: String, targetId: UUID, changes: List<FieldChange>): void | Registra en la transacción en curso un cambio hecho por una cuenta de usuario sobre un registro, con la fecha y hora actual | None |
+
+Tipos que forman parte de la interfaz:
+
+- `FieldChange` (record): `field: String`, `oldValue: String`, `newValue: String`. En una creación, `oldValue` es nulo.
 
 ## Required Interfaces
 

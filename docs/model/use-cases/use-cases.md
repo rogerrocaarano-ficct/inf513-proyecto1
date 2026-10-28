@@ -4,7 +4,7 @@
 
 | ID | Use case | Actors (derived) | Priority (derived) | Arch. significant (derived) | Requirements (derived) | Analysis (derived) | Design (derived) | Iteration (derived) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [UC-001](UC-001-gestionar-usuarios/use-case.md) | Gestionar usuarios | ACT-008, ACT-003, ACT-010 | Must | Yes | Detailed | Draft | — | I1 |
+| [UC-001](UC-001-gestionar-usuarios/use-case.md) | Gestionar usuarios | ACT-008, ACT-003, ACT-010 | Must | Yes | Detailed | Draft | Draft | I1 |
 | [UC-002](UC-002-gestionar-datos-personales/use-case.md) | Gestionar datos personales | ACT-010 | Must | No | Briefly described | — | — | I1 |
 | [UC-003](UC-003-gestionar-tramite-de-titulacion/use-case.md) | Gestionar trámite de titulación | ACT-002 | Must | No | Briefly described | — | — | I1 |
 | [UC-004](UC-004-gestionar-proyecto-de-grado/use-case.md) | Gestionar proyecto de grado | ACT-001 | Must | Yes | Briefly described | — | — | I1 |
