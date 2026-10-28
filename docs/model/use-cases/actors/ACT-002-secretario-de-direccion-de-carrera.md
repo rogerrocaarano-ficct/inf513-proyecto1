@@ -2,6 +2,7 @@
 
 - **Type:** Primary
 - **Kind:** Human
+- **Generalizes:** ACT-010 Usuario
 
 ## Description
 
@@ -9,10 +10,9 @@ Personal de la Dirección de Carrera que recibe los documentos del trámite y ll
 
 ## Goals
 
-- Abrir el expediente y habilitar la solicitud (UC-002)
-- Cerrar y archivar el expediente (UC-011)
-- Seguir el estado de los trámites (UC-012, UC-013, UC-014)
-- Mantener actualizada su foto de perfil (UC-016)
+- Abrir, mantener y cerrar el trámite de titulación (UC-003)
+- Seguir el estado de los trámites de titulación (UC-008)
+- Auditar los cambios de los trámites de titulación (UC-009)
 
 ## Responsibilities
 

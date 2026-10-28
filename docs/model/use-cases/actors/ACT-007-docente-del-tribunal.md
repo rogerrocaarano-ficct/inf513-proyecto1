@@ -1,4 +1,4 @@
-# ACT-007 Miembro del tribunal
+# ACT-007 Docente del Tribunal
 
 - **Type:** Primary
 - **Kind:** Human
@@ -6,12 +6,11 @@
 
 ## Description
 
-Docente designado como uno de los tres integrantes del tribunal evaluador de un estudiante. Usa el sistema para revisar el documento, registrar observaciones y calificar.
+Docente designado como uno de los tres miembros del tribunal evaluador de un estudiante. Usa el sistema para revisar el documento, registrar observaciones y calificar.
 
 ## Goals
 
-- Revisar, observar y aprobar el documento del proyecto (UC-008)
-- Registrar el resultado de la predefensa y la calificación de la defensa final (UC-010)
+- Revisar las versiones del documento del proyecto y calificar la predefensa y la defensa final (UC-006)
 
 ## Responsibilities
 

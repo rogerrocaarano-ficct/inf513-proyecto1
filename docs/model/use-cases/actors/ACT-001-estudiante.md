@@ -2,6 +2,7 @@
 
 - **Type:** Primary
 - **Kind:** Human
+- **Generalizes:** ACT-010 Usuario
 
 ## Description
 
@@ -9,12 +10,8 @@ Postulante que realiza el trámite de titulación por Proyecto de Grado. Usa el 
 
 ## Goals
 
-- Subir sus documentos iniciales (UC-002)
-- Presentar su perfil de proyecto (UC-003)
-- Entregar el documento del proyecto y sus correcciones (UC-007)
-- Saber en qué etapa está su trámite (UC-012)
-- Conocer las fechas de sus evaluaciones (UC-013)
-- Mantener actualizada su foto de perfil (UC-016)
+- Presentar su perfil de proyecto y entregar las versiones del documento del proyecto (UC-004)
+- Saber en qué etapa está su trámite de titulación y cuándo son sus defensas (UC-008)
 
 ## Responsibilities
 
