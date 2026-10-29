@@ -30,7 +30,7 @@
 
 | Application | Deployable unit | Node | Instances |
 | --- | --- | --- | --- |
-| mail-app | Imagen de contenedor construida desde `mail-app/Dockerfile` | Contenedor `mail-app` en el servidor de pruebas de desarrollo; en producción, el servidor de la presentación | 1: el buzón se sondea desde un solo proceso (D4 de `esqueleto-mail-app`) |
+| mail-app | Imagen de contenedor construida desde el `Dockerfile` de la raíz del repositorio | Contenedor `mail-app` en el servidor de pruebas de desarrollo; en producción, el servidor de la presentación | 1: el buzón se sondea desde un solo proceso (D4 de `esqueleto-mail-app`) |
 
 ## Connections
 

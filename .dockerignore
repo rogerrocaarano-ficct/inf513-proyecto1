@@ -1,0 +1,12 @@
+# Only the Gradle wrapper, the build files and src/ are needed to build the image.
+.git
+.gradle
+build
+bin
+.idea
+.env
+.agents
+.claude
+.opencode
+docs
+openspec

@@ -1,6 +1,6 @@
 # mail-app
 
-Prueba de concepto del sistema de titulación que se opera por correo electrónico (AD-001). El diseño está en [`docs/model/design/`](../docs/model/design/architecture.md).
+Prueba de concepto del sistema de titulación que se opera por correo electrónico (AD-001). El diseño está en [`docs/model/design/`](docs/model/design/architecture.md).
 
 ## Requisitos
 
@@ -17,7 +17,7 @@ Las pruebas de integración levantan PostgreSQL 17 con Testcontainers y un servi
 
 ## Stack de pruebas de desarrollo
 
-El archivo `docker-compose.yml` de la raíz del repositorio levanta `mail-app` con PostgreSQL y Mailpit, un servidor de correo local con SMTP, POP3 e interfaz web.
+El archivo `docker-compose.yml` levanta `mail-app` con PostgreSQL y Mailpit, un servidor de correo local con SMTP, POP3 e interfaz web.
 
 1. Desde la raíz del repositorio, crear el archivo de configuración. Sus valores por defecto sirven para el stack local; en un servidor compartido, cambiar las contraseñas:
 

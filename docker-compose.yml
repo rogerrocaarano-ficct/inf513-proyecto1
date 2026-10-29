@@ -33,7 +33,7 @@ services:
     restart: unless-stopped
 
   mail-app:
-    build: ./mail-app
+    build: .
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
       DB_USER: ${DB_USER}

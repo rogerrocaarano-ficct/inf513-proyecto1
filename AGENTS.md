@@ -12,9 +12,14 @@ a whole. Read it first, then the `AGENTS.md` of the folder you work in.
 | `docs/usdp-guide.md` | The process: phases, workflows, artifacts and exit criteria |
 | `docs/model/` | The models of the project, as text: requirements, use cases, analysis and design. Its `AGENTS.md` holds the rules common to all of them |
 | `.claude/skills/` | Claude Code commands for the process: `/requirements [UC-xxx]`, `/analysis UC-xxx`, `/design UC-xxx`. They only order the steps; the rules stay in the `AGENTS.md` files |
+| `openspec/` | OpenSpec changes and specs that guide the implementation workflow |
+| `build.gradle.kts`, `src/`, `Dockerfile` | The `mail-app` application (see `README.md`) |
+| `docker-compose.yml`, `.env.example` | The development test stack |
 
-The source code is added when the implementation workflow starts. Its layout
-follows the applications defined in `docs/model/design/architecture.md`.
+This repository holds only the Java version of the system: the repository
+root is the Gradle project of `mail-app`, the single application of
+`docs/model/design/architecture.md` (AD-001). The web version of the second
+delivery (AD-009) lives in another repository.
 
 ## Languages
 
