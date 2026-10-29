@@ -4,6 +4,7 @@ import grupo03sc.mailapp.audit.application.ChangeLog;
 import grupo03sc.mailapp.users.domain.AccountStatus;
 import grupo03sc.mailapp.users.domain.Role;
 import grupo03sc.mailapp.users.domain.UserAccount;
+import grupo03sc.mailapp.users.domain.UserAccountData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +54,7 @@ class InitialAdministratorCreator implements ApplicationRunner {
                     "No active administrator account exists and these settings are missing: " + String.join(", ", missing));
         }
         UserAccount admin = accounts.saveAndFlush(
-                UserAccount.create(properties.name(), properties.email(), Set.of(Role.ADMINISTRATOR)));
+                UserAccount.create(UserAccountData.of(properties.name(), properties.email(), Set.of(Role.ADMINISTRATOR))));
         changeLog.record(admin.getId(), "UserAccount", admin.getId(), admin.describe());
         log.info("Initial administrator account created for {}", admin.getEmail());
     }

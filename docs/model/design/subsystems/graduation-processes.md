@@ -27,6 +27,8 @@ Tipos que forman parte de la interfaz:
 - `ParticipantKind` (enum): `STUDENT`, `TUTOR`, `TRIBUNAL_MEMBER`.
 - `GraduationProcessSummary` (record): `id: UUID`, `studentName: String`.
 
+Implementación actual: mientras no exista el caso de uso que crea los trámites, `mail-app` solo tiene la interfaz y una implementación que no encuentra trámites (D6 de `implementar-uc-001`). Ese caso de uso la reemplaza sin cambiar la interfaz.
+
 ## Required Interfaces
 
 None. El trámite guarda el identificador de las cuentas de usuario del estudiante y de los docentes, sin depender de Users; así se evita un ciclo con Users, que usa GraduationParticipation.

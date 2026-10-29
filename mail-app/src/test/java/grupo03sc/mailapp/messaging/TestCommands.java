@@ -3,6 +3,7 @@ package grupo03sc.mailapp.messaging;
 import grupo03sc.mailapp.audit.application.ChangeLog;
 import grupo03sc.mailapp.audit.application.FieldChange;
 import grupo03sc.mailapp.messaging.application.CommandHandler;
+import grupo03sc.mailapp.messaging.application.CommandRejectedException;
 import grupo03sc.mailapp.messaging.application.CommandReply;
 import grupo03sc.mailapp.messaging.application.Notifier;
 import grupo03sc.mailapp.messaging.application.Sender;
@@ -24,6 +25,9 @@ public class TestCommands {
     /** Target of the change log entries written by the failing command. */
     public static final UUID FAILING_TARGET = UUID.randomUUID();
 
+    /** Target of the change log entries written by the rejected command. */
+    public static final UUID REJECTED_TARGET = UUID.randomUUID();
+
     @Bean
     CommandHandler echoCommand() {
         return handler("Eco", Set.of(), (command, sender) -> new CommandReply(
@@ -42,6 +46,15 @@ public class TestCommands {
             changeLog.record(sender.accountId(), "Prueba", FAILING_TARGET, List.of(FieldChange.created("dato", "x")));
             notifier.notify("avisado@mailapp.test", "Aviso que no debe llegar", "x");
             throw new IllegalStateException("fallo simulado");
+        });
+    }
+
+    @Bean
+    CommandHandler rejectedCommand(ChangeLog changeLog, Notifier notifier) {
+        return handler("Rechaza", Set.of(), (command, sender) -> {
+            changeLog.record(sender.accountId(), "Prueba", REJECTED_TARGET, List.of(FieldChange.created("dato", "x")));
+            notifier.notify("avisado@mailapp.test", "Aviso que no debe llegar", "x");
+            throw new CommandRejectedException("Solicitud rechazada: motivo de prueba.");
         });
     }
 

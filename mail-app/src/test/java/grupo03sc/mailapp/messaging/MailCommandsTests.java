@@ -150,6 +150,19 @@ class MailCommandsTests {
     }
 
     @Test
+    void repliesWithTheReasonAndKeepsNoChangesWhenACommandIsRejected() throws Exception {
+        sendCommand(ADMIN, "Rechaza()");
+
+        poller.poll();
+
+        assertThat(body(onlyReplyTo(ADMIN))).isEqualTo("Solicitud rechazada: motivo de prueba.");
+        assertThat(changeLog.findByTargetTypeAndTargetIdOrderByChangedAt("Prueba", TestCommands.REJECTED_TARGET)).isEmpty();
+        assertThat(receivedBy(greenMail, "avisado@mailapp.test")).isEmpty();
+        assertThat(greenMail.getManagers().getImapHostManager()
+                .getInbox(greenMail.getUserManager().getUser(SYSTEM)).getMessageCount()).isZero();
+    }
+
+    @Test
     void ignoresItsOwnEmailsAndEmailsForOtherAddressesAndLeavesThem() throws Exception {
         greenMail.setUser("buzon@mailapp.test", "buzon@mailapp.test", "x");
         MailTestSupport.send(MailTestSupport.message(SYSTEM, SYSTEM, "Ping()"));

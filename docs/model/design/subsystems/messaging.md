@@ -28,10 +28,11 @@ Tipos que forman parte de la interfaz:
 - `CommandHandler` (interface), que implementan los subsistemas de negocio:
   - `commandName(): String`: el nombre del comando en el asunto.
   - `allowedRoles(): Set<String>`: los roles que pueden ejecutarlo; vacío significa cualquier cuenta de usuario activa.
-  - `handle(command: MailCommand, sender: Sender): CommandReply`: se ejecuta dentro de la transacción del comando; una excepción la deshace y el remitente recibe un mensaje de error genérico.
+  - `handle(command: MailCommand, sender: Sender): CommandReply`: se ejecuta dentro de la transacción del comando. Para rechazar el comando lanza `CommandRejectedException`: la transacción se deshace y el remitente recibe el mensaje de la excepción. Cualquier otra excepción también la deshace, y el remitente recibe un mensaje de error genérico.
 - `MailCommand` (record): `name: String`, `arguments: List<String>`, `senderEmail: String`, `attachments: List<MailAttachment>`.
 - `MailAttachment` (record): `fileName: String`, `contentType: String`, `content: byte[]`.
 - `CommandReply` (record): `body: String`. Messaging lo envía al remitente con el asunto `Re: <asunto original>`.
+- `CommandRejectedException` (excepción): `message: String`, el motivo del rechazo que recibe el remitente.
 - `Sender` (record): `accountId: UUID`, `email: String`, `roles: Set<String>`.
 
 ### SenderAuthenticator
