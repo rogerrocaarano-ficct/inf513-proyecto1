@@ -1,0 +1,38 @@
+# Local development: only PostgreSQL and Mailpit, so that mail-app runs from the IDE or with ./gradlew bootRun.
+# Ports and credentials match the defaults of src/main/resources/application.properties.
+# Run: docker compose -f docker-compose.dev.yml up -d
+name: mailapp-dev
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ${DB_NAME:-mailapp}
+      POSTGRES_USER: ${DB_USER:-mailapp}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mailapp}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:v1.29
+    environment:
+      MP_POP3_AUTH: ${POP3_USER:-mailapp}:${POP3_PASSWORD:-mailapp}
+    ports:
+      - "${MAILPIT_WEB_PORT:-8025}:8025"
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_POP3_PORT:-1110}:1110"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

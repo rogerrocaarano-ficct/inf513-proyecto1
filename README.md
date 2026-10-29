@@ -15,6 +15,28 @@ Prueba de concepto del sistema de titulación que se opera por correo electróni
 
 Las pruebas de integración levantan PostgreSQL 17 con Testcontainers y un servidor de correo en memoria con GreenMail.
 
+## Desarrollo local
+
+El archivo `docker-compose.dev.yml` levanta solo PostgreSQL y Mailpit, para ejecutar `mail-app` desde el IDE o con Gradle. Sus puertos y credenciales coinciden con los valores por defecto de `application.properties`, así que `mail-app` no necesita otra configuración que el administrador inicial.
+
+1. Levantar la base de datos y el correo:
+
+   ```bash
+   docker compose -f docker-compose.dev.yml up -d
+   ```
+
+2. Ejecutar `mail-app` con los datos del administrador inicial:
+
+   ```bash
+   INITIAL_ADMIN_NAME=Administrador INITIAL_ADMIN_EMAIL=admin@mailapp.local ./gradlew bootRun
+   ```
+
+   En IntelliJ, agregar esas dos variables de entorno a la configuración de ejecución de `MailAppApplication`.
+
+3. Enviar los comandos por SMTP a `localhost:1025` hacia `sistema@mailapp.local` y ver las respuestas en `http://localhost:8025`, como en el stack de pruebas.
+
+Los servicios usan los mismos puertos del host que el stack de pruebas (5432, 1025, 1110 y 8025), así que no se pueden levantar los dos a la vez. Para detenerlos: `docker compose -f docker-compose.dev.yml down` (con `-v` también se borran los datos).
+
 ## Stack de pruebas de desarrollo
 
 El archivo `docker-compose.yml` levanta `mail-app` con PostgreSQL y Mailpit, un servidor de correo local con SMTP, POP3 e interfaz web.
