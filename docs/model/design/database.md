@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft |
 | Iteration | I1 |
-| Database | PostgreSQL, base `db_grupo03sc` en `db.tecnoweb.org.bo` (AD-004, AD-010); migraciones con Flyway (AD-011) en `mail-app/src/main/resources/db/migration` |
+| Database | PostgreSQL, base `db_grupo03sc` en `db.tecnoweb.org.bo` (AD-004, AD-010); migraciones con Flyway (AD-011) en `src/main/resources/db/migration` |
 
 Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID` ordenadas por tiempo (UUID versión 7), generadas por la aplicación (AD-010).
 
