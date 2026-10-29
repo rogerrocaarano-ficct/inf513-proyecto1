@@ -19,6 +19,7 @@
 | AD-008 | La auditoría es un servicio propio: cada caso de uso registra explícitamente sus cambios en el registro de cambios (quién, cuándo, qué dato, valor anterior y nuevo) | El registro de cambios es un concepto del dominio que se consulta en UC-009; un servicio propio decide exactamente qué se guarda | Hibernate Envers: automático por entidad, pero guarda versiones completas en tablas `_AUD` en lugar de cambios legibles | NFR-SE-002, FR-052 | Accepted |
 | AD-009 | La segunda entrega reemplaza `mail-app` por una aplicación web con backend en Laravel y frontend en React | Lo exige la restricción del proyecto; sus aplicaciones y estilos se definen cuando empiece esa entrega | — | CON-002 | Proposed |
 | AD-010 | Las claves primarias son UUID versión 7 (ordenados por tiempo), generados por la aplicación con `@UuidGenerator(style = VERSION_7)` de Hibernate; las tablas se nombran en plural y en `snake_case` | Los UUID no revelan cuántos registros hay y pueden generarse antes de guardar; la versión 7 mantiene el orden de inserción y evita la fragmentación de índices que causan los UUID aleatorios | `BIGINT` con identidad: más compacto, pero secuencial y expuesto; UUID versión 4: aleatorio, fragmenta los índices | CON-007 | Accepted |
+| AD-011 | Las migraciones de la base de datos se escriben en SQL y las aplica Flyway al arrancar `mail-app` | Es la opción habitual en Spring Boot y las migraciones quedan como SQL legible y revisable; el motor es siempre PostgreSQL | Liquibase: changelogs en XML o YAML, útil para varios motores o para deshacer migraciones, que el proyecto no necesita | CON-007 | Accepted |
 
 ## Applications
 
@@ -30,9 +31,9 @@
 
 | Analysis mechanism | Design mechanism | Technology | Decision |
 | --- | --- | --- | --- |
-| AM-001 Security | Identificación por la dirección del remitente y autorización por los roles que declara cada comando, en el adaptador de entrada; verificación de participación en el trámite en la capa de aplicación | Propia, sin framework de seguridad | AD-007 |
+| AM-001 Security | Messaging identifica al remitente con el puerto `SenderAuthenticator` (implementado por Users) y autoriza con los roles que declara cada `CommandHandler`, antes de ejecutar el comando; la participación en el trámite la verifica la capa de aplicación de cada caso de uso | Propia, sin framework de seguridad | AD-007 |
 | AM-002 Distribution | Sondeo del buzón, interpretación del comando del asunto y respuesta o notificación por correo, en el subsistema Messaging | Jakarta Mail (POP3), Spring `JavaMailSender` (SMTP), `@Scheduled` | AD-005, AD-006 |
-| AM-003 Audit | Servicio de registro de cambios del subsistema Audit, llamado por cada caso de uso dentro de la misma transacción | Spring Data JPA sobre PostgreSQL | AD-008 |
+| AM-003 Audit | Servicio de registro de cambios del subsistema Audit, llamado por cada caso de uso dentro de la misma transacción; un trigger impide modificar o borrar entradas | Spring Data JPA sobre PostgreSQL | AD-008 |
 
 ## Architecture Views
 

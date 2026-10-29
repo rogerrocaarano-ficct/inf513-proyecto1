@@ -32,16 +32,15 @@ mail-app/
   src/main/java/grupo03sc/mailapp/
     MailAppApplication.java
     messaging/  adapter/in (sondeo POP3), adapter/out (SMTP),
-                application (registro y despacho de comandos), domain (MailCommand, analizador)
-    audit/      application (ChangeLog), adapter/out (JPA)
+                application (registro y despacho de comandos, puertos), domain (MailCommand, analizador, filtro)
+    audit/      application (ChangeLog, repositorio), domain (ChangeLogEntry)
     users/      adapter/in (comando Ping, autenticador de remitentes),
-                application (administrador inicial), domain (UserAccount, Role, AccountStatus),
-                adapter/out (JPA)
-  src/main/resources/application.yml, db/migration/V*.sql
+                application (administrador inicial, repositorio), domain (UserAccount, Role, AccountStatus)
+  src/main/resources/application.properties, db/migration/V*.sql
   src/test/java/... (misma estructura)
 ```
 
-Un paquete por subsistema de `subsystems.md` y, dentro, las capas de AD-002. Un subsistema usa a otro solo a través de las interfaces de su paquete `application`. El paquete base `grupo03sc.mailapp` toma el nombre del grupo de la base de datos de CON-007.
+Un paquete por subsistema de `subsystems.md` y, dentro, las capas de AD-002. Un subsistema usa a otro solo a través de las interfaces de su paquete `application`. Los repositorios son puertos declarados en `application` que Spring Data JPA implementa, así que no hace falta un paquete `adapter/out` para la persistencia; las entidades JPA están en `domain`. El paquete base `grupo03sc.mailapp` toma el nombre del grupo de la base de datos de CON-007.
 
 ### D3. Migraciones con Flyway (nueva AD-011)
 
@@ -89,7 +88,7 @@ Un `ApplicationRunner` de Users comprueba al arrancar si existe una cuenta activ
 
 ### D9. Configuración por variables de entorno
 
-`application.yml` lee todo de variables de entorno, con valores por defecto para el stack local:
+`application.properties` lee todo de variables de entorno, con valores por defecto para el stack local:
 
 | Variable | Uso |
 | --- | --- |
@@ -108,7 +107,7 @@ Para apuntar a `mail.tecnoweb.org.bo` y `db.tecnoweb.org.bo` basta con cambiar e
 
 | Servicio | Imagen | Puertos publicados | Notas |
 | --- | --- | --- | --- |
-| `postgres` | `postgres:17` | — | Volumen `pgdata`; base, usuario y contraseña desde `.env` |
+| `postgres` | `postgres:17` | 5432 | Volumen `pgdata`; base, usuario y contraseña desde `.env` |
 | `mailpit` | `axllent/mailpit` | 8025 (web) | SMTP 1025 y POP3 1110 dentro de la red; POP3 con usuario y contraseña de `.env` |
 | `mail-app` | construida desde `mail-app/Dockerfile` | — | Depende de `postgres` (healthcheck) y de `mailpit` |
 
