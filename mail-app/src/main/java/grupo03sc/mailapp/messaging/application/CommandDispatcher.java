@@ -15,7 +15,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Handles one command email: authenticates and authorizes the sender, runs the command in a
- * transaction and records the email as processed in that same transaction (D4, D5).
+ * transaction and records the email as processed in that same transaction (D4, D5). A rejected
+ * or failed command is rolled back and still recorded as processed.
  */
 @Service
 public class CommandDispatcher {
@@ -55,6 +56,10 @@ public class CommandDispatcher {
                 markProcessed(mail);
                 return reply;
             });
+        } catch (CommandRejectedException e) {
+            log.info("Command '{}' from {} rejected: {}", mail.subject(), mail.from(), e.getMessage());
+            transaction.executeWithoutResult(status -> markProcessed(mail));
+            return new CommandReply(e.getMessage());
         } catch (RuntimeException e) {
             log.error("Command '{}' from {} failed", mail.subject(), mail.from(), e);
             transaction.executeWithoutResult(status -> markProcessed(mail));

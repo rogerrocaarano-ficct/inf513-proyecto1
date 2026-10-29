@@ -20,7 +20,7 @@ None yet: otros subsistemas la necesitarán para identificar al remitente (AM-00
 | Interface | Provided by | Used for | Comes from |
 | --- | --- | --- | --- |
 | ChangeLog | [Audit](audit.md) | Registrar los cambios de las cuentas de usuario | Split: Unassigned::GestorUsuarios → Unassigned::RegistroCambios; AM-003 |
-| CommandRegistry | [Messaging](messaging.md) | Recibir los comandos de gestión de usuarios y responder a quien los envió (implementa `CommandHandler`) | AM-002 |
+| CommandRegistry | [Messaging](messaging.md) | Recibir los comandos de gestión de usuarios y responder a quien los envió (implementa `CommandHandler`); rechazar una solicitud con `CommandRejectedException` | AM-002 |
 | SenderAuthenticator | [Messaging](messaging.md) | Puerto que Users implementa para que Messaging identifique al remitente | AM-001 |
 | GraduationParticipation | [GraduationProcesses](graduation-processes.md) | Saber en qué trámites en curso participa una cuenta de usuario y dejarlos pendientes de reasignación | Split: Unassigned::GestorUsuarios → Unassigned::TramiteTitulacion |
 | Notifier | [Messaging](messaging.md) | Avisar al usuario de los cambios de su cuenta de usuario | Split: Unassigned::GestorUsuarios → Unassigned::NotificacionUI; AM-002 |

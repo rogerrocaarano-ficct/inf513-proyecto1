@@ -9,6 +9,7 @@ import grupo03sc.mailapp.messaging.application.SenderAuthenticator;
 import grupo03sc.mailapp.users.application.UserAccountRepository;
 import grupo03sc.mailapp.users.domain.Role;
 import grupo03sc.mailapp.users.domain.UserAccount;
+import grupo03sc.mailapp.users.domain.UserAccountData;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -54,7 +55,7 @@ class UserAccountsTests {
         String email = "repetida-" + UUID.randomUUID() + "@uagrm.edu.bo";
         save(email, Role.PROFESSOR);
 
-        assertThatThrownBy(() -> save(email.toUpperCase(), Role.STUDENT))
+        assertThatThrownBy(() -> save(email.toUpperCase(), Role.PROGRAM_SECRETARY))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -74,6 +75,6 @@ class UserAccountsTests {
 
     private UserAccount save(String email, Role role) {
         return transaction.execute(status ->
-                accounts.saveAndFlush(UserAccount.create("Usuario de Prueba", email, Set.of(role))));
+                accounts.saveAndFlush(UserAccount.create(UserAccountData.of("Usuario de Prueba", email, Set.of(role)))));
     }
 }

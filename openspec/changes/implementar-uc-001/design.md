@@ -35,11 +35,10 @@ El código actual de Users es lo mínimo para el remitente y el administrador in
 Cada comando es una clase en `users/adapter/in`: `CreateUserCommandHandler`, `ListUsersCommandHandler`, `ViewUserCommandHandler`, `UpdateUserCommandHandler`, `DeactivateUserCommandHandler` y `ReactivateUserCommandHandler`. Las seis tienen `allowedRoles() = {ADMINISTRATOR, PROGRAM_DIRECTOR}`. Cada una:
 
 1. Convierte los argumentos.
-2. Busca la cuenta de usuario del remitente por `sender.accountId()`.
-3. Llama a una operación de `UserManagementService`.
-4. Arma el texto de la respuesta.
+2. Llama a una operación de `UserManagementService` con `sender.accountId()`. El servicio carga la cuenta de usuario del remitente.
+3. Arma el texto de la respuesta.
 
-La conversión de argumentos, los nombres de los roles en español y los textos de respuesta y de rechazo se comparten en `UserCommandSupport`, del mismo paquete.
+La lectura de argumentos y los textos de las respuestas se comparten en `UserCommandSupport`, del mismo paquete. Los nombres en español de los roles y de los campos viven en `Role` y `AccountField` (`label()`), porque los mensajes de rechazo del dominio también los nombran.
 
 Alternativa: un solo `UserCommandHandler` que distingue el comando por su nombre, como en la realización actual. No encaja con `CommandHandler`, que declara un único `commandName()`, y mezclaría seis flujos en una clase.
 
@@ -83,7 +82,7 @@ Al gestionar una cuenta de usuario existente, el alcance se comprueba sobre sus 
 
 Si falta algo, lanza `UserRuleViolationException(MISSING_DATA)` con los nombres de los datos que faltan. El administrador inicial sigue usando `create`.
 
-Los campos de `ModificarUsuario` se convierten a un enum `AccountField` (`FULL_NAME`, `EMAIL`, `ROLES`, `STUDENT_REGISTRATION_NUMBER`, `ID_CARD`, `PHONE`). El nombre en español de cada campo vive en el adaptador, como los de los roles. Cambiar los roles de una cuenta con `ModificarUsuario` pasa por las mismas reglas que la creación, y además comprueba el último administrador y los trámites afectados.
+Los campos de `ModificarUsuario` se convierten a un enum `AccountField` (`FULL_NAME`, `EMAIL`, `ROLES`, `STUDENT_REGISTRATION_NUMBER`, `ID_CARD`, `PHONE`). El nombre en español de cada campo es su `label()`, como el de los roles. Cambiar los roles de una cuenta con `ModificarUsuario` pasa por las mismas reglas que la creación, y además comprueba el último administrador y los trámites afectados.
 
 ### D5. Unicidad con verificación previa e índice único
 
@@ -111,7 +110,7 @@ Los avisos se envían con `Notifier` después de confirmar (D6 de `esqueleto-mai
 - **Desactivación:** asunto `Cuenta de usuario desactivada`.
 - **Reactivación:** asunto `Cuenta de usuario reactivada`.
 
-El cuerpo es texto plano en español.
+El cuerpo es texto plano en español. Los textos de los avisos están en `UserManagementService`, que es quien los envía.
 
 Las respuestas al gestor confirman la operación y, cuando corresponde, listan los trámites afectados. `ListarUsuarios()` devuelve una línea por cuenta de usuario: `nombre <correo> roles (estado)`. `VerUsuario` devuelve un dato por línea.
 
