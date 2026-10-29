@@ -9,7 +9,7 @@
 
 ## Responsibility
 
-Sondea el buzón POP3, interpreta el comando del asunto y lo entrega al manejador que un subsistema de negocio registró para ese comando; envía por SMTP las respuestas y las notificaciones (AD-005, AD-006). Es general: no conoce los comandos de negocio, que los subsistemas registran en él.
+Sondea el buzón POP3, interpreta el comando del asunto, identifica y autoriza al remitente, y entrega el comando al manejador que un subsistema de negocio registró para él; envía por SMTP las respuestas y las notificaciones (AD-005, AD-006, AD-007). Es general: no conoce los comandos de negocio ni las cuentas de usuario. Los subsistemas de negocio implementan sus puertos `CommandHandler` y `SenderAuthenticator` (inversión de dependencias), así que dependen de Messaging y no al revés.
 
 ## Provided Interfaces
 
@@ -20,13 +20,30 @@ Sondea el buzón POP3, interpreta el comando del asunto y lo entrega al manejado
 
 | Operation | Description | Errors |
 | --- | --- | --- |
-| register(commandName: String, handler: CommandHandler): void | Asocia un nombre de comando del asunto a su manejador; Messaging entrega a ese manejador cada correo con ese comando y envía al remitente la respuesta que devuelve | DuplicateCommandException: el nombre ya está registrado |
+| register(commandName: String, handler: CommandHandler): void | Asocia un nombre de comando del asunto, sin distinguir mayúsculas, a su manejador. Al arrancar se registran todos los beans `CommandHandler` | DuplicateCommandException: el nombre ya está registrado |
+| find(commandName: String): Optional<CommandHandler> | Devuelve el manejador de un comando, sin distinguir mayúsculas | None |
 
 Tipos que forman parte de la interfaz:
 
-- `CommandHandler` (interface): `handle(command: MailCommand): CommandReply`. La implementan los subsistemas de negocio.
+- `CommandHandler` (interface), que implementan los subsistemas de negocio:
+  - `commandName(): String`: el nombre del comando en el asunto.
+  - `allowedRoles(): Set<String>`: los roles que pueden ejecutarlo; vacío significa cualquier cuenta de usuario activa.
+  - `handle(command: MailCommand, sender: Sender): CommandReply`: se ejecuta dentro de la transacción del comando; una excepción la deshace y el remitente recibe un mensaje de error genérico.
 - `MailCommand` (record): `name: String`, `arguments: List<String>`, `senderEmail: String`, `attachments: List<MailAttachment>`.
-- `CommandReply` (record): `subject: String`, `body: String`. Messaging lo envía al remitente.
+- `MailAttachment` (record): `fileName: String`, `contentType: String`, `content: byte[]`.
+- `CommandReply` (record): `body: String`. Messaging lo envía al remitente con el asunto `Re: <asunto original>`.
+- `Sender` (record): `accountId: UUID`, `email: String`, `roles: Set<String>`.
+
+### SenderAuthenticator
+
+Puerto que define Messaging y que implementa Users (D5 de `esqueleto-mail-app`).
+
+- **Used by (derived):** None: lo llama Messaging y lo implementa Users
+- **Use cases (derived):** UC-001
+
+| Operation | Description | Errors |
+| --- | --- | --- |
+| authenticate(senderEmail: String): Optional<Sender> | Devuelve la cuenta de usuario activa con esa dirección de correo, sin distinguir mayúsculas, o vacío si no existe o está desactivada | None |
 
 ### Notifier
 

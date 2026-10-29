@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft |
 | Iteration | I1 |
-| Database | PostgreSQL, base `db_grupo03sc` en `db.tecnoweb.org.bo` (AD-004, AD-010) |
+| Database | PostgreSQL, base `db_grupo03sc` en `db.tecnoweb.org.bo` (AD-004, AD-010); migraciones con Flyway (AD-011) en `mail-app/src/main/resources/db/migration` |
 
 Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID` ordenadas por tiempo (UUID versión 7), generadas por la aplicación (AD-010).
 
@@ -15,6 +15,7 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 | [user_accounts](#user_accounts) | Unassigned::CuentaUsuario | Una fila por cuenta de usuario |
 | [user_account_roles](#user_account_roles) | Relationship Unassigned::CuentaUsuario – Unassigned::Rol | Una fila por rol de una cuenta de usuario |
 | [change_log_entries](#change_log_entries) | Unassigned::RegistroCambios | Una fila por dato cambiado |
+| [processed_mail_messages](#processed_mail_messages) | Mecanismo AM-002 (D4 de `esqueleto-mail-app`) | Una fila por correo de comando ya procesado, para no ejecutarlo dos veces |
 | [graduation_processes](#graduation_processes) | Unassigned::TramiteTitulacion | Una fila por trámite de titulación. Parcial: solo las columnas que usa UC-001; UC-003 la completa |
 | [graduation_process_participants](#graduation_process_participants) | Relationship Unassigned::TramiteTitulacion – Unassigned::CuentaUsuario | Una fila por participante de un trámite. Parcial: UC-005 la completa |
 
@@ -37,6 +38,7 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 **Constraints:**
 
 - CHECK (status IN ('ACTIVE', 'INACTIVE'))
+- CHECK (email = lower(email))
 
 **Indexes:**
 
@@ -77,7 +79,7 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 
 **Constraints:**
 
-- Ninguna; las filas nunca se modifican ni se borran.
+- Trigger `change_log_entries_append_only`: rechaza todo `UPDATE` y `DELETE` (AD-008, NFR-SE-002). La aplicación usa un solo usuario de base de datos (CON-007), así que no basta con quitar permisos.
 
 **Indexes:**
 
@@ -85,6 +87,24 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 | --- | --- | --- | --- |
 | change_log_entries_target_idx | target_type, target_id, changed_at | No | Consultar el historial de un registro (UC-009) |
 | change_log_entries_actor_idx | actor_id, changed_at | No | Consultar los cambios de un usuario (UC-009) |
+
+### processed_mail_messages
+
+| Column | Type | Null | Key | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| id | UUID | No | PK | | Identificador |
+| message_id | VARCHAR(998) | No | UK | | Cabecera `Message-ID` del correo, o un hash SHA-256 si no la tiene |
+| processed_at | TIMESTAMPTZ | No | | now() | Cuándo se procesó |
+
+**Constraints:**
+
+- None.
+
+**Indexes:**
+
+| Index | Columns | Unique | Purpose |
+| --- | --- | --- | --- |
+| processed_mail_messages_message_id_uk | message_id | Yes | Reconocer un correo ya procesado en cada sondeo |
 
 ### graduation_processes
 
