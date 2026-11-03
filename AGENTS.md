@@ -10,7 +10,7 @@ a whole. Read it first, then the `AGENTS.md` of the folder you work in.
 | Path | Content |
 | --- | --- |
 | `docs/usdp-guide.md` | The process: phases, workflows, artifacts and exit criteria |
-| `docs/model/` | The models of the project, as text: requirements, use cases, analysis and design. Its `AGENTS.md` holds the rules common to all of them |
+| `docs/model/` | The models of the project, as text: requirements, use cases, analysis and design, and the management artifacts (risk list). Its `AGENTS.md` holds the rules common to all of them |
 | `.claude/skills/` | Claude Code commands for the process: `/requirements [UC-xxx]`, `/analysis UC-xxx`, `/design UC-xxx`. They only order the steps; the rules stay in the `AGENTS.md` files |
 | `openspec/` | OpenSpec changes and specs that guide the implementation workflow |
 | `build.gradle.kts`, `src/`, `Dockerfile` | The `mail-app` application (see `README.md`) |
@@ -77,7 +77,7 @@ still a placeholder, ask the user for it before writing anything it covers.
   (e.g. `UC-001-register-sale`).
 - **Shared work** covers everything that is not part of one use case: model
   artifacts (vision, requirements, glossary, analysis packages and
-  mechanisms, architecture, subsystems, deployment, database),
+  mechanisms, architecture, subsystems, deployment, database, risk list),
   infrastructure, pipelines and tooling, and defects that belong to no use
   case. Name the branch after what it does (e.g. `shared/architecture`,
   `shared/glossary-review`, `shared/staging-environment`,
@@ -131,7 +131,8 @@ unfinished work stays out of the iteration, and its Status says so.
 ### Closing an Iteration
 
 1. Check the exit criteria of the iteration in `docs/usdp-guide.md` and the
-   Status fields of the artifacts the iteration planned to deliver.
+   Status fields of the artifacts the iteration planned to deliver, and
+   review the risk list (`docs/model/management/risks.md`).
 2. Merge `develop` into `main` with a merge commit:
    - GitHub remote: open a pull request from `develop` to `main` titled
      `chore(release): close iteration E1`, with the exit criteria and how

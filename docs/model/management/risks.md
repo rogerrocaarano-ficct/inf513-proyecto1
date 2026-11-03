@@ -1,0 +1,25 @@
+# Risk List
+
+| | |
+| --- | --- |
+| Status | Draft |
+| Iteration | I1 |
+
+## Risks
+
+| ID | Risk | Category | Probability | Impact | Strategy | Response | Related | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| RSK-001 | El servidor de correo del docente rechaza los correos de `mail-app` porque su SMTP valida al remitente por dirección IP y la IP del laboratorio o del servidor de contingencia no está permitida, o el servidor no está disponible; sin correo, ningún caso de uso se puede presentar | Infrastructure | High | High | Mitigate | Pedir al docente que permita la IP pública del equipo y la del servidor de contingencia. Probar la cadena completa (sondeo POP3, comando, respuesta SMTP) contra `mail.tecnoweb.org.bo` y no solo contra Mailpit. Ensayar la presentación desde el laboratorio antes de la fecha | CON-006, AD-001, AD-005, `../design/deployment.md` | Open |
+| RSK-002 | No se conocen las fechas de la primera y la segunda entrega, por lo que el plan de iteraciones no es creíble y el trabajo puede no llegar a tiempo | Management | High | High | Mitigate | Preguntar las fechas al docente. Planificar E1 y las iteraciones de Construcción hacia atrás desde ellas | CON-003 | Open |
+| RSK-003 | El docente no acepta que los casos de uso UC-001…UC-010 se deriven de sus CU1–CU8 aprobados, y el modelo de casos de uso y lo ya realizado se deben reestructurar | Requirements | Medium | High | Mitigate | Presentar al docente la relación entre FEAT-001…FEAT-008, sus CU y los casos de uso, y registrar su decisión en la tabla Approval de la visión. Es condición para cerrar I1 | FEAT-001…FEAT-008, UC-001…UC-010, `../requirements/vision.md`, `../use-cases/use-cases.md` | Open |
+| RSK-004 | La base compartida `db_grupo03sc` no da los permisos que necesitan las migraciones de Flyway (crear tablas, funciones y el trigger del registro de cambios) o no es accesible desde el laboratorio, y `mail-app` no arranca en la presentación | Infrastructure | Medium | High | Mitigate | Aplicar las migraciones existentes (V1…V5) contra `db.tecnoweb.org.bo` en E1 y registrar los errores. Si falta un permiso, pedirlo al docente o reemplazar el trigger por una verificación en la aplicación | CON-007, AD-004, AD-008, AD-011, AM-003 | Open |
+| RSK-005 | El trabajo pendiente no entra en el plazo: siete casos de uso solo tienen descripción breve, y la segunda entrega se construye de nuevo en Laravel y React | Management | Medium | High | Mitigate | Planificar por riesgo y valor, con los casos de uso Must primero. Reutilizar en la versión web el modelo de casos de uso, el análisis y el esquema de la base de datos. Si no alcanza, recortar alcance por prioridad con acuerdo del docente | CON-002, CON-003, AD-009, UC-002, UC-005…UC-010 | Open |
+| RSK-006 | Reglas de negocio sin resolver obligan a rehacer casos de uso ya realizados: el plazo de revisión de los revisores, la reasignación de trámites al desactivar una cuenta, el contenido del acta de graduación y los indicadores y reportes de la dirección | Requirements | High | Medium | Mitigate | Reunir las preguntas en una sola reunión con el secretario(a) y el director de carrera, y resolverlas antes de detallar UC-005, UC-006, UC-007 y UC-010 | FR-016, FR-024, FR-028, FR-029, FR-034, UC-001, UC-003, `../requirements/requirements.md` | Open |
+| RSK-007 | Los requisitos no funcionales no tienen criterio de aceptación medible, por lo que no se puede verificar que la arquitectura los cumple al cerrar la Elaboración | Requirements | High | Medium | Mitigate | Proponer criterios medibles para cada uno y validarlos con el docente en E1 | NFR-US-001, NFR-SE-001, NFR-SE-002, NFR-IN-001 | Open |
+| RSK-008 | El servidor de correo no acepta adjuntos de hasta 25 MB, o el sondeo cada 30 segundos lo sobrecarga, y los usuarios no pueden entregar el perfil ni el documento del proyecto | Technical | Medium | Medium | Mitigate | Ya hecho: `mail-app` registra el `Message-ID` de cada correo procesado y no lo procesa dos veces. Pendiente: enviar un adjunto de 25 MB a través de `mail.tecnoweb.org.bo` y confirmar el límite del buzón; ajustar el intervalo de sondeo si el docente lo pide | CON-004, CON-006, AD-005, UC-004 | Open |
+| RSK-009 | Un usuario se hace pasar por otro falsificando la dirección del remitente, porque el sistema identifica a los usuarios solo por ella y el servidor no usa cifrado ni autenticación | Security | Medium | Medium | Accept | Aceptado para la prueba de concepto: lo impone el servidor del docente. Queda documentado y se resuelve con sesiones autenticadas en la versión web | NFR-SE-001, NFR-IN-001, CON-006, AD-007, AD-009 | Open |
+| RSK-010 | Los usuarios escriben mal el comando del asunto o el nombre de los adjuntos, y sus solicitudes fallan | Usability | High | Low | Mitigate | Responder cada error con la sintaxis correcta del comando. Preparar una guía de comandos para la presentación | NFR-IN-001, AD-006 | Open |
+
+## Open Questions
+
+- [ ] RSK-001, RSK-004: ¿quién del equipo se encarga de las gestiones con el docente (IP permitidas, permisos de la base) y para qué fecha? (ask: Equipo de desarrollo)
