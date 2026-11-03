@@ -15,8 +15,8 @@ Sondea el buzón POP3, interpreta el comando del asunto, identifica y autoriza a
 
 ### CommandRegistry
 
-- **Used by (derived):** Users
-- **Use cases (derived):** UC-001
+- **Used by (derived):** GraduationProcesses, Users
+- **Use cases (derived):** UC-001, UC-003
 
 | Operation | Description | Errors |
 | --- | --- | --- |
@@ -40,7 +40,7 @@ Tipos que forman parte de la interfaz:
 Puerto que define Messaging y que implementa Users (D5 de `esqueleto-mail-app`).
 
 - **Used by (derived):** None: lo llama Messaging y lo implementa Users
-- **Use cases (derived):** UC-001
+- **Use cases (derived):** UC-001, UC-003
 
 | Operation | Description | Errors |
 | --- | --- | --- |
@@ -48,8 +48,8 @@ Puerto que define Messaging y que implementa Users (D5 de `esqueleto-mail-app`).
 
 ### Notifier
 
-- **Used by (derived):** Users
-- **Use cases (derived):** UC-001
+- **Used by (derived):** GraduationProcesses, Users
+- **Use cases (derived):** UC-001, UC-003
 
 | Operation | Description | Errors |
 | --- | --- | --- |

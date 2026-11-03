@@ -116,7 +116,7 @@
 
 | ID | Requirement | Fit criterion | Scope | Priority | Source |
 | --- | --- | --- | --- | --- | --- |
-| NFR-IN-001 (A) | El sistema recibe las solicitudes de los usuarios y les envía respuestas y notificaciones por correo electrónico. Cada solicitud es un comando que el usuario escribe en el asunto del correo con la forma de una llamada a función, `Comando(arg1; arg2; …)`, con los argumentos separados por punto y coma. Los archivos se envían como adjuntos del correo y el comando los nombra por su nombre de archivo como argumento. El sistema identifica al usuario por la dirección de correo del remitente | TBD | Global | Must | SRC-003 |
+| NFR-IN-001 (A) | El sistema recibe las solicitudes de los usuarios y les envía respuestas y notificaciones por correo electrónico. Cada solicitud es un comando que el usuario escribe en el asunto del correo con la forma de una llamada a función, `Comando(arg1; arg2; …)`, con los argumentos separados por punto y coma. Los archivos se envían como adjuntos del correo, sin nombrarlos en el comando: el sistema reconoce qué documento es cada adjunto por una palabra de su nombre de archivo. El sistema identifica al usuario por la dirección de correo del remitente | TBD | Global | Must | SRC-003, SRC-009 |
 
 ### Constraints
 
@@ -154,7 +154,7 @@
 - [x] CON-004: ¿el perfil de proyecto (UC-004) también se entrega en PDF y con qué tamaño máximo? Respuesta: sí, en PDF, con el mismo máximo de 25 MB.
 - [x] NFR-IN-001: ¿con qué formato escribe el usuario sus solicitudes por correo? Respuesta: como un comando en el asunto del correo, con la forma de una llamada a función: `Comando(args[])`.
 - [x] NFR-IN-001: ¿cómo se separan los argumentos del comando y cómo se escriben los que contienen espacios o comas? Respuesta: se separan con punto y coma.
-- [x] NFR-IN-001: ¿los archivos (documentos iniciales, perfil, documento del proyecto) se envían como adjuntos del correo? Respuesta: sí, como adjuntos; el comando recibe el nombre del archivo como argumento.
+- [x] NFR-IN-001: ¿los archivos (documentos iniciales, perfil, documento del proyecto) se envían como adjuntos del correo? Respuesta: sí, como adjuntos; el comando recibe el nombre del archivo como argumento. Reemplazada en SRC-009: el sistema reconoce cada adjunto por una palabra de su nombre de archivo, y el comando no lo nombra.
 - [x] NFR-IN-001, NFR-SE-001: ¿cómo identifica el sistema al usuario que envía un correo (solo por su dirección de correo u otro mecanismo)? Respuesta: por su dirección de correo.
 - [x] CON-006: el SMTP valida al remitente por su dirección IP; ¿desde qué servidor o dirección IP debe ejecutarse el sistema para poder enviar correos? Respuesta: para las pruebas, el equipo pide al docente que agregue su dirección IP pública a la lista de direcciones permitidas; la presentación se hace desde la dirección IP del laboratorio. Como contingencia, el equipo tendrá su propio servidor de despliegue.
 - [x] CON-006: si se usa el servidor de despliegue de contingencia, ¿el docente también agrega su dirección IP a la lista de direcciones permitidas del SMTP? Respuesta: sí, su dirección IP se incluye en el pedido al docente.

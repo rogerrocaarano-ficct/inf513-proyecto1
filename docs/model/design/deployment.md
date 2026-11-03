@@ -24,6 +24,7 @@
 | --- | --- | --- | --- |
 | Red de Docker Compose | Network | Docker | Conecta `mail-app`, `postgres` y `mailpit`; solo se publican los puertos web y SMTP de Mailpit y el de PostgreSQL |
 | Volumen `pgdata` | Storage | Docker | Conserva los datos de PostgreSQL entre reinicios del stack |
+| Volumen `files` | Storage | Docker | Directorio `app.files.root` del contenedor `mail-app` (AD-012): conserva los archivos que envían los usuarios entre reinicios del stack. En producción, un directorio persistente del servidor de la presentación |
 | Lista de direcciones IP permitidas del SMTP | Firewall | Docente de Tecnología Web | El SMTP del docente solo acepta correos desde las IP registradas (CON-006) |
 
 ## Allocation
@@ -59,9 +60,11 @@
 | --- | --- |
 | CON-006 | En producción `mail-app` usa `mail.tecnoweb.org.bo` con POP3 110 y SMTP 25 sin cifrado; la IP del servidor de la presentación debe estar en la lista del docente |
 | CON-007 | En producción `mail-app` usa `db_grupo03sc` en `db.tecnoweb.org.bo`; Flyway crea las tablas (AD-011) |
+| CON-004, CON-005 | Los archivos se guardan en el directorio `FILES_ROOT` del nodo donde corre `mail-app` (AD-012); ese directorio debe persistir y respaldarse junto con la base de datos |
 | NFR-IN-001 | Los comandos llegan por correo al buzón que `mail-app` sondea cada `POLL_INTERVAL` (30 s por defecto) |
 
 ## Open Questions
 
 - [ ] Servidor de la presentación: ¿en qué servidor corre `mail-app` durante las pruebas contra los servidores del docente y la presentación (laboratorio o servidor de contingencia), y con qué capacidad? (ask: Equipo de desarrollo)
 - [ ] Servidor de pruebas de desarrollo: ¿qué capacidad tiene? (ask: Equipo de desarrollo)
+- [ ] Volumen `files`: ¿cuánto espacio en disco se reserva para los archivos y cómo se respalda en el servidor de la presentación? (ask: Equipo de desarrollo)
