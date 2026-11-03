@@ -44,11 +44,13 @@
 | Secretario(a) de dirección de carrera | Personal de la Dirección de Carrera que recibe los documentos del trámite y lleva el expediente de titulación | Secretaria (avoid) | Dirección de Carrera | ACT-002 Secretario(a) de dirección de carrera | ProgramSecretary | SRC-001 |
 | Servicio de correo | Servicio de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones |  |  | | | SRC-003 |
 | Solicitud de titulación | Pedido del estudiante para iniciar el trámite de titulación, que acompaña a los documentos iniciales |  | Documentos iniciales, Trámite de titulación |  | | SRC-001 |
+| Título del proyecto | Nombre del proyecto de grado que el estudiante indica al presentar su perfil de proyecto; un perfil de proyecto nuevo puede cambiarlo |  | Proyecto de Grado, Perfil de proyecto |  | | SRC-010 |
 | Trámite de titulación | Proceso que sigue un estudiante desde su solicitud de titulación hasta el archivo de su expediente | Proceso de titulación (avoid) | Expediente de titulación | Unassigned::TramiteTitulacion (entity) | GraduationProcess | SRC-001 |
 | Tribunal evaluador | Grupo de tres docentes que revisa el documento del proyecto y evalúa la predefensa y la defensa final de un estudiante | Tribunal calificador (avoid), Cuerpo de tribunales (avoid) | Miembro del tribunal |  | | SRC-001 |
 | Tutor | Docente que guía al estudiante en su proyecto y revisa el documento del proyecto junto al tribunal evaluador | Tutor académico (avoid) | Docente | ACT-006 Docente Tutor | | SRC-001 |
 | Usuario | Persona con una cuenta de usuario en el sistema |  | Cuenta de usuario, Datos personales | ACT-010 Usuario | | SRC-002 |
 | Versión del documento | Cada entrega sucesiva del documento del proyecto, con un comentario general del estudiante y sus observaciones; la última entregada es la versión vigente |  | Documento del proyecto, Observación |  | | SRC-001 |
+| Versión para la defensa final | Versión del documento del proyecto que el estudiante entrega después de aprobar la predefensa, y que el tutor y el tribunal evaluador revisan antes de la defensa final |  | Versión del documento, Predefensa, Defensa final |  | | SRC-005 |
 | Visto bueno | Aprobación formal que emite un docente sobre el perfil de proyecto o el documento del proyecto | Aprobación (avoid) | Perfil de proyecto, Documento del proyecto |  | | SRC-001 |
 
 ## Acronyms and Abbreviations

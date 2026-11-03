@@ -13,6 +13,7 @@
 | SRC-007 | Reestructuración de los casos de uso acordada con el equipo de desarrollo ([docs/sources/2026-10-06.md](../../sources/2026-10-06.md)) | Workshop | 2026-10-27 |
 | SRC-008 | Detalle del caso de uso Gestionar usuarios acordado con el equipo de desarrollo | Workshop | 2026-10-27 |
 | SRC-009 | Detalle del caso de uso Gestionar trámite de titulación acordado con el equipo de desarrollo | Workshop | 2026-11-03 |
+| SRC-010 | Detalle del caso de uso Gestionar proyecto de grado acordado con el equipo de desarrollo | Workshop | 2026-11-03 |
 
 ## Functional Requirements
 
@@ -21,7 +22,7 @@
 | FR-001 | El sistema debe registrar la solicitud de titulación de un estudiante y abrir su expediente de titulación | UC-003 Gestionar trámite de titulación | Must | SRC-002 | Candidate |
 | FR-002 | El sistema debe registrar los documentos iniciales del estudiante: carta de solicitud, hoja de vida, fotocopia de cédula de identidad y boleta de inscripción con Modalidad de Graduación | UC-003 Gestionar trámite de titulación | Must | SRC-001, SRC-002 | Candidate |
 | FR-003 | El sistema debe registrar el tutor que el director de carrera asigna al estudiante | UC-005 Gestionar tribunal evaluador y tutor | Must | SRC-001, SRC-002 | Candidate |
-| FR-004 | El sistema debe registrar el perfil de proyecto que presenta el estudiante | UC-004 Gestionar proyecto de grado | Must | SRC-001, SRC-002 | Candidate |
+| FR-004 | El sistema debe registrar el perfil de proyecto, con el título del proyecto, que presenta el estudiante | UC-004 Gestionar proyecto de grado | Must | SRC-001, SRC-002, SRC-010 | Candidate |
 | FR-005 | El sistema debe registrar el visto bueno del perfil de proyecto emitido por el docente de Taller de Grado | UC-006 Evaluar proyecto de grado | Must | SRC-001, SRC-002 | Candidate |
 | FR-006 | El sistema debe registrar los tres docentes que el director de carrera designa como tribunal evaluador del estudiante | UC-005 Gestionar tribunal evaluador y tutor | Must | SRC-001, SRC-002 | Candidate |
 | FR-007 | El sistema debe notificar a cada miembro del tribunal su designación | UC-005 Gestionar tribunal evaluador y tutor | Must | SRC-002 | Candidate |
@@ -74,11 +75,15 @@
 | FR-054 | El sistema debe notificar al estudiante por correo la apertura y el cierre de su trámite de titulación | UC-003 Gestionar trámite de titulación | Must | SRC-009 | Candidate |
 | FR-055 | El sistema debe permitir que el secretario(a) de dirección de carrera reemplace un documento inicial de un trámite de titulación en curso | UC-003 Gestionar trámite de titulación | Must | SRC-009 | Candidate |
 | FR-056 | El sistema debe abrir el trámite de titulación sobre la cuenta de usuario existente del estudiante, y rechazar la apertura si esa cuenta está desactivada o ya tiene un trámite de titulación en curso | UC-003 Gestionar trámite de titulación | Must | SRC-009 | Candidate |
+| FR-057 | El sistema debe notificar al docente de Taller de Grado cada perfil de proyecto que presenta un estudiante | UC-004 Gestionar proyecto de grado | Must | SRC-010 | Candidate |
+| FR-058 | El sistema debe admitir un perfil de proyecto solo cuando el estudiante no tiene uno o su último perfil de proyecto fue rechazado u observado | UC-004 Gestionar proyecto de grado | Must | SRC-010 | Candidate |
+| FR-059 | El sistema debe mostrar al estudiante su proyecto de grado: el título del proyecto, sus perfiles de proyecto y las versiones del documento del proyecto, con el estado de cada uno | UC-004 Gestionar proyecto de grado | Must | SRC-010 | Candidate |
 
 ### Notes
 
-- FR-008, FR-040: el estudiante puede entregar la primera versión desde que tiene tutor asignado. Si el tribunal se designa después, revisa la versión vigente que el tutor ya aprobó (FR-042).
+- FR-008, FR-040: el estudiante puede entregar la primera versión desde que su perfil de proyecto tiene visto bueno y tiene tutor asignado (SRC-010). Si el tribunal se designa después, revisa la versión vigente que el tutor ya aprobó (FR-042).
 - FR-040, FR-044: cada versión se revisa en dos etapas. Primero la revisa el tutor, como filtro previo; si la observa, el estudiante entrega otra sin que el tribunal la vea. Si la aprueba, pasa a los miembros del tribunal evaluador.
+- FR-004, FR-023, FR-058: el estudiante puede presentar el perfil de proyecto desde que el secretario(a) abre su trámite de titulación. El primer perfil crea el proyecto de grado. Si el docente de Taller de Grado lo rechaza u observa, el estudiante presenta un perfil nuevo, que puede cambiar el título del proyecto; los anteriores se conservan (SRC-010).
 - FR-025, FR-043: la versión para la defensa final se entrega después de aprobar la predefensa y se revisa en las mismas dos etapas.
 - FR-026, FR-036: una cuenta de usuario puede tener varios roles. El director de carrera es también docente: su cuenta de usuario tiene siempre los dos roles, y como cualquier docente puede ser designado tutor o miembro del tribunal (SRC-007). El estudiante, el secretario(a) y el administrador tienen un solo rol: quien administra y además participa en el trámite usa dos cuentas de usuario distintas. Docente de Taller de Grado es un rol de cuenta: la carrera tiene uno solo y revisa todos los perfiles de proyecto (FR-039). Ser tutor o miembro del tribunal sale de las designaciones de cada trámite, no de la cuenta de usuario.
 - FR-050, FR-053: el director de carrera gestiona las cuentas de usuario de docentes, del docente de Taller de Grado y de secretarios(as), y puede asignar esos roles; el administrador gestiona todas las cuentas de usuario y es el único que asigna el rol de director de carrera (SRC-008).
