@@ -24,9 +24,9 @@ El secretario(a) de dirección de carrera abre el trámite de titulación cuando
 1. El secretario(a) de dirección de carrera, una vez verificado que la carpeta del estudiante está completa, solicita abrir su trámite de titulación con el nombre completo, la dirección de correo, el registro universitario, la cédula de identidad y el teléfono del estudiante, y sus documentos iniciales digitalizados: carta de solicitud, hoja de vida, fotocopia de cédula de identidad y boleta de inscripción con Modalidad de Graduación.
 2. El sistema verifica que están los cuatro documentos iniciales y que cada uno es una imagen PNG o JPG/JPEG, o un PDF, de hasta 1 MB.
 3. El sistema verifica que la dirección de correo y el registro universitario no pertenecen a otra cuenta de usuario.
-4. El sistema crea la cuenta de usuario activa del estudiante con el rol de estudiante y registra el cambio en el registro de cambios.
+4. El sistema crea la cuenta de usuario activa del estudiante con el rol de estudiante, registra el cambio en el registro de cambios y le notifica por correo la creación de su cuenta de usuario, como en UC-001.
 5. El sistema abre el trámite de titulación del estudiante con su expediente de titulación, guarda en él los documentos iniciales y registra el cambio en el registro de cambios.
-6. El sistema notifica por correo al estudiante la creación de su cuenta de usuario y la apertura de su trámite de titulación.
+6. El sistema notifica por correo al estudiante la apertura de su trámite de titulación.
 7. El sistema confirma al secretario(a) la apertura del trámite de titulación.
 
 ## Alternative Flows
@@ -36,7 +36,7 @@ El secretario(a) de dirección de carrera abre el trámite de titulación cuando
 En el paso 3, si la dirección de correo y el registro universitario pertenecen a una misma cuenta de usuario activa, con el rol de estudiante y sin otro trámite de titulación en curso.
 
 1. El sistema usa esa cuenta de usuario para el trámite, sin crear otra ni cambiar sus datos.
-2. El caso de uso continúa en el paso 5 del flujo básico; en el paso 6, la notificación solo informa la apertura del trámite de titulación.
+2. El caso de uso continúa en el paso 5 del flujo básico.
 
 ### A2 Reemplazar un documento inicial
 
@@ -105,7 +105,7 @@ En el paso A3.2, si el tribunal evaluador todavía no registró la calificación
 
 ## Postconditions
 
-- **Success:** según lo solicitado, existe un trámite de titulación en curso del estudiante, con su expediente de titulación y sus documentos iniciales, y el estudiante tiene una cuenta de usuario activa con el rol de estudiante; o el documento inicial queda reemplazado; o el trámite de titulación queda cerrado, con su expediente archivado y la recepción de los ejemplares físicos registrada. Cada cambio queda en el registro de cambios, y el estudiante recibe la notificación por correo de la apertura o del cierre.
+- **Success:** según lo solicitado, existe un trámite de titulación en curso del estudiante, con su expediente de titulación y sus documentos iniciales, y el estudiante tiene una cuenta de usuario activa con el rol de estudiante; o el documento inicial queda reemplazado; o el trámite de titulación queda cerrado, con su expediente archivado y la recepción de los ejemplares físicos registrada. Cada cambio queda en el registro de cambios, y el estudiante recibe la notificación por correo de la creación de su cuenta de usuario, de la apertura o del cierre.
 - **Failure:** ningún trámite de titulación ni cuenta de usuario cambia, y el secretario(a) conoce el motivo del rechazo.
 
 ## Special Requirements (derived)
