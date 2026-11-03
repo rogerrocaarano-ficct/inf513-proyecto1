@@ -1,0 +1,27 @@
+# CrearUsuario(nombreCompleto; correo; roles[; registroUniversitario; cedula; telefono]): creates a user account (UC-001)
+# Sends the command to mail-app through the Mailpit API. The reply arrives after the next poll: see mailbox.http.
+@baseUrl = http://localhost:8025
+@systemAddress = sistema@mailapp.local
+@adminAddress = admin@mailapp.local
+
+### Create a user with the required arguments only (3)
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{adminAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "CrearUsuario(Ana Pérez; ana.perez@mailapp.local; docente)",
+  "Text": ""
+}
+
+### Create a user with every optional argument (6)
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{adminAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "CrearUsuario(Luis Rojas; luis.rojas@mailapp.local; estudiante; 2026001; 1234567; 70000001)",
+  "Text": ""
+}

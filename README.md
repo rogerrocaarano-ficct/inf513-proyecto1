@@ -37,6 +37,16 @@ El archivo `docker-compose.dev.yml` levanta solo PostgreSQL y Mailpit, para ejec
 
 Los servicios usan los mismos puertos del host que el stack de pruebas (5432, 1025, 1110 y 8025), así que no se pueden levantar los dos a la vez. Para detenerlos: `docker compose -f docker-compose.dev.yml down` (con `-v` también se borran los datos).
 
+### Comandos de prueba con archivos `.http`
+
+`src/test/http/` tiene un archivo `.http` por comando, que lo envía a `mail-app` con la API de Mailpit (`POST /api/v1/send`), desde el administrador inicial hacia `sistema@mailapp.local`. Los archivos solo usan el formato común de los clientes HTTP de los IDEs, así que se ejecutan sin configuración en IntelliJ y los demás IDEs de JetBrains, en VS Code con REST Client o httpyac, en Neovim con kulala y en Zed. Cada archivo declara sus variables al inicio (`@baseUrl`, `@systemAddress`, `@adminAddress`).
+
+1. Levantar los servicios y ejecutar `mail-app` como arriba, con `POLL_INTERVAL=5s` para no esperar 30 segundos por cada respuesta.
+2. Ejecutar los archivos en orden, de `01-ping.http` a `07-reactivate-user.http`. Trabajan sobre la cuenta de ejemplo `ana.perez@mailapp.local`. `02-create-user.http` tiene una petición por cada forma de `CrearUsuario`: con los 3 argumentos obligatorios y con los 6.
+3. Ver las respuestas con `mailbox.http`: su primera petición trae los últimos 10 mensajes recibidos por la casilla `@mailbox` y la segunda vacía el buzón. También se ven en `http://localhost:8025`.
+
+Los archivos cubren solo el caso feliz, sobre datos fijos. Al repetir la secuencia, `CrearUsuario` responde que la cuenta ya existe: para empezar de nuevo, borrar los datos con `docker compose -f docker-compose.dev.yml down -v` y volver a levantar los servicios.
+
 ## Stack de pruebas de desarrollo
 
 El archivo `docker-compose.yml` levanta `mail-app` con PostgreSQL y Mailpit, un servidor de correo local con SMTP, POP3 e interfaz web.
