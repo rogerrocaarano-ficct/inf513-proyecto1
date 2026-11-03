@@ -16,7 +16,7 @@ Guarda en el sistema de archivos del servidor los archivos que envían los usuar
 ### FileStorage
 
 - **Used by (derived):** GraduationProcesses
-- **Use cases (derived):** UC-003
+- **Use cases (derived):** UC-003, UC-004
 
 | Operation | Description | Errors |
 | --- | --- | --- |

@@ -19,6 +19,7 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 | [graduation_processes](#graduation_processes) | Unassigned::TramiteTitulacion | Una fila por trámite de titulación, que es también su expediente |
 | [graduation_process_participants](#graduation_process_participants) | Relationship Unassigned::TramiteTitulacion – Unassigned::CuentaUsuario | Una fila por docente designado en un trámite. Parcial: UC-005 la completa |
 | [initial_documents](#initial_documents) | Unassigned::DocumentoInicial | Una fila por documento inicial de un trámite; el archivo está en el sistema de archivos (AD-012) |
+| [graduation_projects](#graduation_projects) | Unassigned::ProyectoGrado | Una fila por proyecto de grado, con su documento vigente; el historial está en `change_log_entries` y los archivos en el sistema de archivos (AD-012) |
 
 ## Table Details
 
@@ -86,7 +87,7 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 
 | Index | Columns | Unique | Purpose |
 | --- | --- | --- | --- |
-| change_log_entries_target_idx | target_type, target_id, changed_at | No | Consultar el historial de un registro (UC-009) |
+| change_log_entries_target_idx | target_type, target_id, changed_at | No | Consultar el historial de un registro (UC-009) y de un proyecto de grado (UC-004 A4) |
 | change_log_entries_actor_idx | actor_id, changed_at | No | Consultar los cambios de un usuario (UC-009) |
 
 ### processed_mail_messages
@@ -175,6 +176,39 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 | initial_documents_process_type_uk | graduation_process_id, type | Yes | Un documento de cada tipo por trámite (UC-003 2, A2.3) |
 | initial_documents_storage_key_uk | storage_key | Yes | Cada archivo pertenece a un solo documento |
 
+### graduation_projects
+
+| Column | Type | Null | Key | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| id | UUID | No | PK | | Identificador del proyecto de grado |
+| graduation_process_id | UUID | No | FK → graduation_processes.id, UK | | Trámite al que pertenece |
+| title | VARCHAR(300) | No | | | Título del proyecto, del último perfil de proyecto |
+| document_kind | VARCHAR(30) | No | | | Constante de `ProjectDocumentKind` del documento vigente |
+| file_name | VARCHAR(255) | No | | | Nombre original del adjunto vigente |
+| size_bytes | INTEGER | No | | | Tamaño del archivo vigente |
+| storage_key | VARCHAR(500) | No | UK | | Ruta relativa del archivo vigente bajo `app.files.root` (AD-012) |
+| version_number | INTEGER | Yes | | | Número de la versión vigente; nulo mientras es un perfil de proyecto |
+| general_comment | TEXT | Yes | | | Comentario general del estudiante sobre la versión vigente |
+| submitted_at | TIMESTAMPTZ | No | | | Cuándo se entregó el documento vigente |
+| status | VARCHAR(30) | No | | 'PROFILE_PENDING' | Constante de `ProjectStatus` |
+| version | BIGINT | No | | 0 | Bloqueo optimista (`@Version`) |
+
+**Constraints:**
+
+- CHECK (document_kind IN ('PROJECT_PROFILE', 'PROJECT_DOCUMENT', 'FINAL_DEFENSE_VERSION'))
+- CHECK (status IN ('PROFILE_PENDING', 'PROFILE_OBSERVED', 'PROFILE_REJECTED', 'PROFILE_APPROVED', 'TUTOR_REVIEW', 'TUTOR_OBSERVED', 'TRIBUNAL_REVIEW', 'TRIBUNAL_OBSERVED', 'APPROVED'))
+- CHECK ((document_kind = 'PROJECT_PROFILE') = (version_number IS NULL)): un perfil no tiene número de versión, y una versión sí
+- CHECK (document_kind = 'PROJECT_PROFILE' OR general_comment IS NOT NULL)
+- CHECK (document_kind = 'PROJECT_PROFILE' OR status NOT LIKE 'PROFILE_%') y CHECK (document_kind <> 'PROJECT_PROFILE' OR status LIKE 'PROFILE_%')
+- CHECK (size_bytes BETWEEN 1 AND 26214400) (CON-004)
+
+**Indexes:**
+
+| Index | Columns | Unique | Purpose |
+| --- | --- | --- | --- |
+| graduation_projects_process_uk | graduation_process_id | Yes | Un proyecto de grado por trámite y buscarlo por su trámite (UC-004) |
+| graduation_projects_storage_key_uk | storage_key | Yes | Cada archivo pertenece a un solo documento |
+
 ## Relationships
 
 | From | To | Cardinality | On delete | Description |
@@ -182,6 +216,7 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 | user_account_roles.user_account_id | user_accounts.id | many to one | Cascade | Un rol pertenece a una cuenta de usuario |
 | graduation_process_participants.graduation_process_id | graduation_processes.id | many to one | Cascade | Un participante pertenece a un trámite |
 | initial_documents.graduation_process_id | graduation_processes.id | many to one | Cascade | Un documento inicial pertenece a un trámite; los trámites no se borran |
+| graduation_projects.graduation_process_id | graduation_processes.id | one to one (optional) | Cascade | Un proyecto de grado pertenece a un trámite; los trámites no se borran |
 
 ## Open Questions
 
