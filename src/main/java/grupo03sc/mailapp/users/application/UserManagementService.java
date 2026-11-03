@@ -16,6 +16,7 @@ import grupo03sc.mailapp.users.domain.UserRuleViolationException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -65,13 +66,47 @@ public class UserManagementService {
         }
         UserAccount saved = save(account);
         changeLog.record(requesterId, TARGET_TYPE, saved.getId(), saved.describe());
-        notifier.notify(saved.getEmail(), "Cuenta de usuario creada", """
-                Estimado(a) %s:
-
-                Se creó su cuenta de usuario en el sistema de titulación con los roles: %s.
-                Puede enviar sus comandos por correo desde esta dirección.
-                """.formatted(saved.getFullName(), Role.labels(saved.getRoles())));
+        notifyCreated(saved);
         return saved;
+    }
+
+    /**
+     * UC-003 step 3 and A1: the active student account with this email and university registration
+     * number, or a new one with the student role, recorded and notified as in UC-001. The opening of
+     * the graduation process authorizes it, so the scope of the requester does not apply (FR-051).
+     */
+    public StudentAccountResult obtainStudentAccount(UUID requesterId, UserAccountData data) {
+        UserAccount candidate = UserAccount.create(data);
+        Optional<UserAccount> byEmail = accounts.findByEmail(candidate.getEmail());
+        Optional<UserAccount> byRegistration =
+                accounts.findByStudentRegistrationNumber(candidate.getStudentRegistrationNumber());
+        if (byEmail.isEmpty() && byRegistration.isEmpty()) {
+            UserAccount saved = save(candidate);
+            changeLog.record(requesterId, TARGET_TYPE, saved.getId(), saved.describe());
+            notifyCreated(saved);
+            return new StudentAccountResult(saved, true);
+        }
+        if (byEmail.isPresent() && byRegistration.isPresent()
+                && byEmail.get().getId().equals(byRegistration.get().getId()) && byEmail.get().hasRole(Role.STUDENT)) {
+            UserAccount account = byEmail.get();
+            if (!account.isActive()) {
+                throw new UserRuleViolationException(RejectionReason.INACTIVE_ACCOUNT, account.getEmail());
+            }
+            return new StudentAccountResult(account, false);
+        }
+        throw byEmail.isPresent()
+                ? duplicateEmail(candidate.getEmail())
+                : duplicateRegistration(candidate.getStudentRegistrationNumber());
+    }
+
+    /** UC-003 A2 and A3: the account with the student role and this university registration number. */
+    @Transactional(readOnly = true)
+    public Optional<UserAccount> findStudentAccount(String studentRegistrationNumber) {
+        if (studentRegistrationNumber == null || studentRegistrationNumber.isBlank()) {
+            return Optional.empty();
+        }
+        return accounts.findByStudentRegistrationNumber(studentRegistrationNumber.strip())
+                .filter(account -> account.hasRole(Role.STUDENT));
     }
 
     /** A2: the accounts within the scope of the requester, by name. */
@@ -131,9 +166,9 @@ public class UserManagementService {
         Set<ParticipantKind> lostKinds = EnumSet.noneOf(ParticipantKind.class);
         lostKinds.addAll(Role.participantKinds(oldRoles));
         lostKinds.removeAll(Role.participantKinds(newRoles));
-        List<GraduationProcessSummary> affected = lostKinds.isEmpty()
+        List<AffectedProcess> affected = lostKinds.isEmpty()
                 ? List.of()
-                : graduationParticipation.markPendingReassignment(account.getId(), lostKinds);
+                : withStudentNames(graduationParticipation.markPendingReassignment(account.getId(), lostKinds));
         FieldChange change = account.changeRoles(newRoles);
         save(account);
         changeLog.record(requesterId, TARGET_TYPE, account.getId(), List.of(change));
@@ -152,8 +187,8 @@ public class UserManagementService {
             checkNotLastAdministrator(account);
         }
         FieldChange change = account.deactivate();
-        List<GraduationProcessSummary> affected =
-                graduationParticipation.markPendingReassignment(account.getId(), EnumSet.allOf(ParticipantKind.class));
+        List<AffectedProcess> affected = withStudentNames(
+                graduationParticipation.markPendingReassignment(account.getId(), EnumSet.allOf(ParticipantKind.class)));
         save(account);
         changeLog.record(requesterId, TARGET_TYPE, account.getId(), List.of(change));
         notifier.notify(account.getEmail(), "Cuenta de usuario desactivada", """
@@ -218,6 +253,22 @@ public class UserManagementService {
             throw new UserRuleViolationException(RejectionReason.LAST_ADMINISTRATOR,
                     account.getEmail() + " es la única cuenta de administrador activa");
         }
+    }
+
+    /** GraduationProcesses only knows the student's account id; the name is resolved here (D7). */
+    private List<AffectedProcess> withStudentNames(List<GraduationProcessSummary> processes) {
+        return processes.stream().map(process -> new AffectedProcess(process.id(),
+                accounts.findById(process.studentAccountId()).map(UserAccount::getFullName).orElse("(estudiante desconocido)")))
+                .toList();
+    }
+
+    private void notifyCreated(UserAccount account) {
+        notifier.notify(account.getEmail(), "Cuenta de usuario creada", """
+                Estimado(a) %s:
+
+                Se creó su cuenta de usuario en el sistema de titulación con los roles: %s.
+                Puede enviar sus comandos por correo desde esta dirección.
+                """.formatted(account.getFullName(), Role.labels(account.getRoles())));
     }
 
     /** Saves and flushes, so that the unique indexes also reject a duplicate (D5). */

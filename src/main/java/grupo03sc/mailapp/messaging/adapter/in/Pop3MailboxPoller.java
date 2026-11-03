@@ -18,7 +18,9 @@ import jakarta.mail.Part;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
 import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeUtility;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -101,6 +103,7 @@ public class Pop3MailboxPoller {
                 header(message, "Auto-Submitted"), subject, attachments);
     }
 
+    /** Only parts marked as attachments; inline parts, such as signature images, are ignored (D2). */
     private static void collectAttachments(Part part, List<MailAttachment> attachments)
             throws MessagingException, IOException {
         if (part.isMimeType("multipart/*")) {
@@ -108,10 +111,26 @@ public class Pop3MailboxPoller {
             for (int i = 0; i < multipart.getCount(); i++) {
                 collectAttachments(multipart.getBodyPart(i), attachments);
             }
-        } else if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition()) || part.getFileName() != null) {
+        } else if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
             try (var input = part.getInputStream()) {
-                attachments.add(new MailAttachment(part.getFileName(), baseType(part.getContentType()), input.readAllBytes()));
+                attachments.add(new MailAttachment(fileName(part), baseType(part.getContentType()), input.readAllBytes()));
             }
+        }
+    }
+
+    /**
+     * The file name, decoded: RFC 2231 is decoded by Jakarta Mail, and RFC 2047 encoded words
+     * (sent by some mail clients) are decoded here. An undecodable name is kept as it came.
+     */
+    private static String fileName(Part part) throws MessagingException {
+        String name = part.getFileName();
+        if (name == null) {
+            return null;
+        }
+        try {
+            return MimeUtility.decodeText(name);
+        } catch (UnsupportedEncodingException e) {
+            return name;
         }
     }
 

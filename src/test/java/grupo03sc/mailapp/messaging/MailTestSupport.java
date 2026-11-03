@@ -57,6 +57,48 @@ public final class MailTestSupport {
         send(message);
     }
 
+    /** Sends a command with a text body and the given parts (attachments or inline parts). */
+    public static void sendWithParts(String from, String subject, MimeBodyPart... parts) throws MessagingException {
+        MimeMessage message = message(from, SYSTEM, subject);
+        MimeBodyPart text = new MimeBodyPart();
+        text.setText("Adjuntos", "UTF-8");
+        MimeMultipart multipart = new MimeMultipart(text);
+        for (MimeBodyPart part : parts) {
+            multipart.addBodyPart(part);
+        }
+        message.setContent(multipart);
+        send(message);
+    }
+
+    /** An attachment whose file name Jakarta Mail writes (RFC 2231 when it is not ASCII). */
+    public static MimeBodyPart attachment(String fileName, String contentType, byte[] content)
+            throws MessagingException {
+        MimeBodyPart part = new MimeBodyPart();
+        part.setContent(content, contentType);
+        part.setFileName(fileName);
+        part.setDisposition(MimeBodyPart.ATTACHMENT);
+        return part;
+    }
+
+    /** An attachment with a raw Content-Disposition header, to send encoded file names as mail clients do. */
+    public static MimeBodyPart attachmentWithDisposition(String disposition, String contentType, byte[] content)
+            throws MessagingException {
+        MimeBodyPart part = new MimeBodyPart();
+        part.setContent(content, contentType);
+        part.setHeader("Content-Disposition", disposition);
+        return part;
+    }
+
+    /** An inline part with a file name, like an image in a signature. */
+    public static MimeBodyPart inline(String fileName, String contentType, byte[] content) throws MessagingException {
+        MimeBodyPart part = new MimeBodyPart();
+        part.setContent(content, contentType);
+        part.setFileName(fileName);
+        part.setDisposition(MimeBodyPart.INLINE);
+        part.setContentID("<" + fileName + "@mailapp.test>");
+        return part;
+    }
+
     public static void send(MimeMessage message) throws MessagingException {
         message.saveChanges();
         Transport.send(message);

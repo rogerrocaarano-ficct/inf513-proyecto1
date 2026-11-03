@@ -102,6 +102,39 @@ class MailCommandsTests {
     }
 
     @Test
+    void decodesAnRfc2047FileName() throws Exception {
+        MailTestSupport.sendWithParts(ADMIN, "Eco()", MailTestSupport.attachmentWithDisposition(
+                "attachment; filename=\"=?UTF-8?Q?C=C3=A9dula.pdf?=\"", "application/pdf",
+                "x".getBytes(StandardCharsets.UTF_8)));
+
+        poller.poll();
+
+        assertThat(body(onlyReplyTo(ADMIN))).isEqualTo("args=[] adjuntos=Cédula.pdf:x");
+    }
+
+    @Test
+    void decodesAnRfc2231FileName() throws Exception {
+        MailTestSupport.sendWithParts(ADMIN, "Eco()", MailTestSupport.attachmentWithDisposition(
+                "attachment; filename*=UTF-8''C%C3%A9dula.pdf", "application/pdf",
+                "x".getBytes(StandardCharsets.UTF_8)));
+
+        poller.poll();
+
+        assertThat(body(onlyReplyTo(ADMIN))).isEqualTo("args=[] adjuntos=Cédula.pdf:x");
+    }
+
+    @Test
+    void ignoresInlineParts() throws Exception {
+        MailTestSupport.sendWithParts(ADMIN, "Eco()",
+                MailTestSupport.attachment("carta.pdf", "application/pdf", "c".getBytes(StandardCharsets.UTF_8)),
+                MailTestSupport.inline("logo.png", "image/png", "l".getBytes(StandardCharsets.UTF_8)));
+
+        poller.poll();
+
+        assertThat(body(onlyReplyTo(ADMIN))).isEqualTo("args=[] adjuntos=carta.pdf:c");
+    }
+
+    @Test
     void rejectsAnUnknownSender() throws Exception {
         sendCommand("intruso@mailapp.test", "Ping()");
 

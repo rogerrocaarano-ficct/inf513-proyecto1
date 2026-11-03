@@ -48,6 +48,9 @@ services:
       POLL_INTERVAL: ${POLL_INTERVAL:-30s}
       INITIAL_ADMIN_NAME: ${INITIAL_ADMIN_NAME}
       INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL}
+      FILES_ROOT: /app/data/files
+    volumes:
+      - files:/app/data/files
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,3 +60,4 @@ services:
 
 volumes:
   pgdata:
+  files:

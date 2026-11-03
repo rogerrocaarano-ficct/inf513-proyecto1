@@ -23,7 +23,7 @@ Guarda en el sistema de archivos del servidor los archivos que envían los usuar
 | store(category: String, fileName: String, content: byte[]): String | Escribe el archivo en `<raíz>/<categoría>/<UUID>.<extensión del nombre>` y devuelve esa ruta relativa como clave. Si la transacción en curso se deshace, lo borra | UncheckedIOException: no se pudo escribir; deshace el comando |
 | delete(storageKey: String): void | Borra el archivo después de confirmar la transacción en curso; si se deshace, no lo borra | None: un fallo al borrar se registra en el log |
 
-La raíz se configura con `app.files.root` (variable de entorno `FILES_ROOT`).
+La raíz se configura con `app.files.root` (variable de entorno `FILES_ROOT`, por defecto `./data/files`), que lee `FileStorageProperties` y habilita `StorageConfiguration`. La implementación es `LocalFileStorage`, con `TransactionSynchronization` para borrar al deshacer o después de confirmar.
 
 ## Required Interfaces
 

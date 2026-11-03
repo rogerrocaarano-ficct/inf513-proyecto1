@@ -1,7 +1,7 @@
 package grupo03sc.mailapp.users.domain;
 
 /**
- * Why a user account request is rejected (E1 to E5), with the text that starts the reply.
+ * Why a user account request is rejected (UC-001 E1 to E5, UC-003 E3 and E4), with the text that starts the reply.
  */
 public enum RejectionReason {
     OUT_OF_SCOPE("Fuera de su alcance"),
@@ -12,7 +12,8 @@ public enum RejectionReason {
     LAST_ADMINISTRATOR("El sistema quedaría sin un administrador activo"),
     MISSING_DATA("Faltan datos"),
     INVALID_DATA("Dato inválido"),
-    ACCOUNT_NOT_FOUND("La cuenta de usuario no existe");
+    ACCOUNT_NOT_FOUND("La cuenta de usuario no existe"),
+    INACTIVE_ACCOUNT("La cuenta de usuario está desactivada");
 
     private final String text;
 

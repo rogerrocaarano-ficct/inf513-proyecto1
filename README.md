@@ -43,9 +43,10 @@ Los servicios usan los mismos puertos del host que el stack de pruebas (5432, 10
 
 1. Levantar los servicios y ejecutar `mail-app` como arriba, con `POLL_INTERVAL=5s` para no esperar 30 segundos por cada respuesta.
 2. Ejecutar los archivos en orden, de `01-ping.http` a `07-reactivate-user.http`. Trabajan sobre la cuenta de ejemplo `ana.perez@mailapp.local`. `02-create-user.http` tiene una petición por cada forma de `CrearUsuario`: con los 3 argumentos obligatorios y con los 6.
+   Luego, de `08-open-graduation-process.http` a `10-close-graduation-process.http`, para el trámite de titulación (UC-003): `08` crea la cuenta del secretario(a) `secretaria@mailapp.local`, que envía estos comandos, y abre el trámite del estudiante `juan.soto@mailapp.local` con los cuatro documentos iniciales adjuntos en base64. También muestra los rechazos y que una imagen inline se ignora. `10` explica cómo fijar a mano la calificación final, que todavía no registra ningún caso de uso, antes del cierre.
 3. Ver las respuestas con `mailbox.http`: su primera petición trae los últimos 10 mensajes recibidos por la casilla `@mailbox` y la segunda vacía el buzón. También se ven en `http://localhost:8025`.
 
-Los archivos cubren solo el caso feliz, sobre datos fijos. Al repetir la secuencia, `CrearUsuario` responde que la cuenta ya existe: para empezar de nuevo, borrar los datos con `docker compose -f docker-compose.dev.yml down -v` y volver a levantar los servicios.
+Los archivos de UC-001 cubren solo el caso feliz, sobre datos fijos. Al repetir la secuencia, `CrearUsuario` responde que la cuenta ya existe: para empezar de nuevo, borrar los datos con `docker compose -f docker-compose.dev.yml down -v` y volver a levantar los servicios.
 
 ## Stack de pruebas de desarrollo
 
@@ -71,7 +72,9 @@ El archivo `docker-compose.yml` levanta `mail-app` con PostgreSQL y Mailpit, un 
 
 Para revisar la base de datos, conectarse a `localhost:5432` (`POSTGRES_PORT`) con `DB_NAME`, `DB_USER` y `DB_PASSWORD` de `.env`.
 
-Para detener el stack: `docker compose down` (con `-v` también se borran los datos).
+Los archivos que envían los usuarios (por ejemplo, los documentos iniciales de un trámite) se guardan en el volumen `files`, montado en `/app/data/files` (`FILES_ROOT`, AD-012). Fuera de Docker se guardan en `./data/files`.
+
+Para detener el stack: `docker compose down` (con `-v` también se borran los datos y los archivos).
 
 ## Servidores del docente
 
@@ -85,5 +88,6 @@ Para usar `mail.tecnoweb.org.bo` y `db.tecnoweb.org.bo` (CON-006, CON-007) en lu
 | `POP3_USER`, `POP3_PASSWORD` | El buzón del grupo |
 | `SMTP_HOST`, `SMTP_PORT` | `mail.tecnoweb.org.bo`, `25` |
 | `MAIL_ADDRESS` | La dirección del buzón del grupo |
+| `FILES_ROOT` | Un directorio persistente del servidor para los archivos que envían los usuarios (AD-012) |
 
 El servidor SMTP valida la dirección IP de origen: la IP desde la que corre `mail-app` debe estar en la lista del docente.

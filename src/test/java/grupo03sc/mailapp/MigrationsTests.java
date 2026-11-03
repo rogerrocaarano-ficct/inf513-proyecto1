@@ -29,7 +29,7 @@ class MigrationsTests {
         assertThat(flyway.info().applied())
                 .extracting(MigrationInfo::getVersion)
                 .extracting(Object::toString)
-                .containsExactly("1", "2", "3");
+                .containsExactly("1", "2", "3", "4");
     }
 
     @Test
@@ -52,6 +52,20 @@ class MigrationsTests {
         assertThatThrownBy(() -> jdbc.update("DELETE FROM change_log_entries WHERE id = ?", id))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("append-only");
+    }
+
+    @Test
+    void allowsOnlyOneGraduationProcessInProgressPerStudent() {
+        UUID student = UUID.randomUUID();
+        insertProcess(student, "CLOSED");
+        insertProcess(student, "IN_PROGRESS");
+
+        assertThatThrownBy(() -> insertProcess(student, "IN_PROGRESS")).isInstanceOf(DuplicateKeyException.class);
+    }
+
+    private void insertProcess(UUID student, String status) {
+        jdbc.update("INSERT INTO graduation_processes (id, student_account_id, status, opened_at, closed_at,"
+                + " physical_copies_received_at) VALUES (?, ?, ?, now(), now(), now())", UUID.randomUUID(), student, status);
     }
 
     private void insertAccount(String email) {

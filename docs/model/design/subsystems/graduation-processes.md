@@ -25,9 +25,9 @@ Lleva los trámites de titulación desde la solicitud hasta el archivo del exped
 Tipos que forman parte de la interfaz:
 
 - `ParticipantKind` (enum): `STUDENT`, `TUTOR`, `TRIBUNAL_MEMBER`.
-- `GraduationProcessSummary` (record): `id: UUID`, `studentName: String`.
+- `GraduationProcessSummary` (record): `id: UUID`, `studentAccountId: UUID`. El nombre del estudiante lo resuelve Users, porque GraduationProcesses no depende de Users.
 
-Implementación: UC-003 reemplaza la implementación provisional de UC-001, que no encontraba trámites (D6 de `implementar-uc-001`), por una que busca en `graduation_processes.student_account_id` para `STUDENT` y en `graduation_process_participants` para `TUTOR` y `TRIBUNAL_MEMBER`. La interfaz no cambia.
+Implementación: UC-003 reemplaza la implementación provisional de UC-001, que no encontraba trámites (D6 de `implementar-uc-001`), por `ProcessParticipation`, que busca en `graduation_processes.student_account_id` para `STUDENT` y en `graduation_process_participants` para `TUTOR` y `TRIBUNAL_MEMBER`. Solo cambia el contenido de `GraduationProcessSummary` (D7 de `implementar-uc-003`).
 
 ### StudentAccounts
 
@@ -44,7 +44,7 @@ Puerto que define GraduationProcesses y que implementa Users (`UserStudentAccoun
 Tipos que forman parte de la interfaz:
 
 - `StudentData` (record): `fullName: String`, `email: String`, `studentRegistrationNumber: String`, `idCard: String`, `phone: String`.
-- `StudentAccount` (record): `id: UUID`, `fullName: String`, `email: String`.
+- `StudentAccount` (record): `id: UUID`, `fullName: String`, `email: String`, `created: boolean` (si `obtain` la acaba de crear).
 
 ## Required Interfaces
 
