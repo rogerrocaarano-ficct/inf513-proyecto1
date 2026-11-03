@@ -1,5 +1,19 @@
 # Unassigned: Control Classes
 
+## GestorProyectos
+
+| | |
+| --- | --- |
+| Use cases (derived) | UC-004 |
+| Status | Draft |
+| Iteration | I1 |
+
+**Responsibilities:**
+
+- Coordinar la presentación del perfil de proyecto y la entrega de las versiones del documento del proyecto sobre el trámite de titulación en curso del estudiante (UC-004)
+- Mostrar al estudiante su proyecto de grado (UC-004)
+- Hacer que cada cambio del proyecto de grado quede en el registro de cambios y se avise al docente de Taller de Grado o al tutor (UC-004)
+
 ## GestorTramites
 
 | | |

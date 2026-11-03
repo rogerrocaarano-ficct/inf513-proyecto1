@@ -7,7 +7,7 @@
 | [UC-001](UC-001-gestionar-usuarios/use-case.md) | Gestionar usuarios | ACT-008, ACT-003, ACT-010 | Must | Yes | Detailed | Draft | Draft | I1 |
 | [UC-002](UC-002-gestionar-datos-personales/use-case.md) | Gestionar datos personales | ACT-010 | Must | No | Briefly described | — | — | I1 |
 | [UC-003](UC-003-gestionar-tramite-de-titulacion/use-case.md) | Gestionar trámite de titulación | ACT-002, ACT-001 | Must | Yes | Detailed | Draft | Draft | I1 |
-| [UC-004](UC-004-gestionar-proyecto-de-grado/use-case.md) | Gestionar proyecto de grado | ACT-001 | Must | Yes | Detailed | — | — | I1 |
+| [UC-004](UC-004-gestionar-proyecto-de-grado/use-case.md) | Gestionar proyecto de grado | ACT-001, ACT-005, ACT-006 | Must | Yes | Detailed | Draft | — | I1 |
 | [UC-005](UC-005-gestionar-tribunal-evaluador-y-tutor/use-case.md) | Gestionar tribunal evaluador y tutor | ACT-003 | Must | No | Briefly described | — | — | I1 |
 | [UC-006](UC-006-evaluar-proyecto-de-grado/use-case.md) | Evaluar proyecto de grado | ACT-005, ACT-006, ACT-007 | Must | No | Briefly described | — | — | I1 |
 | [UC-007](UC-007-gestionar-cronograma-de-defensas/use-case.md) | Gestionar cronograma de defensas | ACT-003 | Must | No | Briefly described | — | — | I1 |

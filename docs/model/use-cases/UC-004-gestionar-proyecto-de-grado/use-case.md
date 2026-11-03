@@ -5,7 +5,7 @@
 | Status | Detailed |
 | Iteration | I1 |
 | Primary actor | ACT-001 Estudiante |
-| Supporting actors | None |
+| Supporting actors | ACT-005 Docente de Taller de Grado, ACT-006 Docente Tutor |
 | Priority | Must |
 | Architecturally significant | Yes: recibe los archivos del proyecto de grado, de hasta 25 MB, como adjuntos de correo (NFR-IN-001, CON-004) y conserva el historial de versiones del documento del proyecto |
 | Feature | FEAT-003, FEAT-005 |

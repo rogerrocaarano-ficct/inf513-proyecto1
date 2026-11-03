@@ -10,6 +10,7 @@ Docente designado como tutor del proyecto de grado de un estudiante, que lo guí
 
 ## Goals
 
+- Saber que hay una versión del documento del proyecto para revisar (UC-004)
 - Revisar, observar y aprobar las versiones del documento del proyecto (UC-006)
 
 ## Responsibilities
