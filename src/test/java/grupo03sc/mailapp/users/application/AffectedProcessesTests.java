@@ -25,7 +25,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
- * FR-034 with a double of GraduationParticipation, since graduation processes do not exist yet (D6).
+ * FR-034 with a double of GraduationParticipation, so that a professor can take part in processes
+ * before UC-005 designates them.
  */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -40,7 +41,7 @@ class AffectedProcessesTests {
     @Autowired
     private UserAccountRepository accounts;
 
-    private final GraduationProcessSummary process = new GraduationProcessSummary(UUID.randomUUID(), "Juan Soto");
+    private final UUID processId = UUID.randomUUID();
 
     private UUID admin() {
         return accounts.findByEmail("admin@mailapp.test").orElseThrow().getId();
@@ -51,25 +52,33 @@ class AffectedProcessesTests {
                 Set.of(Role.PROFESSOR)));
     }
 
+    /** A process of a student account named Juan Soto, as GraduationProcesses reports it (D7). */
+    private GraduationProcessSummary process() {
+        UserAccount student = service.createAccount(admin(), new UserAccountData("Juan Soto",
+                "juan-" + UUID.randomUUID() + "@uagrm.edu.bo", Set.of(Role.STUDENT),
+                String.valueOf(Math.abs(UUID.randomUUID().getMostSignificantBits() % 1_000_000_000L)), "1", "2"));
+        return new GraduationProcessSummary(processId, student.getId());
+    }
+
     @Test
     void leavesTheProcessesOfADeactivatedAccountPendingAndReportsThem() {
         UserAccount tutor = professor();
-        when(participation.markPendingReassignment(eq(tutor.getId()), any())).thenReturn(List.of(process));
+        when(participation.markPendingReassignment(eq(tutor.getId()), any())).thenReturn(List.of(process()));
 
         AccountChangeResult result = service.deactivateAccount(admin(), tutor.getEmail());
 
-        assertThat(result.affectedProcesses()).containsExactly(process);
+        assertThat(result.affectedProcesses()).containsExactly(new AffectedProcess(processId, "Juan Soto"));
         verify(participation).markPendingReassignment(tutor.getId(), EnumSet.allOf(ParticipantKind.class));
     }
 
     @Test
     void leavesPendingOnlyTheParticipationOfTheRemovedRoles() {
         UserAccount tutor = professor();
-        when(participation.markPendingReassignment(eq(tutor.getId()), any())).thenReturn(List.of(process));
+        when(participation.markPendingReassignment(eq(tutor.getId()), any())).thenReturn(List.of(process()));
 
         AccountChangeResult result = service.updateRoles(admin(), tutor.getEmail(), Set.of(Role.PROGRAM_SECRETARY));
 
-        assertThat(result.affectedProcesses()).containsExactly(process);
+        assertThat(result.affectedProcesses()).containsExactly(new AffectedProcess(processId, "Juan Soto"));
         verify(participation).markPendingReassignment(tutor.getId(), EnumSet.of(ParticipantKind.TUTOR, ParticipantKind.TRIBUNAL_MEMBER));
     }
 

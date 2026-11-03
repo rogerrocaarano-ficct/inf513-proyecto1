@@ -16,8 +16,9 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 | [user_account_roles](#user_account_roles) | Relationship Unassigned::CuentaUsuario – Unassigned::Rol | Una fila por rol de una cuenta de usuario |
 | [change_log_entries](#change_log_entries) | Unassigned::RegistroCambios | Una fila por dato cambiado |
 | [processed_mail_messages](#processed_mail_messages) | Mecanismo AM-002 (D4 de `esqueleto-mail-app`) | Una fila por correo de comando ya procesado, para no ejecutarlo dos veces |
-| [graduation_processes](#graduation_processes) | Unassigned::TramiteTitulacion | Una fila por trámite de titulación. Parcial: solo las columnas que usa UC-001; UC-003 la completa |
-| [graduation_process_participants](#graduation_process_participants) | Relationship Unassigned::TramiteTitulacion – Unassigned::CuentaUsuario | Una fila por participante de un trámite. Parcial: UC-005 la completa |
+| [graduation_processes](#graduation_processes) | Unassigned::TramiteTitulacion | Una fila por trámite de titulación, que es también su expediente |
+| [graduation_process_participants](#graduation_process_participants) | Relationship Unassigned::TramiteTitulacion – Unassigned::CuentaUsuario | Una fila por docente designado en un trámite. Parcial: UC-005 la completa |
+| [initial_documents](#initial_documents) | Unassigned::DocumentoInicial | Una fila por documento inicial de un trámite; el archivo está en el sistema de archivos (AD-012) |
 
 ## Table Details
 
@@ -111,30 +112,36 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 | Column | Type | Null | Key | Default | Description |
 | --- | --- | --- | --- | --- | --- |
 | id | UUID | No | PK | | Identificador del trámite |
-| status | VARCHAR(20) | No | | 'IN_PROGRESS' | `IN_PROGRESS` o `CLOSED`; UC-003 define el resto de los estados |
+| student_account_id | UUID | No | | | Cuenta de usuario del estudiante (sin FK: GraduationProcesses no depende de Users) |
+| status | VARCHAR(20) | No | | 'IN_PROGRESS' | `IN_PROGRESS` o `CLOSED`; `CLOSED` significa que el expediente está archivado |
+| stage | VARCHAR(30) | No | | 'OPENED' | Constante de `GraduationStage`; UC-003 usa `OPENED` y `FINAL_GRADE_RECORDED`, y los demás casos de uso agregan las suyas |
+| opened_at | TIMESTAMPTZ | No | | | Cuándo se abrió el trámite |
+| closed_at | TIMESTAMPTZ | Yes | | | Cuándo se cerró y se archivó el expediente |
+| physical_copies_received_at | TIMESTAMPTZ | Yes | | | Cuándo se registró la recepción de los dos ejemplares físicos |
 | pending_reassignment | BOOLEAN | No | | false | Falta reasignar a un participante (FR-034) |
 
 **Constraints:**
 
-- None.
+- CHECK (status IN ('IN_PROGRESS', 'CLOSED'))
+- CHECK (status = 'IN_PROGRESS' OR (closed_at IS NOT NULL AND physical_copies_received_at IS NOT NULL))
 
 **Indexes:**
 
 | Index | Columns | Unique | Purpose |
 | --- | --- | --- | --- |
-| None | | | |
+| graduation_processes_student_in_progress_uk | student_account_id, parcial `WHERE status = 'IN_PROGRESS'` | Yes | Un solo trámite en curso por estudiante (UC-003 E4, FR-056) y buscarlo por su cuenta de usuario (UC-003 A2, A3; UC-001 A3, A4) |
 
 ### graduation_process_participants
 
 | Column | Type | Null | Key | Default | Description |
 | --- | --- | --- | --- | --- | --- |
 | graduation_process_id | UUID | No | PK, FK → graduation_processes.id | | Trámite |
-| user_account_id | UUID | No | PK | | Cuenta de usuario del participante (sin FK: GraduationProcesses no depende de Users) |
-| kind | VARCHAR(20) | No | PK | | `STUDENT`, `TUTOR` o `TRIBUNAL_MEMBER` |
+| user_account_id | UUID | No | PK | | Cuenta de usuario del docente (sin FK: GraduationProcesses no depende de Users) |
+| kind | VARCHAR(20) | No | PK | | `TUTOR` o `TRIBUNAL_MEMBER`; el estudiante está en `graduation_processes.student_account_id` |
 
 **Constraints:**
 
-- CHECK (kind IN ('STUDENT', 'TUTOR', 'TRIBUNAL_MEMBER'))
+- CHECK (kind IN ('TUTOR', 'TRIBUNAL_MEMBER'))
 
 **Indexes:**
 
@@ -142,13 +149,40 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 | --- | --- | --- | --- |
 | graduation_process_participants_user_idx | user_account_id, kind | No | Buscar los trámites de una cuenta de usuario (UC-001 A3, A4) |
 
+### initial_documents
+
+| Column | Type | Null | Key | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| id | UUID | No | PK | | Identificador del documento inicial |
+| graduation_process_id | UUID | No | FK → graduation_processes.id | | Trámite al que pertenece |
+| type | VARCHAR(20) | No | | | Constante de `InitialDocumentType` |
+| file_name | VARCHAR(255) | No | | | Nombre original del adjunto |
+| content_type | VARCHAR(100) | No | | | `image/png`, `image/jpeg` o `application/pdf` |
+| size_bytes | INTEGER | No | | | Tamaño del archivo |
+| storage_key | VARCHAR(500) | No | UK | | Ruta relativa del archivo bajo `app.files.root` (AD-012) |
+| uploaded_at | TIMESTAMPTZ | No | | | Cuándo se guardó |
+
+**Constraints:**
+
+- CHECK (type IN ('REQUEST_LETTER', 'CURRICULUM_VITAE', 'ID_CARD_COPY', 'ENROLLMENT_SLIP'))
+- CHECK (content_type IN ('image/png', 'image/jpeg', 'application/pdf'))
+- CHECK (size_bytes BETWEEN 1 AND 1048576) (CON-005)
+
+**Indexes:**
+
+| Index | Columns | Unique | Purpose |
+| --- | --- | --- | --- |
+| initial_documents_process_type_uk | graduation_process_id, type | Yes | Un documento de cada tipo por trámite (UC-003 2, A2.3) |
+| initial_documents_storage_key_uk | storage_key | Yes | Cada archivo pertenece a un solo documento |
+
 ## Relationships
 
 | From | To | Cardinality | On delete | Description |
 | --- | --- | --- | --- | --- |
 | user_account_roles.user_account_id | user_accounts.id | many to one | Cascade | Un rol pertenece a una cuenta de usuario |
 | graduation_process_participants.graduation_process_id | graduation_processes.id | many to one | Cascade | Un participante pertenece a un trámite |
+| initial_documents.graduation_process_id | graduation_processes.id | many to one | Cascade | Un documento inicial pertenece a un trámite; los trámites no se borran |
 
 ## Open Questions
 
-- [ ] change_log_entries.actor_id, graduation_process_participants.user_account_id: no tienen FK a `user_accounts` para mantener los subsistemas desacoplados; ¿se prefiere la integridad de la base de datos (agregar las FK, ya que las cuentas de usuario nunca se borran)? (ask: Equipo de desarrollo)
+- [ ] change_log_entries.actor_id, graduation_processes.student_account_id, graduation_process_participants.user_account_id: no tienen FK a `user_accounts` para mantener los subsistemas desacoplados; ¿se prefiere la integridad de la base de datos (agregar las FK, ya que las cuentas de usuario nunca se borran)? (ask: Equipo de desarrollo)

@@ -39,6 +39,7 @@
 | AccountField | Enumeration | Users | mail-app | Datos que `ModificarUsuario` puede cambiar, con su nombre en español |
 | UserAccountData | Class | Users | mail-app | Record con los datos de una cuenta de usuario recibidos en un comando |
 | AccountChangeResult | Class | Users | mail-app | Record con la cuenta de usuario cambiada y los trámites afectados |
+| AffectedProcess | Class | Users | mail-app | Record con un trámite afectado y el nombre de su estudiante |
 | UserRuleViolationException | Class | Users | mail-app | Rechazo de una solicitud, con su motivo; extiende `CommandRejectedException` |
 | RejectionReason | Enumeration | Users | mail-app | Motivos de rechazo (E1 a E5), con el texto que inicia la respuesta |
 | UserAccountRepository | Interface | Users | mail-app | Puerto de salida de persistencia, implementado por Spring Data JPA |
@@ -52,7 +53,7 @@
 | FieldChange | Class | Audit | mail-app | Record con un dato cambiado |
 | GraduationParticipation | Interface | GraduationProcesses | mail-app | Marca los trámites pendientes de reasignación |
 | ParticipantKind | Enumeration | GraduationProcesses | mail-app | Tipo de participación en un trámite |
-| GraduationProcessSummary | Class | GraduationProcesses | mail-app | Record con un trámite afectado |
+| GraduationProcessSummary | Class | GraduationProcesses | mail-app | Record con un trámite afectado y la cuenta de usuario de su estudiante |
 
 ### Command handlers
 
@@ -77,7 +78,7 @@ Los seis manejadores (`CreateUserCommandHandler`, `ListUsersCommandHandler`, `Vi
 | field | Operation | static field(text: String): AccountField | ~ |
 | summary | Operation | static summary(account: UserAccount): String | ~ |
 | details | Operation | static details(account: UserAccount): String | ~ |
-| withAffectedProcesses | Operation | static withAffectedProcesses(confirmation: String, processes: List<GraduationProcessSummary>): String | ~ |
+| withAffectedProcesses | Operation | static withAffectedProcesses(confirmation: String, processes: List<AffectedProcess>): String | ~ |
 
 ### UserManagementService
 
@@ -99,6 +100,7 @@ Los seis manejadores (`CreateUserCommandHandler`, `ListUsersCommandHandler`, `Vi
 | checkCanAssign | Operation | static checkCanAssign(requester: UserAccount, roles: Set<Role>): void | - |
 | checkNotLastAdministrator | Operation | checkNotLastAdministrator(account: UserAccount): void | - |
 | save | Operation | save(account: UserAccount): UserAccount | - |
+| withStudentNames | Operation | withStudentNames(processes: List<GraduationProcessSummary>): List<AffectedProcess> | - |
 
 ### UserAccount
 
@@ -157,7 +159,14 @@ Los seis manejadores (`CreateUserCommandHandler`, `ListUsersCommandHandler`, `Vi
 | Member | Kind | Type or signature | Visibility |
 | --- | --- | --- | --- |
 | account | Attribute | UserAccount | + |
-| affectedProcesses | Attribute | List<GraduationProcessSummary> | + |
+| affectedProcesses | Attribute | List<AffectedProcess> | + |
+
+### AffectedProcess
+
+| Member | Kind | Type or signature | Visibility |
+| --- | --- | --- | --- |
+| id | Attribute | UUID | + |
+| studentName | Attribute | String | + |
 
 ### UserRuleViolationException
 
@@ -206,7 +215,8 @@ Los seis manejadores (`CreateUserCommandHandler`, `ListUsersCommandHandler`, `Vi
 | UserAccount | AccountField | Dependency | — | From → To |
 | Role | ParticipantKind | Dependency | — | From → To |
 | AccountChangeResult | UserAccount | Association | 1 to 1 | From → To |
-| AccountChangeResult | GraduationProcessSummary | Association | 1 to 0..* | From → To |
+| AccountChangeResult | AffectedProcess | Association | 1 to 0..* | From → To |
+| UserManagementService | GraduationProcessSummary | Dependency | — | From → To |
 | UserRuleViolationException | CommandRejectedException | Generalization | — | From → To |
 | UserRuleViolationException | RejectionReason | Association | 1 to 1 | From → To |
 
@@ -270,7 +280,7 @@ Las filas "envía correo" y "recibe respuesta" resumen ese recorrido.
 | 7 | A3.2 | UserManagementService | UserAccountRepository | existsOtherActiveWithRole(THESIS_WORKSHOP_PROFESSOR, account.getId()) | boolean |
 | 8 | A3.2 | UserManagementService | UserManagementService | checkNotLastAdministrator(account), si se quita el rol de administrador | |
 | 9 | A3.2 | UserManagementService | UserAccountRepository | existsByEmailAndIdNot(value, account.getId()) o existsByStudentRegistrationNumberAndIdNot(value, account.getId()), al cambiar esos datos | boolean |
-| 10 | A3.3 | UserManagementService | GraduationParticipation | markPendingReassignment(account.getId(), participantKinds(oldRoles) − participantKinds(newRoles)) | List<GraduationProcessSummary> |
+| 10 | A3.3 | UserManagementService | GraduationParticipation | markPendingReassignment(account.getId(), participantKinds(oldRoles) − participantKinds(newRoles)), y withStudentNames(processes) con `findById` de cada estudiante | List<GraduationProcessSummary> |
 | 11 | A3.4 | UserManagementService | UserAccount | changeRoles(newRoles) / changeField(field, value) | FieldChange |
 | 12 | A3.4 | UserManagementService | UserAccountRepository | saveAndFlush(account) | UserAccount |
 | 13 | A3.4 | UserManagementService | ChangeLog | record(requesterId, "UserAccount", account.getId(), List.of(change)) | |
@@ -287,7 +297,7 @@ Las filas "envía correo" y "recibe respuesta" resumen ese recorrido.
 | 3 | A4.1 | UserManagementService | UserManagementService | managedAccount(requester, email) | UserAccount |
 | 4 | A4.1 | UserManagementService | UserAccountRepository | existsOtherActiveWithRole(ADMINISTRATOR, account.getId()), si la cuenta es de administrador | boolean |
 | 5 | A4.3 | UserManagementService | UserAccount | deactivate() | FieldChange |
-| 6 | A4.2 | UserManagementService | GraduationParticipation | markPendingReassignment(account.getId(), todos los ParticipantKind) | List<GraduationProcessSummary> |
+| 6 | A4.2 | UserManagementService | GraduationParticipation | markPendingReassignment(account.getId(), todos los ParticipantKind), y withStudentNames(processes) con `findById` de cada estudiante | List<GraduationProcessSummary> |
 | 7 | A4.3 | UserManagementService | UserAccountRepository | saveAndFlush(account) | UserAccount |
 | 8 | A4.3 | UserManagementService | ChangeLog | record(requesterId, "UserAccount", account.getId(), List.of(change)) | |
 | 9 | A4.4 | UserManagementService | Notifier | notify(account.getEmail(), "Cuenta de usuario desactivada", body) | |
@@ -351,7 +361,7 @@ Como la excepción extiende `CommandRejectedException`, Messaging deshace la tra
 - **Combinación de roles (FR-036):** `STUDENT`, `PROGRAM_SECRETARY` y `ADMINISTRATOR` van solos, y `THESIS_WORKSHOP_PROFESSOR` solo se combina con `PROFESSOR`. `PROGRAM_DIRECTOR` puede combinarse con `PROFESSOR`.
 - **Administrador inicial (FR-038):** al iniciar, si no existe una cuenta de usuario activa con `ADMINISTRATOR`, `mail-app` la crea con el nombre y la dirección de correo de la configuración (`application.properties`).
 - **Participación por rol:** `Role.participantKinds()` asocia `STUDENT` con `ParticipantKind.STUDENT`, y `PROFESSOR` con `TUTOR` y `TRIBUNAL_MEMBER`. Los demás roles no participan en trámites. Al cambiar los roles, solo se marcan los tipos de participación que la cuenta de usuario deja de tener.
-- **GraduationProcesses:** mientras no existan los trámites, la implementación de `GraduationParticipation` devuelve una lista vacía (D6 de `implementar-uc-001`).
+- **GraduationProcesses:** desde UC-003, `GraduationParticipation` busca en los trámites reales y devuelve el id de la cuenta de usuario del estudiante de cada trámite; `withStudentNames` resuelve su nombre para la respuesta, que no cambia (D7 de `implementar-uc-003`).
 
 ## Open Questions
 

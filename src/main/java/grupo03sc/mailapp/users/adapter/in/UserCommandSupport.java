@@ -1,6 +1,6 @@
 package grupo03sc.mailapp.users.adapter.in;
 
-import grupo03sc.mailapp.graduationprocesses.application.GraduationProcessSummary;
+import grupo03sc.mailapp.users.application.AffectedProcess;
 import grupo03sc.mailapp.users.domain.AccountField;
 import grupo03sc.mailapp.users.domain.RejectionReason;
 import grupo03sc.mailapp.users.domain.Role;
@@ -119,7 +119,7 @@ final class UserCommandSupport {
     /**
      * Confirmation followed, when there are any, by the processes left pending reassignment (FR-034).
      */
-    static String withAffectedProcesses(String confirmation, List<GraduationProcessSummary> processes) {
+    static String withAffectedProcesses(String confirmation, List<AffectedProcess> processes) {
         if (processes.isEmpty()) {
             return confirmation;
         }

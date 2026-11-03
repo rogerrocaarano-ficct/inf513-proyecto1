@@ -20,12 +20,13 @@
 | AD-009 | La segunda entrega reemplaza `mail-app` por una aplicación web con backend en Laravel y frontend en React | Lo exige la restricción del proyecto; sus aplicaciones y estilos se definen cuando empiece esa entrega. Esa versión vive en otro repositorio: este es exclusivo de la versión Java, y su raíz es el proyecto Gradle de `mail-app` | — | CON-002 | Proposed |
 | AD-010 | Las claves primarias son UUID versión 7 (ordenados por tiempo), generados por la aplicación con `@UuidGenerator(style = VERSION_7)` de Hibernate; las tablas se nombran en plural y en `snake_case` | Los UUID no revelan cuántos registros hay y pueden generarse antes de guardar; la versión 7 mantiene el orden de inserción y evita la fragmentación de índices que causan los UUID aleatorios | `BIGINT` con identidad: más compacto, pero secuencial y expuesto; UUID versión 4: aleatorio, fragmenta los índices | CON-007 | Accepted |
 | AD-011 | Las migraciones de la base de datos se escriben en SQL y las aplica Flyway al arrancar `mail-app` | Es la opción habitual en Spring Boot y las migraciones quedan como SQL legible y revisable; el motor es siempre PostgreSQL | Liquibase: changelogs en XML o YAML, útil para varios motores o para deshacer migraciones, que el proyecto no necesita | CON-007 | Accepted |
+| AD-012 | Los archivos que envían los usuarios se guardan en el sistema de archivos del servidor de `mail-app`, bajo la raíz `app.files.root`, a través del subsistema Storage; la base de datos guarda solo su clave, nombre original, tipo de contenido y tamaño. Un archivo nuevo se borra si la transacción del comando se deshace, y uno reemplazado se borra después de confirmar | Mantiene liviana la base del docente (CON-007) frente a archivos de hasta 25 MB (CON-004), elegido por el equipo | `BYTEA` en PostgreSQL: transaccional y con un solo respaldo, como la foto de perfil, pero agranda la base compartida | CON-004, CON-005, CON-007 | Accepted |
 
 ## Applications
 
 | Application | Kind | Architectural style | Technical layers | Subsystem parts it holds | Decision |
 | --- | --- | --- | --- | --- | --- |
-| mail-app | Backend | Hexagonal (puertos y adaptadores) | Adaptadores de entrada (sondeo POP3, analizador y registro de comandos, autorización por remitente); Aplicación (servicios de casos de uso y puertos); Dominio (entidades y reglas); Adaptadores de salida (persistencia JPA, envío SMTP) | Todo Users, GraduationProcesses, Audit y Messaging | AD-001, AD-002 |
+| mail-app | Backend | Hexagonal (puertos y adaptadores) | Adaptadores de entrada (sondeo POP3, analizador y registro de comandos, autorización por remitente); Aplicación (servicios de casos de uso y puertos); Dominio (entidades y reglas); Adaptadores de salida (persistencia JPA, envío SMTP, archivos en disco) | Todo Users, GraduationProcesses, Audit, Messaging y Storage | AD-001, AD-002 |
 
 ## Design Mechanisms
 
@@ -34,6 +35,7 @@
 | AM-001 Security | Messaging identifica al remitente con el puerto `SenderAuthenticator` (implementado por Users) y autoriza con los roles que declara cada `CommandHandler`, antes de ejecutar el comando; la participación en el trámite la verifica la capa de aplicación de cada caso de uso | Propia, sin framework de seguridad | AD-007 |
 | AM-002 Distribution | Sondeo del buzón, interpretación del comando del asunto y respuesta o notificación por correo, en el subsistema Messaging | Jakarta Mail (POP3), Spring `JavaMailSender` (SMTP), `@Scheduled` | AD-005, AD-006 |
 | AM-003 Audit | Servicio de registro de cambios del subsistema Audit, llamado por cada caso de uso dentro de la misma transacción; un trigger impide modificar o borrar entradas | Spring Data JPA sobre PostgreSQL | AD-008 |
+| AM-004 Persistence | Puerto `FileStorage` del subsistema Storage: escribe cada archivo en `<raíz>/<categoría>/<UUID>.<extensión>` y devuelve la clave que guarda el subsistema de negocio; borra los archivos nuevos si la transacción se deshace y los reemplazados después de confirmar | `java.nio.file`, `TransactionSynchronization` de Spring | AD-012 |
 
 ## Architecture Views
 

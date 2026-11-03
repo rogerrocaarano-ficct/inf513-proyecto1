@@ -1,0 +1,34 @@
+# CerrarTramite(registro): registers the two physical copies, closes the process and archives its record (UC-003 A3)
+# Closing needs the final grade, which UC-006 will register. Until then, set it by hand before the last request,
+# from the repository root:
+#   docker compose exec postgres psql -U mailapp -d mailapp -c "UPDATE graduation_processes SET stage = 'FINAL_GRADE_RECORDED' WHERE status = 'IN_PROGRESS' AND student_account_id = (SELECT id FROM user_accounts WHERE student_registration_number = '2026101')"
+# With docker-compose.dev.yml, add -f docker-compose.dev.yml after "docker compose". Use DB_USER and DB_NAME of .env.
+# Sends the commands to mail-app through the Mailpit API. The replies arrive after the next poll: see mailbox.http.
+@baseUrl = http://localhost:8025
+@systemAddress = sistema@mailapp.local
+@adminAddress = admin@mailapp.local
+@secretaryAddress = secretaria@mailapp.local
+@studentAddress = juan.soto@mailapp.local
+@registration = 2026101
+
+### Rejected: the process does not have the final grade yet
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{secretaryAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "CerrarTramite({{registration}})",
+  "Text": ""
+}
+
+### Close the process, after setting the final grade with the psql command above
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{secretaryAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "CerrarTramite({{registration}})",
+  "Text": ""
+}

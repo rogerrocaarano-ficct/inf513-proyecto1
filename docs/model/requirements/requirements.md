@@ -12,6 +12,7 @@
 | SRC-006 | Detalle del caso de uso Revisar documento del proyecto, anterior a SRC-007, acordado con el equipo de desarrollo | Workshop | 2026-10-26 |
 | SRC-007 | Reestructuración de los casos de uso acordada con el equipo de desarrollo ([docs/sources/2026-10-06.md](../../sources/2026-10-06.md)) | Workshop | 2026-10-27 |
 | SRC-008 | Detalle del caso de uso Gestionar usuarios acordado con el equipo de desarrollo | Workshop | 2026-10-27 |
+| SRC-009 | Detalle del caso de uso Gestionar trámite de titulación acordado con el equipo de desarrollo | Workshop | 2026-11-03 |
 
 ## Functional Requirements
 
@@ -70,6 +71,9 @@
 | FR-051 | El sistema debe crear la cuenta de usuario del estudiante cuando el secretario(a) de dirección de carrera abre su trámite de titulación, una vez verificados sus documentos iniciales | UC-003 Gestionar trámite de titulación | Must | SRC-007 | Candidate |
 | FR-052 | El sistema debe mostrar el registro de cambios al administrador, al director de carrera y al secretario(a) de dirección de carrera, a cada uno dentro de su alcance | UC-009 Consultar registro de cambios | Must | SRC-007 | Candidate |
 | FR-053 | El sistema debe permitir que solo el administrador asigne o quite los roles de director de carrera y de administrador, y gestione las cuentas de usuario que los tienen | UC-001 Gestionar usuarios | Must | SRC-008 | Candidate |
+| FR-054 | El sistema debe notificar al estudiante por correo la apertura y el cierre de su trámite de titulación | UC-003 Gestionar trámite de titulación | Must | SRC-009 | Candidate |
+| FR-055 | El sistema debe permitir que el secretario(a) de dirección de carrera reemplace un documento inicial de un trámite de titulación en curso | UC-003 Gestionar trámite de titulación | Must | SRC-009 | Candidate |
+| FR-056 | El sistema debe abrir el trámite de titulación sobre la cuenta de usuario existente del estudiante, y rechazar la apertura si esa cuenta está desactivada o ya tiene un trámite de titulación en curso | UC-003 Gestionar trámite de titulación | Must | SRC-009 | Candidate |
 
 ### Notes
 
@@ -85,6 +89,9 @@
   - El director de carrera fija las fechas de la predefensa y la defensa final (FR-012, FR-015), como dice SRC-001.
   - El tutor revisa y aprueba el documento junto al tribunal (FR-009, FR-011), como dice SRC-001.
 - FR-002: SRC-001 incluye la carta de solicitud entre los documentos iniciales; RF02 la omitía. El estudiante entrega los documentos iniciales en la oficina; el secretario(a) verifica que la carpeta esté completa, abre el trámite de titulación y crea la cuenta de usuario del estudiante (FR-051, SRC-007).
+- FR-002, FR-055: el secretario(a) digitaliza los documentos iniciales y los adjunta al abrir el trámite; el sistema los guarda en el expediente de titulación y solo admite reemplazarlos mientras el trámite está en curso (SRC-009).
+- FR-051, FR-056: los datos del estudiante que registra el secretario(a) son los de su cuenta de usuario (FR-026); el trámite no agrega datos propios. Si la dirección de correo y el registro universitario ya pertenecen a una misma cuenta de usuario activa de estudiante, el trámite se abre sobre ella sin crear otra. La cuenta nueva se crea con las mismas reglas y el mismo aviso por correo que en UC-001 (FR-033, FR-035), pero sin el alcance de FR-050 y FR-053: la autoriza la apertura del trámite (SRC-009).
+- FR-017, FR-018: la recepción de los dos ejemplares físicos se registra en una sola solicitud, solo después de la calificación final (FR-016), y en el mismo paso el sistema cierra el trámite y archiva el expediente de titulación. La cuenta de usuario del estudiante sigue activa, para que pueda consultar su trámite archivado (UC-008) (SRC-009).
 - FR-003: el tutor se asigna después del visto bueno del perfil, junto con el tribunal (paso 5 de SRC-001).
 - FR-011: el documento queda apto para la predefensa solo cuando lo aprueban los tres miembros del tribunal y el tutor.
 - SRC-007: los casos de uso se reestructuraron el 2026-10-27, numerados de nuevo desde UC-001. El detalle acordado en SRC-004, SRC-005 y SRC-006 corresponde a casos de uso anteriores y se vuelve a detallar en los nuevos.
@@ -109,7 +116,7 @@
 
 | ID | Requirement | Fit criterion | Scope | Priority | Source |
 | --- | --- | --- | --- | --- | --- |
-| NFR-IN-001 (A) | El sistema recibe las solicitudes de los usuarios y les envía respuestas y notificaciones por correo electrónico. Cada solicitud es un comando que el usuario escribe en el asunto del correo con la forma de una llamada a función, `Comando(arg1; arg2; …)`, con los argumentos separados por punto y coma. Los archivos se envían como adjuntos del correo y el comando los nombra por su nombre de archivo como argumento. El sistema identifica al usuario por la dirección de correo del remitente | TBD | Global | Must | SRC-003 |
+| NFR-IN-001 (A) | El sistema recibe las solicitudes de los usuarios y les envía respuestas y notificaciones por correo electrónico. Cada solicitud es un comando que el usuario escribe en el asunto del correo con la forma de una llamada a función, `Comando(arg1; arg2; …)`, con los argumentos separados por punto y coma. Los archivos se envían como adjuntos del correo, sin nombrarlos en el comando: el sistema reconoce qué documento es cada adjunto por una palabra de su nombre de archivo. El sistema identifica al usuario por la dirección de correo del remitente | TBD | Global | Must | SRC-003, SRC-009 |
 
 ### Constraints
 
@@ -130,7 +137,7 @@
 
 ## Open Questions
 
-- [ ] FR-002, CON-005: con el trámite abierto por el secretario(a), ¿los documentos iniciales se digitalizan y suben al sistema, o solo se registra su recepción? (ask: Secretario(a) de dirección de carrera)
+- [x] FR-002, CON-005: con el trámite abierto por el secretario(a), ¿los documentos iniciales se digitalizan y suben al sistema, o solo se registra su recepción? Respuesta: el secretario(a) los digitaliza y los adjunta al abrir el trámite; el sistema los guarda en el expediente de titulación (SRC-009).
 - [ ] FR-034: un trámite queda pendiente de reasignación cuando se desactiva la cuenta de su tutor o de un miembro del tribunal; ¿UC-005 debe permitir reasignarlos? ¿Qué pasa con el trámite de un estudiante desactivado? (ask: Secretario(a) de dirección de carrera)
 - [ ] CON-003: ¿cuáles son las fechas de la primera y la segunda entrega? (ask: Docente de Tecnología Web)
 - [ ] NFR-US-001, NFR-SE-001, NFR-SE-002, NFR-IN-001: criterios de aceptación medibles (ask: Docente de Tecnología Web)
@@ -147,7 +154,7 @@
 - [x] CON-004: ¿el perfil de proyecto (UC-004) también se entrega en PDF y con qué tamaño máximo? Respuesta: sí, en PDF, con el mismo máximo de 25 MB.
 - [x] NFR-IN-001: ¿con qué formato escribe el usuario sus solicitudes por correo? Respuesta: como un comando en el asunto del correo, con la forma de una llamada a función: `Comando(args[])`.
 - [x] NFR-IN-001: ¿cómo se separan los argumentos del comando y cómo se escriben los que contienen espacios o comas? Respuesta: se separan con punto y coma.
-- [x] NFR-IN-001: ¿los archivos (documentos iniciales, perfil, documento del proyecto) se envían como adjuntos del correo? Respuesta: sí, como adjuntos; el comando recibe el nombre del archivo como argumento.
+- [x] NFR-IN-001: ¿los archivos (documentos iniciales, perfil, documento del proyecto) se envían como adjuntos del correo? Respuesta: sí, como adjuntos; el comando recibe el nombre del archivo como argumento. Reemplazada en SRC-009: el sistema reconoce cada adjunto por una palabra de su nombre de archivo, y el comando no lo nombra.
 - [x] NFR-IN-001, NFR-SE-001: ¿cómo identifica el sistema al usuario que envía un correo (solo por su dirección de correo u otro mecanismo)? Respuesta: por su dirección de correo.
 - [x] CON-006: el SMTP valida al remitente por su dirección IP; ¿desde qué servidor o dirección IP debe ejecutarse el sistema para poder enviar correos? Respuesta: para las pruebas, el equipo pide al docente que agregue su dirección IP pública a la lista de direcciones permitidas; la presentación se hace desde la dirección IP del laboratorio. Como contingencia, el equipo tendrá su propio servidor de despliegue.
 - [x] CON-006: si se usa el servidor de despliegue de contingencia, ¿el docente también agrega su dirección IP a la lista de direcciones permitidas del SMTP? Respuesta: sí, su dirección IP se incluye en el pedido al docente.

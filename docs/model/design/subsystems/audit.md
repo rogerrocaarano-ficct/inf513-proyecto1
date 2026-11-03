@@ -15,8 +15,8 @@ Guarda el registro de cambios de todo el sistema (AD-008). Es general: guarda el
 
 ### ChangeLog
 
-- **Used by (derived):** Users
-- **Use cases (derived):** UC-001
+- **Used by (derived):** GraduationProcesses, Users
+- **Use cases (derived):** UC-001, UC-003
 
 | Operation | Description | Errors |
 | --- | --- | --- |

@@ -23,6 +23,8 @@ public interface UserAccountRepository extends Repository<UserAccount, UUID> {
 
     Optional<UserAccount> findByEmail(String email);
 
+    Optional<UserAccount> findByStudentRegistrationNumber(String number);
+
     List<UserAccount> findAllByOrderByFullNameAsc();
 
     boolean existsByEmail(String email);

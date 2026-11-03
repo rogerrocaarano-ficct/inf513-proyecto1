@@ -15,8 +15,8 @@ Sondea el buzón POP3, interpreta el comando del asunto, identifica y autoriza a
 
 ### CommandRegistry
 
-- **Used by (derived):** Users
-- **Use cases (derived):** UC-001
+- **Used by (derived):** GraduationProcesses, Users
+- **Use cases (derived):** UC-001, UC-003
 
 | Operation | Description | Errors |
 | --- | --- | --- |
@@ -30,7 +30,7 @@ Tipos que forman parte de la interfaz:
   - `allowedRoles(): Set<String>`: los roles que pueden ejecutarlo; vacío significa cualquier cuenta de usuario activa.
   - `handle(command: MailCommand, sender: Sender): CommandReply`: se ejecuta dentro de la transacción del comando. Para rechazar el comando lanza `CommandRejectedException`: la transacción se deshace y el remitente recibe el mensaje de la excepción. Cualquier otra excepción también la deshace, y el remitente recibe un mensaje de error genérico.
 - `MailCommand` (record): `name: String`, `arguments: List<String>`, `senderEmail: String`, `attachments: List<MailAttachment>`.
-- `MailAttachment` (record): `fileName: String`, `contentType: String`, `content: byte[]`.
+- `MailAttachment` (record): `fileName: String`, `contentType: String`, `content: byte[]`. Solo se entregan las partes del correo con `Content-Disposition: attachment`; las partes inline (imágenes de una firma o pegadas en el cuerpo) se ignoran. `fileName` llega decodificado, tanto en RFC 2231 como en RFC 2047, y `contentType` sin parámetros. El comando reconoce los adjuntos por su nombre, sin que un argumento los nombre (NFR-IN-001).
 - `CommandReply` (record): `body: String`. Messaging lo envía al remitente con el asunto `Re: <asunto original>`.
 - `CommandRejectedException` (excepción): `message: String`, el motivo del rechazo que recibe el remitente.
 - `Sender` (record): `accountId: UUID`, `email: String`, `roles: Set<String>`.
@@ -40,7 +40,7 @@ Tipos que forman parte de la interfaz:
 Puerto que define Messaging y que implementa Users (D5 de `esqueleto-mail-app`).
 
 - **Used by (derived):** None: lo llama Messaging y lo implementa Users
-- **Use cases (derived):** UC-001
+- **Use cases (derived):** UC-001, UC-003
 
 | Operation | Description | Errors |
 | --- | --- | --- |
@@ -48,8 +48,8 @@ Puerto que define Messaging y que implementa Users (D5 de `esqueleto-mail-app`).
 
 ### Notifier
 
-- **Used by (derived):** Users
-- **Use cases (derived):** UC-001
+- **Used by (derived):** GraduationProcesses, Users
+- **Use cases (derived):** UC-001, UC-003
 
 | Operation | Description | Errors |
 | --- | --- | --- |

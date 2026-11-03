@@ -4,7 +4,7 @@
 
 | ID | Actor | Type | Kind | Description | Use cases (derived) |
 | --- | --- | --- | --- | --- | --- |
-| [ACT-001](ACT-001-estudiante.md) | Estudiante | Primary | Human | Postulante que realiza el trámite de titulación por Proyecto de Grado. | UC-004, UC-008 |
+| [ACT-001](ACT-001-estudiante.md) | Estudiante | Primary | Human | Postulante que realiza el trámite de titulación por Proyecto de Grado. | UC-003, UC-004, UC-008 |
 | [ACT-002](ACT-002-secretario-de-direccion-de-carrera.md) | Secretario(a) de dirección de carrera | Primary | Human | Personal de la Dirección de Carrera que recibe los documentos del trámite y lleva el expediente. | UC-003, UC-008, UC-009 |
 | [ACT-003](ACT-003-director-de-carrera.md) | Director de carrera | Primary | Human | Autoridad de la carrera, y también docente, que designa tutores y tribunales y programa las defensas. | UC-001, UC-005, UC-007, UC-009, UC-010 |
 | [ACT-004](ACT-004-docente.md) | Docente | Primary | Human | Actor abstracto: docente de la carrera que participa en trámites de titulación como docente de Taller de Grado, tutor o miembro del tribunal. | UC-008 |
@@ -18,7 +18,7 @@
 
 | Child actor | Parent actor | Additional use cases of the child |
 | --- | --- | --- |
-| ACT-001 Estudiante | ACT-010 Usuario | UC-004 Gestionar proyecto de grado, UC-008 Consultar trámite de titulación |
+| ACT-001 Estudiante | ACT-010 Usuario | UC-003 Gestionar trámite de titulación, UC-004 Gestionar proyecto de grado, UC-008 Consultar trámite de titulación |
 | ACT-002 Secretario(a) de dirección de carrera | ACT-010 Usuario | UC-003 Gestionar trámite de titulación, UC-008 Consultar trámite de titulación, UC-009 Consultar registro de cambios |
 | ACT-004 Docente | ACT-010 Usuario | UC-008 Consultar trámite de titulación |
 | ACT-008 Administrador | ACT-010 Usuario | UC-001 Gestionar usuarios, UC-009 Consultar registro de cambios |
