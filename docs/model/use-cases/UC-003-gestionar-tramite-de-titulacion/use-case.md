@@ -7,7 +7,7 @@
 | Primary actor | ACT-002 Secretario(a) de dirección de carrera |
 | Supporting actors | None |
 | Priority | Must |
-| Architecturally significant | No: registro de datos y documentos del trámite |
+| Architecturally significant | Yes: crea el trámite de titulación, la entidad central del subsistema GraduationProcesses de la que dependen los demás casos de uso; cruza al subsistema Users para crear la cuenta del estudiante (FR-051), y recibe y guarda los documentos iniciales como adjuntos de correo (CON-005) |
 | Feature | FEAT-002, FEAT-006 |
 | Functional requirements (derived) | FR-001, FR-002, FR-017, FR-018, FR-051 |
 
