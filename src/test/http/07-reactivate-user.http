@@ -1,0 +1,16 @@
+# ReactivarUsuario(correo): reactivates a user account (UC-001)
+# Sends the command to mail-app through the Mailpit API. The reply arrives after the next poll: see mailbox.http.
+@baseUrl = http://localhost:8025
+@systemAddress = sistema@mailapp.local
+@adminAddress = admin@mailapp.local
+
+### Send the command
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{adminAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "ReactivarUsuario(ana.perez@mailapp.local)",
+  "Text": ""
+}
