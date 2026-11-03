@@ -11,6 +11,7 @@
 | --- | --- |
 | [UC-001](../../use-cases/UC-001-gestionar-usuarios/use-case.md) | Las cuentas de usuario con sus roles, las reglas de alcance y de combinación de roles, el registro de cambios y las notificaciones de cuenta |
 | [UC-003](../../use-cases/UC-003-gestionar-tramite-de-titulacion/use-case.md) | El trámite de titulación con su expediente y sus documentos iniciales, la cuenta de usuario del estudiante, el registro de cambios y los avisos de apertura y cierre |
+| [UC-004](../../use-cases/UC-004-gestionar-proyecto-de-grado/use-case.md) | El proyecto de grado con sus perfiles de proyecto y versiones del documento del proyecto, las reglas para admitirlos, el registro de cambios y los avisos al docente de Taller de Grado y al tutor |
 
 ## Responsibility
 

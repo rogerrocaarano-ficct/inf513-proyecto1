@@ -23,4 +23,9 @@ public interface GraduationProcessRepository extends Repository<GraduationProces
             + "select 1 from graduation_process_participants p where p.graduation_process_id = g.id"
             + " and p.user_account_id = :accountId and p.kind in (:kinds))", nativeQuery = true)
     List<GraduationProcess> findInProgressByParticipant(UUID accountId, Collection<String> kinds);
+
+    /** The user accounts designated in the process with the kind, e.g. TUTOR (UC-004; UC-005 fills them). */
+    @Query(value = "select p.user_account_id from graduation_process_participants p"
+            + " where p.graduation_process_id = :graduationProcessId and p.kind = :kind", nativeQuery = true)
+    List<UUID> findParticipantIds(UUID graduationProcessId, String kind);
 }

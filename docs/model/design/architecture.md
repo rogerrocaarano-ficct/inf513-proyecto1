@@ -34,7 +34,7 @@
 | --- | --- | --- | --- |
 | AM-001 Security | Messaging identifica al remitente con el puerto `SenderAuthenticator` (implementado por Users) y autoriza con los roles que declara cada `CommandHandler`, antes de ejecutar el comando; la participación en el trámite la verifica la capa de aplicación de cada caso de uso | Propia, sin framework de seguridad | AD-007 |
 | AM-002 Distribution | Sondeo del buzón, interpretación del comando del asunto y respuesta o notificación por correo, en el subsistema Messaging | Jakarta Mail (POP3), Spring `JavaMailSender` (SMTP), `@Scheduled` | AD-005, AD-006 |
-| AM-003 Audit | Servicio de registro de cambios del subsistema Audit, llamado por cada caso de uso dentro de la misma transacción; un trigger impide modificar o borrar entradas | Spring Data JPA sobre PostgreSQL | AD-008 |
+| AM-003 Audit | Servicio de registro de cambios del subsistema Audit, llamado por cada caso de uso dentro de la misma transacción, que también devuelve el historial de un registro (UC-004); un trigger impide modificar o borrar entradas | Spring Data JPA sobre PostgreSQL | AD-008 |
 | AM-004 Persistence | Puerto `FileStorage` del subsistema Storage: escribe cada archivo en `<raíz>/<categoría>/<UUID>.<extensión>` y devuelve la clave que guarda el subsistema de negocio; borra los archivos nuevos si la transacción se deshace y los reemplazados después de confirmar | `java.nio.file`, `TransactionSynchronization` de Spring | AD-012 |
 
 ## Architecture Views

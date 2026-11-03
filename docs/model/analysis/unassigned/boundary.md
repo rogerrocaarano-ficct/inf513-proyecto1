@@ -1,5 +1,26 @@
 # Unassigned: Boundary Classes
 
+## GestionProyectoUI
+
+| | |
+| --- | --- |
+| Actor | ACT-001 Estudiante |
+| Use cases (derived) | UC-004 |
+| Status | Draft |
+| Iteration | I1 |
+
+**Responsibilities:**
+
+- Recibir las solicitudes para presentar un perfil de proyecto, entregar una versión del documento del proyecto y consultar el proyecto de grado (UC-004)
+- Devolver al estudiante el resultado, su proyecto de grado y los motivos de rechazo (UC-004)
+
+**Information exchanged:**
+
+| Direction | Information |
+| --- | --- |
+| In | Perfil de proyecto en PDF con el título del proyecto, documento del proyecto en PDF con un comentario general, solicitud de consulta |
+| Out | Confirmaciones con el número de la versión, título del proyecto, perfiles de proyecto y versiones del documento del proyecto con su estado, motivos de rechazo |
+
 ## GestionTramiteUI
 
 | | |
@@ -47,7 +68,7 @@
 | | |
 | --- | --- |
 | Actor | ACT-010 Usuario |
-| Use cases (derived) | UC-001, UC-003 |
+| Use cases (derived) | UC-001, UC-003, UC-004 |
 | Status | Draft |
 | Iteration | I1 |
 
@@ -55,9 +76,10 @@
 
 - Avisar por correo al usuario de la creación, desactivación y reactivación de su cuenta de usuario y de los cambios de sus roles (UC-001, UC-003)
 - Avisar por correo al estudiante de la apertura y el cierre de su trámite de titulación (UC-003)
+- Avisar por correo al docente de Taller de Grado de cada perfil de proyecto presentado, y al tutor de cada versión del documento del proyecto entregada (UC-004)
 
 **Information exchanged:**
 
 | Direction | Information |
 | --- | --- |
-| Out | Tipo de cambio, roles de la cuenta de usuario, apertura o cierre del trámite de titulación |
+| Out | Tipo de cambio, roles de la cuenta de usuario, apertura o cierre del trámite de titulación, perfil de proyecto o versión del documento del proyecto para revisar |

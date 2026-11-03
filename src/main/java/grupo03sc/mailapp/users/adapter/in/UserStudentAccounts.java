@@ -4,6 +4,7 @@ import grupo03sc.mailapp.graduationprocesses.application.StudentAccount;
 import grupo03sc.mailapp.graduationprocesses.application.StudentAccounts;
 import grupo03sc.mailapp.graduationprocesses.application.StudentData;
 import grupo03sc.mailapp.users.application.StudentAccountResult;
+import grupo03sc.mailapp.users.application.UserAccountRepository;
 import grupo03sc.mailapp.users.application.UserManagementService;
 import grupo03sc.mailapp.users.domain.Role;
 import grupo03sc.mailapp.users.domain.UserAccount;
@@ -21,9 +22,11 @@ import org.springframework.stereotype.Component;
 class UserStudentAccounts implements StudentAccounts {
 
     private final UserManagementService service;
+    private final UserAccountRepository accounts;
 
-    UserStudentAccounts(UserManagementService service) {
+    UserStudentAccounts(UserManagementService service, UserAccountRepository accounts) {
         this.service = service;
+        this.accounts = accounts;
     }
 
     @Override
@@ -37,6 +40,12 @@ class UserStudentAccounts implements StudentAccounts {
     @Override
     public Optional<StudentAccount> findByRegistrationNumber(String studentRegistrationNumber) {
         return service.findStudentAccount(studentRegistrationNumber).map(account -> toStudentAccount(account, false));
+    }
+
+    @Override
+    public Optional<StudentAccount> findById(UUID userAccountId) {
+        return accounts.findById(userAccountId).filter(account -> account.hasRole(Role.STUDENT))
+                .map(account -> toStudentAccount(account, false));
     }
 
     private static StudentAccount toStudentAccount(UserAccount account, boolean created) {

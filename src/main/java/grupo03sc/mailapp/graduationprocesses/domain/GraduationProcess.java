@@ -108,6 +108,11 @@ public class GraduationProcess {
                 FieldChange.created("closedAt", now));
     }
 
+    /** Whether the pre-defense is approved: the stage is PREDEFENSE_APPROVED or a later one (UC-004). */
+    public boolean isPredefenseApproved() {
+        return stage.compareTo(GraduationStage.PREDEFENSE_APPROVED) >= 0;
+    }
+
     /** Leaves the process pending reassignment of a participant (FR-034). */
     public void markPendingReassignment() {
         pendingReassignment = true;

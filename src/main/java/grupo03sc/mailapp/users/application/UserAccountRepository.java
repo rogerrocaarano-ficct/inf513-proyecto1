@@ -42,4 +42,9 @@ public interface UserAccountRepository extends Repository<UserAccount, UUID> {
     @Query("select count(a) > 0 from UserAccount a join a.roles r"
             + " where r = :role and a.status = grupo03sc.mailapp.users.domain.AccountStatus.ACTIVE and a.id <> :excludedId")
     boolean existsOtherActiveWithRole(Role role, UUID excludedId);
+
+    /** The active accounts with the role (UC-004: the thesis workshop professor, at most one by FR-039). */
+    @Query("select a from UserAccount a join a.roles r"
+            + " where r = :role and a.status = grupo03sc.mailapp.users.domain.AccountStatus.ACTIVE")
+    List<UserAccount> findActiveWithRole(Role role);
 }
