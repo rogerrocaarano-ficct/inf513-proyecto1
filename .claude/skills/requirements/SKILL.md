@@ -165,10 +165,10 @@ Only when the user runs this skill with a use-case ID.
      use-case detail it expects (`docs/model/use-cases/AGENTS.md`), and which
      ones hold. The vision needs the stakeholders' acceptance in its Approval
      table.
-   - In Inception, the risk list (`docs/model/management/risks.md`): whether
-     it exists and has a strategy for each risk. Also what the phase expects
-     but this model has no template for yet: estimates and project plan. Do
-     not create files for them unless the user asks.
+   - In Inception, the management artifacts in `docs/model/management/`:
+     whether the risk list (`risks.md`) has a strategy for each risk, and
+     whether the plan (`plan.md`) has estimates and a credible Elaboration
+     plan. Do not create them unless the user asks.
    - Next steps:
      - Use cases to detail with `/requirements UC-xxx`: first the
        architecturally significant ones, then by priority. The user chooses.

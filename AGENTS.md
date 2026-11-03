@@ -10,7 +10,7 @@ a whole. Read it first, then the `AGENTS.md` of the folder you work in.
 | Path | Content |
 | --- | --- |
 | `docs/usdp-guide.md` | The process: phases, workflows, artifacts and exit criteria |
-| `docs/model/` | The models of the project, as text: requirements, use cases, analysis and design, and the management artifacts (risk list). Its `AGENTS.md` holds the rules common to all of them |
+| `docs/model/` | The models of the project, as text: requirements, use cases, analysis and design, and the management artifacts (risk list, project plan). Its `AGENTS.md` holds the rules common to all of them |
 | `.claude/skills/` | Claude Code commands for the process: `/requirements [UC-xxx]`, `/analysis UC-xxx`, `/design UC-xxx`. They only order the steps; the rules stay in the `AGENTS.md` files |
 | `openspec/` | OpenSpec changes and specs that guide the implementation workflow |
 | `build.gradle.kts`, `src/`, `Dockerfile` | The `mail-app` application (see `README.md`) |
@@ -77,7 +77,7 @@ still a placeholder, ask the user for it before writing anything it covers.
   (e.g. `UC-001-register-sale`).
 - **Shared work** covers everything that is not part of one use case: model
   artifacts (vision, requirements, glossary, analysis packages and
-  mechanisms, architecture, subsystems, deployment, database, risk list),
+  mechanisms, architecture, subsystems, deployment, database, risk list, project plan),
   infrastructure, pipelines and tooling, and defects that belong to no use
   case. Name the branch after what it does (e.g. `shared/architecture`,
   `shared/glossary-review`, `shared/staging-environment`,

@@ -14,7 +14,7 @@ rules specific to its artifacts; read this file first. How to work with git
 | `use-cases/` | Requirements, analysis, design | Use-case catalog, actors and one folder per use case with its description and its analysis and design realizations |
 | `analysis/` | Analysis | Analysis packages, their classes and the analysis mechanisms |
 | `design/` | Design | Architecture, subsystems and interfaces, deployment, logical database model |
-| `management/` | Management (not a workflow) | Risk list |
+| `management/` | Management (not a workflow) | Risk list, project plan and iteration plans |
 
 Order of work: vision → actors and use cases → requirements → analysis
 (packages, classes, analysis realizations) → design (architecture,
