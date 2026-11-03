@@ -14,6 +14,7 @@
 | SRC-008 | Detalle del caso de uso Gestionar usuarios acordado con el equipo de desarrollo | Workshop | 2026-10-27 |
 | SRC-009 | Detalle del caso de uso Gestionar trámite de titulación acordado con el equipo de desarrollo | Workshop | 2026-11-03 |
 | SRC-010 | Detalle del caso de uso Gestionar proyecto de grado acordado con el equipo de desarrollo | Workshop | 2026-11-03 |
+| SRC-011 | Estado de la gestión del proyecto (fechas de entrega, equipo y gestiones con el docente) informado por el equipo de desarrollo | Interview | 2026-11-03 |
 
 ## Functional Requirements
 
@@ -129,7 +130,7 @@
 | --- | --- | --- | --- | --- | --- |
 | CON-001 (A) | La primera entrega es una prueba de concepto que se opera completamente por correo electrónico, construida en Java con Spring Boot | Cada caso de uso se ejecuta solo enviando y recibiendo correos; el código usa Java y Spring Boot | Global | Must | SRC-003 |
 | CON-002 (A) | La segunda entrega, posterior a la primera, es la versión final del sistema: una aplicación web con backend en Laravel y frontend en React que reemplaza a la prueba de concepto por correo | El backend usa Laravel y el frontend usa React | Global | Must | SRC-003 |
-| CON-003 | Fechas de la primera y la segunda entrega | TBD | Global | Must | SRC-003 |
+| CON-003 | Fechas de la primera y la segunda entrega | Primera entrega: 2026-11-17 o 2026-11-19, por confirmar. Segunda entrega: TBD | Global | Must | SRC-003, SRC-011 |
 | CON-004 | El perfil de proyecto, el documento del proyecto y el PDF anotado de una revisión se entregan en PDF con un tamaño máximo de 25 MB | El sistema rechaza archivos que no son PDF o que superan 25 MB | UC-004, UC-006 | Must | SRC-003, SRC-006 |
 | CON-005 | Los documentos iniciales del trámite se entregan como imagen PNG o JPG/JPEG, o como PDF, con un tamaño máximo de 1 MB por archivo | El sistema rechaza archivos que no son PNG, JPG/JPEG o PDF, o que superan 1 MB | UC-003 | Must | SRC-003 |
 | CON-006 (A) | Para la presentación del proyecto, el sistema usa el servidor de correo provisto por el docente de Tecnología Web, `mail.tecnoweb.org.bo`: recibe por POP3 y envía por SMTP, en los puertos por defecto (110 y 25), sin cifrado. El SMTP no pide contraseña y valida al remitente por su dirección IP: el equipo pide al docente que agregue a la lista de direcciones permitidas su dirección IP pública para las pruebas y la de su servidor de despliegue de contingencia; la presentación se hace desde la dirección IP del laboratorio | El sistema recibe y envía todos sus correos a través de `mail.tecnoweb.org.bo` con esa configuración | Global | Must | SRC-003 |
@@ -144,7 +145,7 @@
 
 - [x] FR-002, CON-005: con el trámite abierto por el secretario(a), ¿los documentos iniciales se digitalizan y suben al sistema, o solo se registra su recepción? Respuesta: el secretario(a) los digitaliza y los adjunta al abrir el trámite; el sistema los guarda en el expediente de titulación (SRC-009).
 - [ ] FR-034: un trámite queda pendiente de reasignación cuando se desactiva la cuenta de su tutor o de un miembro del tribunal; ¿UC-005 debe permitir reasignarlos? ¿Qué pasa con el trámite de un estudiante desactivado? (ask: Secretario(a) de dirección de carrera)
-- [ ] CON-003: ¿cuáles son las fechas de la primera y la segunda entrega? (ask: Docente de Tecnología Web)
+- [ ] CON-003: ¿la primera entrega es el 17 o el 19 de noviembre de 2026, y cuál es la fecha de la segunda? (ask: Docente de Tecnología Web)
 - [ ] NFR-US-001, NFR-SE-001, NFR-SE-002, NFR-IN-001: criterios de aceptación medibles (ask: Docente de Tecnología Web)
 - [ ] FR-024: ¿cuánto dura el plazo de revisión del tutor y de cada miembro del tribunal, quién lo fija y qué hace el sistema cuando vence? (ask: Secretario(a) de dirección de carrera)
 - [ ] FR-013, FR-015: ¿se notifica también la programación de la defensa final? (ask: Secretario(a) de dirección de carrera)
