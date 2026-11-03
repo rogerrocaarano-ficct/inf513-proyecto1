@@ -107,4 +107,42 @@ class ChangeLogTests {
                 .singleElement()
                 .satisfies(entry -> assertThat(entry.getNewValue()).isEqualTo("Ana"));
     }
+
+    @Test
+    void returnsTheHistoryOfARecordInOrder() {
+        UUID actor = UUID.randomUUID();
+        UUID target = UUID.randomUUID();
+        transaction.executeWithoutResult(status -> changeLog.record(actor, "Registro", target,
+                List.of(FieldChange.created("nombre", "Ana"), FieldChange.created("telefono", "700000"))));
+        transaction.executeWithoutResult(status -> changeLog.record(actor, "Registro", target,
+                List.of(new FieldChange("telefono", "700000", "711111"))));
+        transaction.executeWithoutResult(status -> changeLog.record(actor, "Registro", target,
+                List.of(new FieldChange("nombre", "Ana", "Ana María"))));
+
+        List<LoggedChange> history = changeLog.history("Registro", target);
+
+        assertThat(history).extracting(LoggedChange::field, LoggedChange::oldValue, LoggedChange::newValue)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple("nombre", null, "Ana"),
+                        org.assertj.core.groups.Tuple.tuple("telefono", null, "700000"),
+                        org.assertj.core.groups.Tuple.tuple("telefono", "700000", "711111"),
+                        org.assertj.core.groups.Tuple.tuple("nombre", "Ana", "Ana María"));
+        assertThat(history).allSatisfy(change -> assertThat(change.actorId()).isEqualTo(actor));
+        assertThat(history.get(1).changedAt()).isBefore(history.get(2).changedAt());
+    }
+
+    @Test
+    void theEntriesOfOneChangeShareTheirDateAndTime() {
+        UUID target = UUID.randomUUID();
+        transaction.executeWithoutResult(status -> changeLog.record(UUID.randomUUID(), "Registro", target,
+                List.of(FieldChange.created("a", "1"), FieldChange.created("b", "2"), FieldChange.created("c", "3"))));
+
+        assertThat(changeLog.history("Registro", target)).extracting(LoggedChange::changedAt).hasSize(3)
+                .containsOnly(changeLog.history("Registro", target).getFirst().changedAt());
+    }
+
+    @Test
+    void theHistoryOfARecordWithoutEntriesIsEmpty() {
+        assertThat(changeLog.history("Registro", UUID.randomUUID())).isEmpty();
+    }
 }

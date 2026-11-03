@@ -83,6 +83,24 @@ class GraduationProcessTests {
                         e -> assertThat(e.getReason()).isEqualTo(GraduationRejectionReason.PROCESS_NOT_FOUND));
     }
 
+    @Test
+    void theStagesAreDeclaredInTheOrderOfTheProcess() {
+        assertThat(GraduationStage.values()).containsExactly(GraduationStage.OPENED,
+                GraduationStage.PREDEFENSE_APPROVED, GraduationStage.FINAL_GRADE_RECORDED);
+    }
+
+    @Test
+    void thePredefenseIsApprovedFromItsStageOn() throws Exception {
+        GraduationProcess process = GraduationProcess.open(student, fourDocuments(), NOW);
+        assertThat(process.isPredefenseApproved()).isFalse();
+
+        setStage(process, GraduationStage.PREDEFENSE_APPROVED);
+        assertThat(process.isPredefenseApproved()).isTrue();
+
+        setStage(process, GraduationStage.FINAL_GRADE_RECORDED);
+        assertThat(process.isPredefenseApproved()).isTrue();
+    }
+
     private static List<InitialDocument> fourDocuments() {
         return Arrays.stream(InitialDocumentType.values())
                 .map(type -> InitialDocument.of(type, new DocumentFile(type.name() + ".pdf", "application/pdf",

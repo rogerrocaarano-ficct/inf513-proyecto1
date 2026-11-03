@@ -21,4 +21,7 @@ public interface StudentAccounts {
 
     /** The user account with the student role and this university registration number. */
     Optional<StudentAccount> findByRegistrationNumber(String studentRegistrationNumber);
+
+    /** The user account with the student role and this id, to name the student in notices (UC-004). */
+    Optional<StudentAccount> findById(UUID userAccountId);
 }

@@ -199,7 +199,7 @@ Convención: `snake_case`, nombres de tabla en plural, claves primarias `id UUID
 - CHECK (status IN ('PROFILE_PENDING', 'PROFILE_OBSERVED', 'PROFILE_REJECTED', 'PROFILE_APPROVED', 'TUTOR_REVIEW', 'TUTOR_OBSERVED', 'TRIBUNAL_REVIEW', 'TRIBUNAL_OBSERVED', 'APPROVED'))
 - CHECK ((document_kind = 'PROJECT_PROFILE') = (version_number IS NULL)): un perfil no tiene número de versión, y una versión sí
 - CHECK (document_kind = 'PROJECT_PROFILE' OR general_comment IS NOT NULL)
-- CHECK (document_kind = 'PROJECT_PROFILE' OR status NOT LIKE 'PROFILE_%') y CHECK (document_kind <> 'PROJECT_PROFILE' OR status LIKE 'PROFILE_%')
+- CHECK ((document_kind = 'PROJECT_PROFILE') = (status LIKE 'PROFILE\_%')): los estados `PROFILE_` solo para un perfil, y los de revisión solo para una versión
 - CHECK (size_bytes BETWEEN 1 AND 26214400) (CON-004)
 
 **Indexes:**

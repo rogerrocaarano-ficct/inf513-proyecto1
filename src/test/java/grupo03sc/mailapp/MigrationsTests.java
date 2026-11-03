@@ -29,7 +29,7 @@ class MigrationsTests {
         assertThat(flyway.info().applied())
                 .extracting(MigrationInfo::getVersion)
                 .extracting(Object::toString)
-                .containsExactly("1", "2", "3", "4");
+                .containsExactly("1", "2", "3", "4", "5");
     }
 
     @Test
@@ -63,9 +63,42 @@ class MigrationsTests {
         assertThatThrownBy(() -> insertProcess(student, "IN_PROGRESS")).isInstanceOf(DuplicateKeyException.class);
     }
 
-    private void insertProcess(UUID student, String status) {
+    @Test
+    void allowsOnlyOneGraduationProjectPerProcess() {
+        UUID process = insertProcess(UUID.randomUUID(), "IN_PROGRESS");
+        insertProject(process, "PROJECT_PROFILE", null, "PROFILE_PENDING");
+
+        assertThatThrownBy(() -> insertProject(process, "PROJECT_PROFILE", null, "PROFILE_PENDING"))
+                .isInstanceOf(DuplicateKeyException.class);
+    }
+
+    @Test
+    void keepsTheDocumentKindConsistentWithItsVersionAndStatus() {
+        UUID process = insertProcess(UUID.randomUUID(), "IN_PROGRESS");
+
+        assertThatThrownBy(() -> insertProject(process, "PROJECT_PROFILE", 1, "PROFILE_PENDING"))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertProject(process, "PROJECT_DOCUMENT", null, "TUTOR_REVIEW"))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertProject(process, "PROJECT_DOCUMENT", 1, "PROFILE_APPROVED"))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertProject(process, "PROJECT_PROFILE", null, "TUTOR_REVIEW"))
+                .isInstanceOf(DataAccessException.class);
+    }
+
+    private void insertProject(UUID process, String kind, Integer versionNumber, String status) {
+        jdbc.update("INSERT INTO graduation_projects (id, graduation_process_id, title, document_kind, file_name,"
+                + " size_bytes, storage_key, version_number, general_comment, submitted_at, status)"
+                + " VALUES (?, ?, 'Título', ?, 'perfil.pdf', 10, ?, ?, 'Comentario', now(), ?)",
+                UUID.randomUUID(), process, kind, "graduation-projects/" + UUID.randomUUID() + ".pdf",
+                versionNumber, status);
+    }
+
+    private UUID insertProcess(UUID student, String status) {
+        UUID id = UUID.randomUUID();
         jdbc.update("INSERT INTO graduation_processes (id, student_account_id, status, opened_at, closed_at,"
-                + " physical_copies_received_at) VALUES (?, ?, ?, now(), now(), now())", UUID.randomUUID(), student, status);
+                + " physical_copies_received_at) VALUES (?, ?, ?, now(), now(), now())", id, student, status);
+        return id;
     }
 
     private void insertAccount(String email) {

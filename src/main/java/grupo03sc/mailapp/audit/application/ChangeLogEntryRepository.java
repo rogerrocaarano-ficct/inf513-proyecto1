@@ -13,4 +13,7 @@ public interface ChangeLogEntryRepository extends Repository<ChangeLogEntry, UUI
     ChangeLogEntry save(ChangeLogEntry entry);
 
     List<ChangeLogEntry> findByTargetTypeAndTargetIdOrderByChangedAt(String targetType, UUID targetId);
+
+    /** Same order, and inside one change by id (UUID version 7, time-ordered), so the order is stable. */
+    List<ChangeLogEntry> findByTargetTypeAndTargetIdOrderByChangedAtAscIdAsc(String targetType, UUID targetId);
 }

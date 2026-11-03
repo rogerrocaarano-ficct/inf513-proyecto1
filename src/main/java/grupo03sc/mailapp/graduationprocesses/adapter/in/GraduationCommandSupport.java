@@ -9,12 +9,16 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Shared by the graduation process commands: reading the arguments and the attachments (UC-003).
+ * Shared by the graduation process and graduation project commands: reading the arguments and the
+ * attachments (UC-003, UC-004).
  */
 final class GraduationCommandSupport {
 
     /** Role allowed to run every graduation process command (UC-003 preconditions). */
     static final Set<String> SECRETARY_ROLES = Set.of("PROGRAM_SECRETARY");
+
+    /** Role allowed to run every graduation project command, on the student's own process (UC-004). */
+    static final Set<String> STUDENT_ROLES = Set.of("STUDENT");
 
     private GraduationCommandSupport() {
     }

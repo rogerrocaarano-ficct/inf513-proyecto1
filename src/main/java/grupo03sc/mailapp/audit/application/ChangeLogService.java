@@ -29,4 +29,13 @@ class ChangeLogService implements ChangeLog {
                     change.field(), change.oldValue(), change.newValue()));
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LoggedChange> history(String targetType, UUID targetId) {
+        return repository.findByTargetTypeAndTargetIdOrderByChangedAtAscIdAsc(targetType, targetId).stream()
+                .map(entry -> new LoggedChange(entry.getChangedAt(), entry.getActorId(), entry.getField(),
+                        entry.getOldValue(), entry.getNewValue()))
+                .toList();
+    }
 }

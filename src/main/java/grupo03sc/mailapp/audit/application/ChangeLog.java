@@ -8,5 +8,9 @@ import java.util.UUID;
  */
 public interface ChangeLog {
 
+    /** Records the changes in the current transaction; all of them share the same date and time. */
     void record(UUID actorId, String targetType, UUID targetId, List<FieldChange> changes);
+
+    /** The entries of a record in the order they were made, oldest first (UC-004). */
+    List<LoggedChange> history(String targetType, UUID targetId);
 }

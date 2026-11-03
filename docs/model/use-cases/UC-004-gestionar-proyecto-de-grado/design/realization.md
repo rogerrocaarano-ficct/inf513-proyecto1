@@ -13,7 +13,7 @@
 | --- | --- | --- |
 | Unassigned::GestionProyectoUI | boundary | SubmitProjectProfileCommandHandler, SubmitDocumentVersionCommandHandler, ViewGraduationProjectCommandHandler, GraduationCommandSupport (implementan CommandHandler de Messaging) |
 | Unassigned::NotificacionUI | boundary | Notifier (interface de Messaging) |
-| Unassigned::GestorProyectos | control | GraduationProjectService, ProjectView, GraduationRuleViolationException, GraduationRejectionReason |
+| Unassigned::GestorProyectos | control | GraduationProjectService, ProjectView, SubmittedProfile, GraduationRuleViolationException, GraduationRejectionReason |
 | Unassigned::TramiteTitulacion | entity | GraduationProcess, GraduationStage, GraduationProcessRepository |
 | Unassigned::ProyectoGrado | entity | GraduationProject, ProjectDocumentKind, ProjectStatus, ProjectHistory, ProjectHistoryItem, DocumentFile, GraduationProjectRepository, FileStorage (interface de Storage) |
 | Unassigned::CuentaUsuario | entity | ProfessorContacts y StudentAccounts (puertos de GraduationProcesses), ProfessorContact, StudentAccount, UserProfessorContacts, UserStudentAccounts, UserAccountRepository |
@@ -31,6 +31,7 @@
 | GraduationCommandSupport | Class | GraduationProcesses | mail-app | Lectura de los argumentos y de los adjuntos, compartida con UC-003; suma el rol del estudiante |
 | GraduationProjectService | Class | GraduationProcesses | mail-app | Servicio de aplicación: busca el trámite del estudiante, aplica las reglas del proyecto de grado, guarda el archivo, registra el cambio y avisa |
 | ProjectView | Class | GraduationProcesses | mail-app | Record con el proyecto de grado y su historial, para la consulta |
+| SubmittedProfile | Class | GraduationProcesses | mail-app | Record con el proyecto del perfil presentado y si se avisó al docente de Taller de Grado, para la respuesta |
 | GraduationProject | Class | GraduationProcesses | mail-app | Entidad JPA: proyecto de grado con su documento vigente, que evoluciona de perfil de proyecto a versiones, y sus reglas |
 | ProjectDocumentKind | Enumeration | GraduationProcesses | mail-app | Tipo del documento vigente: `PROJECT_PROFILE`, `PROJECT_DOCUMENT`, `FINAL_DEFENSE_VERSION` |
 | ProjectStatus | Enumeration | GraduationProcesses | mail-app | Estado del documento vigente; UC-004 deja `PROFILE_PENDING` y `TUTOR_REVIEW`, UC-006 los demás |
@@ -87,7 +88,7 @@ Solo los miembros que usa este caso de uso; `STUDENT_ROLES` es nuevo.
 | changeLog | Attribute | ChangeLog | - |
 | notifier | Attribute | Notifier | - |
 | clock | Attribute | Clock | - |
-| submitProfile | Operation | submitProfile(studentId: UUID, title: String, files: List<DocumentFile>): GraduationProject | + |
+| submitProfile | Operation | submitProfile(studentId: UUID, title: String, files: List<DocumentFile>): SubmittedProfile | + |
 | submitVersion | Operation | submitVersion(studentId: UUID, generalComment: String, files: List<DocumentFile>): GraduationProject | + |
 | viewProject | Operation | viewProject(studentId: UUID): Optional<ProjectView> | + |
 | processInProgress | Operation | processInProgress(studentId: UUID): GraduationProcess | - |
@@ -114,6 +115,7 @@ Solo los miembros que usa este caso de uso; `STUDENT_ROLES` es nuevo.
 | MAX_SIZE_BYTES | Attribute | static long = 26214400 | + |
 | checkFile | Operation | static checkFile(file: DocumentFile): void | + |
 | createWithProfile | Operation | static createWithProfile(graduationProcessId: UUID, title: String, file: DocumentFile, storageKey: String, now: Instant): GraduationProject | + |
+| checkProfileAllowed | Operation | checkProfileAllowed(): void | + |
 | submitProfile | Operation | submitProfile(title: String, file: DocumentFile, storageKey: String, now: Instant): List<FieldChange> | + |
 | checkVersionAllowed | Operation | checkVersionAllowed(predefenseApproved: boolean): void | + |
 | submitVersion | Operation | submitVersion(generalComment: String, file: DocumentFile, storageKey: String, predefenseApproved: boolean, now: Instant): List<FieldChange> | + |
@@ -137,11 +139,13 @@ Solo los miembros que usa este caso de uso; `STUDENT_ROLES` es nuevo.
 | ProjectHistory | from | Operation | static from(changes: List<LoggedChange>): List<ProjectHistoryItem> | + |
 | ProjectHistoryItem | documentKind | Attribute | ProjectDocumentKind | + |
 | ProjectHistoryItem | versionNumber | Attribute | Integer | + |
-| ProjectHistoryItem | title, generalComment, fileName | Attribute | String | + |
+| ProjectHistoryItem | title, generalComment, fileName, storageKey | Attribute | String | + |
 | ProjectHistoryItem | submittedAt | Attribute | Instant | + |
 | ProjectHistoryItem | status | Attribute | ProjectStatus | + |
 | ProjectView | project | Attribute | GraduationProject | + |
 | ProjectView | history | Attribute | List<ProjectHistoryItem> | + |
+| SubmittedProfile | project | Attribute | GraduationProject | + |
+| SubmittedProfile | professorNotified | Attribute | boolean | + |
 
 ### GraduationProjectRepository
 
@@ -205,7 +209,7 @@ Solo los miembros nuevos; los de UC-003 están en su realización.
 | GraduationProjectService | FileStorage | Association | 1 to 1 | From → To |
 | GraduationProjectService | ChangeLog | Association | 1 to 1 | From → To |
 | GraduationProjectService | Notifier | Association | 1 to 1 | From → To |
-| GraduationProjectService | ProjectHistory, ProjectView | Dependency | — | From → To |
+| GraduationProjectService | ProjectHistory, ProjectView, SubmittedProfile | Dependency | — | From → To |
 | GraduationProjectRepository | GraduationProject | Dependency | — | From → To |
 | GraduationProject | GraduationProcess | Association (por `graduationProcessId`) | 0..1 to 1 | From → To |
 | GraduationProject | ProjectDocumentKind | Association | 1 to 1 | From → To |
@@ -217,6 +221,7 @@ Solo los miembros nuevos; los de UC-003 están en su realización.
 | UserProfessorContacts | ProfessorContacts | Realization | — | From → To |
 | UserProfessorContacts | UserAccountRepository | Association | 1 to 1 | From → To |
 | UserStudentAccounts | StudentAccounts | Realization | — | From → To |
+| UserStudentAccounts | UserAccountRepository | Association | 1 to 1 | From → To |
 
 ## Behavioral View
 
@@ -228,7 +233,7 @@ Los comandos llegan por correo. Messaging sondea el buzón, interpreta el asunto
 | --- | --- | --- | --- | --- | --- |
 | 1 | 1 | Estudiante | SubmitProjectProfileCommandHandler | envía correo con asunto `PresentarPerfil(titulo)` y el perfil de proyecto en PDF adjunto | |
 | 2 | 1 | SubmitProjectProfileCommandHandler | GraduationCommandSupport | required(arguments, FORM, "título del proyecto"), files(command.attachments()) | List<String>, List<DocumentFile> |
-| 3 | 1 | SubmitProjectProfileCommandHandler | GraduationProjectService | submitProfile(sender.accountId(), title, files) | GraduationProject |
+| 3 | 1 | SubmitProjectProfileCommandHandler | GraduationProjectService | submitProfile(sender.accountId(), title, files) | SubmittedProfile |
 | 4 | 2 | GraduationProjectService | GraduationProcessRepository | findByStudentAccountIdAndStatus(studentId, IN_PROGRESS), desde processInProgress(studentId) | Optional<GraduationProcess> |
 | 5 | 2 | GraduationProjectService | GraduationProjectRepository | findByGraduationProcessId(process.getId()): vacío | Optional<GraduationProject> |
 | 6 | 3 | GraduationProjectService | GraduationProject | checkFile(singleFile(files)) | |
@@ -247,6 +252,7 @@ Los comandos llegan por correo. Messaging sondea el buzón, interpreta el asunto
 | # | UC step | From | To | Operation | Returns |
 | --- | --- | --- | --- | --- | --- |
 | 1 | 2 | GraduationProjectService | GraduationProjectRepository | findByGraduationProcessId(process.getId()): el proyecto existente | Optional<GraduationProject> |
+| 1a | 2 | GraduationProjectService | GraduationProject | checkProfileAllowed(): `PROFILE_OBSERVED` o `PROFILE_REJECTED`, antes de guardar el archivo | |
 | 2 | A1.1 | GraduationProjectService | GraduationProject | checkFile(singleFile(files)) | |
 | 3 | A1.2 | GraduationProjectService | FileStorage | store("graduation-projects", file.fileName(), file.content()) | String |
 | 4 | 2, A1.2 | GraduationProjectService | GraduationProject | submitProfile(title, file, storageKey, now): verifica `PROFILE_OBSERVED` o `PROFILE_REJECTED` | List<FieldChange> |
@@ -263,9 +269,9 @@ Los comandos llegan por correo. Messaging sondea el buzón, interpreta el asunto
 | 3 | A2 | SubmitDocumentVersionCommandHandler | GraduationProjectService | submitVersion(sender.accountId(), generalComment, files) | GraduationProject |
 | 4 | A2.1 | GraduationProjectService | GraduationProcessRepository | findByStudentAccountIdAndStatus(studentId, IN_PROGRESS), desde processInProgress(studentId) | Optional<GraduationProcess> |
 | 5 | A2.1 | GraduationProjectService | GraduationProjectRepository | findByGraduationProcessId(process.getId()) | Optional<GraduationProject> |
-| 6 | A2.1 | GraduationProjectService | GraduationProcessRepository | findParticipantIds(process.getId(), "TUTOR") | List<UUID> |
-| 7 | A2.2 | GraduationProjectService | GraduationProcess | isPredefenseApproved() | boolean |
-| 8 | A2.1, A2.2 | GraduationProjectService | GraduationProject | checkVersionAllowed(predefenseApproved) | |
+| 6 | A2.2 | GraduationProjectService | GraduationProcess | isPredefenseApproved() | boolean |
+| 7 | A2.1, A2.2 | GraduationProjectService | GraduationProject | checkVersionAllowed(predefenseApproved) | |
+| 8 | A2.1 | GraduationProjectService | GraduationProcessRepository | findParticipantIds(process.getId(), "TUTOR"): después de las reglas, porque el tutor se designa después del visto bueno | List<UUID> |
 | 9 | A2.3 | GraduationProjectService | GraduationProject | checkFile(singleFile(files)) | |
 | 10 | A2.4 | GraduationProjectService | FileStorage | store("graduation-projects", file.fileName(), file.content()) | String |
 | 11 | A2.4 | GraduationProjectService | GraduationProject | submitVersion(generalComment, file, storageKey, predefenseApproved, now) | List<FieldChange> |
@@ -328,13 +334,15 @@ La precondición (trámite en curso) que falla responde `PROCESS_NOT_FOUND`. Mes
   - Versión nueva: con `PROJECT_PROFILE` en `PROFILE_APPROVED` (primera versión, número 1); con `TUTOR_OBSERVED` o `TRIBUNAL_OBSERVED`; o con `APPROVED` de `PROJECT_DOCUMENT` y la predefensa aprobada. Suma uno al número, guarda el comentario general, deja `TUTOR_REVIEW`, y el tipo `FINAL_DEFENSE_VERSION` si la predefensa está aprobada (A3), o `PROJECT_DOCUMENT` si no.
   - Los demás estados (`TRIBUNAL_REVIEW`, `TUTOR_REVIEW`, `PROFILE_PENDING`, `APPROVED` sin predefensa o de la versión para la defensa final) rechazan la entrega. Los cambia UC-006.
 - **Predefensa:** `GraduationProcess.isPredefenseApproved()` es verdadero cuando la etapa es `PREDEFENSE_APPROVED` o una posterior; por eso las constantes de `GraduationStage` se declaran en el orden del trámite. UC-006 deja la etapa `PREDEFENSE_APPROVED`.
+- **Orden de verificación:** el trámite en curso, el proyecto, las reglas de `GraduationProject` (`checkProfileAllowed` o `checkVersionAllowed`), el tutor, la cantidad de adjuntos y el archivo; solo entonces se guarda el archivo. Las reglas van antes que el tutor porque el tutor se designa después del visto bueno.
 - **Tutor:** `findParticipantIds(processId, "TUTOR")` lee `graduation_process_participants`, que llena UC-005. Sin tutor, E2. Si la cuenta del tutor está desactivada, `ProfessorContacts.findById` devuelve vacío y el aviso se omite: el trámite ya está pendiente de reasignación (FR-034).
 - **Docente de Taller de Grado:** `UserProfessorContacts.thesisWorkshopProfessor()` devuelve la única cuenta activa con `THESIS_WORKSHOP_PROFESSOR` (FR-039). Si no hay ninguna, el perfil se registra igual, el aviso se omite con una advertencia en el log, y la respuesta al estudiante dice que no hay docente de Taller de Grado para avisar.
 - **Historial (FR-010, A4):** no hay tabla de versiones. Cada entrega registra en `ChangeLog` los datos del documento entregado (`documentKind`, `title`, `fileName`, `storageKey`, `versionNumber`, `generalComment`, `status`), con su valor anterior y nuevo. `ProjectHistory.from` agrupa las entradas por `changedAt`: un grupo con `storageKey` es una entrega; los grupos siguientes sin `storageKey` (los cambios de estado de UC-006) actualizan el estado de esa entrega. Todas las entradas de un `record` comparten la fecha y hora.
 - **Archivos (AM-004, AD-012):** categoría `graduation-projects`. Los archivos de los perfiles y versiones anteriores no se borran nunca: el historial los cita por su clave. Un archivo guardado en un comando que se deshace se borra.
 - **Transacciones:** cada comando corre en la transacción de Messaging; `GraduationProjectService` (`@Transactional`) participa en ella. El proyecto, su registro de cambios y los avisos se confirman o se deshacen juntos. El archivo se guarda después de todas las verificaciones.
 - **Concurrencia:** `graduation_projects_process_uk` impide dos proyectos de grado en un trámite si llegan dos perfiles a la vez. Dos entregas a la vez sobre el mismo proyecto se resuelven con bloqueo optimista (`@Version` en `GraduationProject`): la segunda falla y el estudiante recibe el error genérico.
-- **Notificaciones:** `Notifier` envía después de confirmar. El aviso al docente de Taller de Grado lleva el nombre del estudiante, su registro universitario y el título del proyecto; el aviso al tutor, además el número de la versión, el comentario general y si es la versión para la defensa final. Los textos están en `GraduationProjectService`.
+- **Notificaciones:** `Notifier` envía después de confirmar. El aviso al docente de Taller de Grado lleva el nombre y la dirección de correo del estudiante (de `StudentAccounts.findById`, que no tiene el registro universitario) y el título del proyecto; el aviso al tutor, además el número de la versión, el comentario general y si es la versión para la defensa final. Los textos están en `GraduationProjectService`.
+- **Pruebas sin UC-005 ni UC-006:** `GraduationProjectFixtures` (pruebas) y los comandos `psql` de `src/test/http/11` y `12` fijan con SQL el tutor (`INSERT` en `graduation_process_participants`), el estado del documento vigente (`UPDATE` de `graduation_projects.status` y un `INSERT` del dato `status` en `change_log_entries`, para que el historial lo muestre) y la predefensa aprobada (`UPDATE` de `graduation_processes.stage`).
 - **Registro de cambios:** con `targetType = "GraduationProject"` y `actorId` el estudiante. `describe()` registra además `graduationProcessId` al crear el proyecto.
 
 ## Open Questions
