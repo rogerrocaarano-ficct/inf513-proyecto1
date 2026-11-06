@@ -15,6 +15,7 @@
 | SRC-009 | Detalle del caso de uso Gestionar trámite de titulación acordado con el equipo de desarrollo | Workshop | 2026-11-03 |
 | SRC-010 | Detalle del caso de uso Gestionar proyecto de grado acordado con el equipo de desarrollo | Workshop | 2026-11-03 |
 | SRC-011 | Estado de la gestión del proyecto (fechas de entrega, equipo y gestiones con el docente) informado por el equipo de desarrollo | Interview | 2026-11-03 |
+| SRC-012 | Decisión del equipo de desarrollo de dar por aceptados el alcance y los casos de uso UC-001…UC-010 mientras el docente no los objete, y de ajustarlos si los objeta, siempre que el sistema responda a las necesidades de la Dirección de Carrera | Interview | 2026-11-06 |
 
 ## Functional Requirements
 

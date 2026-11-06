@@ -42,9 +42,9 @@ Con el sistema, cada etapa del trámite queda registrada en un expediente digita
 
 ## Open Questions
 
-- [ ] FEAT-001 … FEAT-008: ¿acepta el docente que sus CU1–CU8 se modelen como funcionalidades, con los casos de uso derivados de cada una? Ver la decisión de modelado en `docs/sources/2026-10-06.md` (ask: Docente de Tecnología Web)
-- [ ] FEAT-006: ¿acepta el docente incluir la entrega de ejemplares físicos y el cierre del expediente (RF17, RF18) en su CU6? (ask: Docente de Tecnología Web)
-- [ ] FEAT-003: el tutor se asigna junto con el tribunal, después de evaluar la viabilidad del perfil; ¿se mantiene en CU3 o pasa a CU4? (ask: Docente de Tecnología Web)
+- [x] FEAT-001 … FEAT-008: ¿acepta el docente que sus CU1–CU8 se modelen como funcionalidades, con los casos de uso derivados de cada una? Ver la decisión de modelado en `docs/sources/2026-10-06.md` (ask: Docente de Tecnología Web) Respuesta: el equipo lo da por aceptado mientras el docente no lo objete; si lo objeta, se ajustan los casos de uso, y en todo caso el sistema debe responder a las necesidades de la Dirección de Carrera (SRC-012).
+- [x] FEAT-006: ¿acepta el docente incluir la entrega de ejemplares físicos y el cierre del expediente (RF17, RF18) en su CU6? (ask: Docente de Tecnología Web) Respuesta: el equipo lo da por aceptado, con los casos de uso que lo realizan (SRC-012).
+- [x] FEAT-003: el tutor se asigna junto con el tribunal, después de evaluar la viabilidad del perfil; ¿se mantiene en CU3 o pasa a CU4? (ask: Docente de Tecnología Web) Respuesta: se mantiene como está modelado, en FEAT-003 y FEAT-004 con UC-005; el equipo lo da por aceptado (SRC-012).
 - [ ] Criterio de éxito: ¿la dirección de carrera lo acepta como medida de éxito? (ask: Director de carrera)
 - [x] Alcance: ¿qué funcionalidades entran en la primera entrega (por correo) y cuáles en la segunda (web)? (ask: Docente de Tecnología Web)
 
@@ -52,4 +52,6 @@ Con el sistema, cada etapa del trámite queda registrada en un expediente digita
 
 | Stakeholder | Decision | Date |
 | --- | --- | --- |
-| <!-- STK-001 --> | <!-- Accepted / Accepted with changes / Rejected --> | <!-- YYYY-MM-DD --> |
+| STK-004 | Accepted | 2026-11-06 |
+
+La aceptación de STK-004 la supone el equipo de desarrollo (SRC-012): se da por aceptado el alcance mientras el docente no lo objete, y si lo objeta se agrega una fila con su decisión y se ajustan los casos de uso (RSK-003).
