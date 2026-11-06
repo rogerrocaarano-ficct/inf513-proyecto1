@@ -43,12 +43,12 @@ El equipo trata con el docente como grupo, sin un responsable único (SRC-011).
 | Arquitectura candidata | Decisiones arquitectónicas, subsistemas, despliegue y base de datos | Design | Equipo | — | 2026-10-29 | — | Done |
 | Lista de riesgos | Identificar y priorizar los riesgos, con su estrategia | — | Integrante A | 0,5 | 2026-11-03 | — | Done |
 | Plan del proyecto | Escribir este plan, con E1 y C1 en detalle | — | Integrante A | 0,5 | 2026-11-03 | RSK-002, RSK-005 | In progress |
-| Aprobación del alcance | Presentar al docente FEAT-001…FEAT-008 y los casos de uso derivados de sus CU1–CU8, y registrar su decisión en la tabla Approval de la visión | Requirements | Equipo | 0,5 | 2026-11-05 | RSK-003 | Pending |
+| Aprobación del alcance | Presentar al docente FEAT-001…FEAT-008 y los casos de uso derivados de sus CU1–CU8, y registrar su decisión en la tabla Approval de la visión. El equipo da el alcance por aceptado mientras el docente no lo objete (SRC-012) | Requirements | Equipo | 0,5 | 2026-11-06 | RSK-003 | Done |
 | Fechas de entrega | Preguntar al docente el día de la primera entrega y la fecha de la segunda | — | Equipo | — | 2026-11-05 | RSK-002 | Pending |
 
 ### Exit Criteria
 
-- [ ] Los interesados aceptan el alcance: pendiente de la presentación al docente.
+- [x] Los interesados aceptan el alcance: el equipo lo da por aceptado mientras el docente no lo objete (`../requirements/vision.md`, Approval; SRC-012), y si lo objeta ajusta los casos de uso (RSK-003).
 - [x] Los casos de uso críticos están identificados y descritos: UC-001, UC-003 y UC-004 están Detailed.
 - [x] Existe una arquitectura candidata viable: `../design/architecture.md`, y ya funciona con los tres casos de uso significativos.
 - [x] Los riesgos principales están priorizados y tienen estrategia: `risks.md`.
