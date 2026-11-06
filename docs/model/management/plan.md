@@ -27,9 +27,9 @@ El equipo trata con el docente como grupo, sin un responsable único (SRC-011).
 
 | Iteration | Phase | Start | End | Goal | Status |
 | --- | --- | --- | --- | --- | --- |
-| I1 | Inception | 2026-10-26 | 2026-11-05 | Alcance aprobado por el docente, arquitectura candidata, riesgos priorizados y plan de Elaboración | In progress |
-| E1 | Elaboration | 2026-11-05 | 2026-11-07 | La línea base ejecutable (UC-001, UC-003, UC-004) probada contra los servidores del docente y los riesgos de infraestructura reducidos | Planned |
-| C1 | Construction | 2026-11-08 | 2026-11-16 | Los siete casos de uso restantes implementados e integrados, y la primera entrega ensayada | Planned |
+| I1 | Inception | 2026-10-26 | 2026-11-07 | Alcance aprobado por el docente, arquitectura candidata, riesgos priorizados y plan de Elaboración | In progress |
+| E1 | Elaboration | 2026-11-08 | 2026-11-09 | La línea base ejecutable (UC-001, UC-003, UC-004) probada contra los servidores del docente y los riesgos de infraestructura reducidos | Planned |
+| C1 | Construction | 2026-11-10 | 2026-11-16 | Los siete casos de uso restantes implementados e integrados, y la primera entrega ensayada | Planned |
 | — | — | TBD | TBD | Iteraciones de la segunda entrega, en el repositorio de la versión web (AD-009) | Planned |
 
 ## Iteration I1
@@ -60,12 +60,12 @@ El equipo trata con el docente como grupo, sin un responsable único (SRC-011).
 
 | Item | Work | Workflows | Owner | Estimate | Due | Risks | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Servidor de correo | Verificar que el SMTP acepta las IP del equipo, probar la cadena completa (POP3, comando, respuesta SMTP) contra `mail.tecnoweb.org.bo` y enviar un adjunto de 25 MB | Testing | Integrante A | 1 | 2026-11-07 | RSK-001, RSK-008 | Pending |
-| Base de datos | Aplicar las migraciones V1…V5 contra `db_grupo03sc` y resolver los permisos que falten | Implementation, Testing | Integrante B | 1 | 2026-11-07 | RSK-004 | Pending |
-| Requisitos no funcionales | Proponer criterios de aceptación medibles y validarlos con el docente | Requirements | Integrante C | 0,5 | 2026-11-07 | RSK-007 | Pending |
-| Reglas de negocio | Reunir las preguntas abiertas para el secretario(a) y el director de carrera y obtener sus respuestas | Requirements | Equipo | 0,5 | 2026-11-07 | RSK-006 | Pending |
-| UC-001, UC-003, UC-004 | Ejecutar las pruebas y revisar las realizaciones de análisis y diseño contra sus casos de uso (Status Reviewed) | Analysis, Design, Testing | Integrante A | 0,5 | 2026-11-07 | — | Pending |
-| UC-002, UC-005, UC-007 | Detallar los casos de uso con los que empieza C1 | Requirements | Integrante C, A, B | 0,5 | 2026-11-07 | RSK-005 | Pending |
+| Servidor de correo | Verificar que el SMTP acepta las IP del equipo, probar la cadena completa (POP3, comando, respuesta SMTP) contra `mail.tecnoweb.org.bo` y enviar un adjunto de 25 MB | Testing | Integrante A | 1 | 2026-11-09 | RSK-001, RSK-008 | Pending |
+| Base de datos | Aplicar las migraciones V1…V5 contra `db_grupo03sc` y resolver los permisos que falten | Implementation, Testing | Integrante B | 1 | 2026-11-09 | RSK-004 | Pending |
+| Requisitos no funcionales | Proponer criterios de aceptación medibles y validarlos con el docente | Requirements | Integrante C | 0,5 | 2026-11-09 | RSK-007 | Pending |
+| Reglas de negocio | Reunir las preguntas abiertas para el secretario(a) y el director de carrera y obtener sus respuestas | Requirements | Equipo | 0,5 | 2026-11-09 | RSK-006 | Pending |
+| UC-001, UC-003, UC-004 | Ejecutar las pruebas y revisar las realizaciones de análisis y diseño contra sus casos de uso (Status Reviewed) | Analysis, Design, Testing | Integrante A | 0,5 | 2026-11-09 | — | Pending |
+| UC-002, UC-005, UC-007 | Detallar los casos de uso con los que empieza C1 | Requirements | Integrante C, A, B | 0,5 | 2026-11-09 | RSK-005 | Pending |
 
 ### Exit Criteria
 
@@ -102,5 +102,6 @@ El equipo trata con el docente como grupo, sin un responsable único (SRC-011).
 
 ## Open Questions
 
-- [ ] C1: ¿los tres integrantes pueden trabajar el fin de semana del 7 y 8 de noviembre? E1 termina un sábado y C1 empieza un domingo (ask: Equipo de desarrollo)
+- [x] E1, C1: ¿los tres integrantes pueden trabajar el fin de semana del 7 y 8 de noviembre? E1 termina un sábado y C1 empieza un domingo (ask: Equipo de desarrollo). Respuesta: el equipo fijó el cierre de E1 el lunes 2026-11-09; C1 empieza el 2026-11-10
+- [ ] C1: con C1 entre el 2026-11-10 y el 2026-11-16, UC-002 (vence el 2026-11-09), UC-005 y UC-007 (vencen el 2026-11-10 con 2 días de estimación) ya no entran; ¿se mueven sus fechas, se reparten de nuevo o se mueve el fin de C1? (ask: Equipo de desarrollo)
 - [ ] C1: si la primera entrega es el 2026-11-19, ¿se usan los dos días extra como margen o se mueve el fin de C1? (ask: Equipo de desarrollo)
