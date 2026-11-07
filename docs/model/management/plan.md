@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | Status | Draft |
-| Iteration | I1 |
+| Iteration | E1 |
 
 ## Team
 
@@ -27,8 +27,8 @@ El equipo trata con el docente como grupo, sin un responsable único (SRC-011).
 
 | Iteration | Phase | Start | End | Goal | Status |
 | --- | --- | --- | --- | --- | --- |
-| I1 | Inception | 2026-10-26 | 2026-11-07 | Alcance aprobado por el docente, arquitectura candidata, riesgos priorizados y plan de Elaboración | In progress |
-| E1 | Elaboration | 2026-11-07 | 2026-11-09 | Los casos de uso significativos (UC-001, UC-003, UC-004) completamente validados contra los servicios del docente (correo y base de datos) y los riesgos de infraestructura reducidos | Planned |
+| I1 | Inception | 2026-10-26 | 2026-11-07 | Alcance aprobado por el docente, arquitectura candidata, riesgos priorizados y plan de Elaboración | Closed |
+| E1 | Elaboration | 2026-11-07 | 2026-11-09 | Los casos de uso significativos (UC-001, UC-003, UC-004) completamente validados contra los servicios del docente (correo y base de datos) y los riesgos de infraestructura reducidos | In progress |
 | E2 | Elaboration | 2026-11-10 | 2026-11-12 | Las reglas de negocio resueltas, los casos de uso propuestos validados con el docente y los casos de uso restantes detallados | Planned |
 | C1 | Construction | 2026-11-13 | 2026-11-16 | Los siete casos de uso restantes implementados e integrados, y la primera entrega ensayada | Planned |
 | — | — | TBD | TBD | Iteraciones de la segunda entrega, en el repositorio de la versión web (AD-009) | Planned |
@@ -45,7 +45,7 @@ El equipo trata con el docente como grupo, sin un responsable único (SRC-011).
 | Lista de riesgos | Identificar y priorizar los riesgos, con su estrategia | — | Roger Roca Arano | 0,5 | 2026-11-03 | — | Done |
 | Plan del proyecto | Escribir este plan, con E1, E2 y C1 en detalle | — | Roger Roca Arano | 0,5 | 2026-11-03 | RSK-002, RSK-005 | Done |
 | Aprobación del alcance | Presentar al docente FEAT-001…FEAT-008 y los casos de uso derivados de sus CU1–CU8, y registrar su decisión en la tabla Approval de la visión. El equipo da el alcance por aceptado mientras el docente no lo objete (SRC-012) | Requirements | Equipo | 0,5 | 2026-11-06 | RSK-003 | Done |
-| Fechas de entrega | Preguntar al docente el día de la primera entrega y la fecha de la segunda | — | Equipo | — | 2026-11-07 | RSK-002 | Pending |
+| Fechas de entrega | Preguntar al docente el día de la primera entrega y la fecha de la segunda. Pasa a E1 | — | Equipo | — | 2026-11-07 | RSK-002 | Moved |
 
 ### Exit Criteria
 
@@ -64,6 +64,7 @@ El equipo trata con el docente como grupo, sin un responsable único (SRC-011).
 | Servidor de correo | Verificar que el SMTP acepta las IP del equipo, probar la cadena completa (POP3, comando, respuesta SMTP) contra `mail.tecnoweb.org.bo` y enviar un adjunto de 25 MB | Testing | Roger Roca Arano | 0,5 | 2026-11-09 | RSK-001, RSK-008 | Pending |
 | Base de datos | Aplicar las migraciones V1…V5 contra `db_grupo03sc` y resolver los permisos que falten | Implementation, Testing | Roger Roca Arano | 0,5 | 2026-11-09 | RSK-004 | Pending |
 | Requisitos no funcionales | Proponer criterios de aceptación medibles y validarlos con el docente | Requirements | Roger Roca Arano | 0,5 | 2026-11-09 | RSK-007 | Pending |
+| Fechas de entrega | Preguntar al docente el día de la primera entrega y la fecha de la segunda (viene de I1) | — | Equipo | — | 2026-11-09 | RSK-002 | Pending |
 | UC-001, UC-003, UC-004 | Probar la implementación inicial contra los servidores del docente y corregir lo que falle, en el código y en el caso de uso y las realizaciones afectadas | All | Roger Roca Arano | 1,5 | 2026-11-09 | — | Pending |
 
 ### Exit Criteria
