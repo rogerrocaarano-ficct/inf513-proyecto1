@@ -40,24 +40,24 @@
 | FR-017 | El sistema debe registrar la recepción de los dos ejemplares físicos del proyecto, uno para la biblioteca y otro para la Dirección de Carrera | UC-003 Gestionar trámite de titulación | Must | SRC-001, SRC-002 | Candidate |
 | FR-018 | El sistema debe cerrar y archivar el expediente de titulación del graduado | UC-003 Gestionar trámite de titulación | Must | SRC-002 | Candidate |
 | FR-019 | El sistema debe mostrar la etapa en la que se encuentra un trámite de titulación al estudiante, a los docentes que participan en él, al secretario(a) y al director de carrera | UC-008 Consultar trámite de titulación | Must | SRC-002 | Candidate |
-| FR-020 | El sistema debe notificar al estudiante la designación de su tutor | UC-005 Gestionar tribunal evaluador y tutor | Must | SRC-001 | Candidate |
-| FR-021 | El sistema debe notificar al estudiante la designación de su tribunal evaluador | UC-005 Gestionar tribunal evaluador y tutor | Must | SRC-001 | Candidate |
+| FR-020 | El sistema debe notificar al estudiante la designación de su tutor | UC-005 Gestionar tribunal evaluador y tutor | Should | SRC-001 | Candidate |
+| FR-021 | El sistema debe notificar al estudiante la designación de su tribunal evaluador | UC-005 Gestionar tribunal evaluador y tutor | Should | SRC-001 | Candidate |
 | FR-022 | El sistema debe registrar el rechazo o las observaciones del docente de Taller de Grado al perfil de proyecto | UC-006 Evaluar proyecto de grado | Must | SRC-001 | Candidate |
 | FR-023 | El sistema debe registrar un nuevo perfil de proyecto cuando el anterior fue rechazado u observado | UC-004 Gestionar proyecto de grado | Must | SRC-001 | Candidate |
-| FR-024 | El sistema debe controlar el plazo de revisión del tutor y de cada miembro del tribunal sobre cada versión del documento del proyecto | UC-006 Evaluar proyecto de grado | Must | SRC-002, SRC-006 | Candidate |
+| FR-024 | El sistema debe controlar el plazo de revisión del tutor y de cada miembro del tribunal sobre cada versión del documento del proyecto | UC-006 Evaluar proyecto de grado | Should | SRC-002, SRC-006 | Candidate |
 | FR-025 | El sistema debe registrar la entrega del documento del proyecto para la defensa final | UC-004 Gestionar proyecto de grado | Must | SRC-001 | Candidate |
 | FR-026 | El sistema debe crear cuentas de usuario con nombre completo, dirección de correo y uno o más roles, y para un estudiante además registro universitario, cédula de identidad y teléfono | UC-001 Gestionar usuarios | Must | SRC-002, SRC-004 | Candidate |
-| FR-027 | El sistema debe mostrar el calendario académico con las predefensas y defensas finales programadas | UC-008 Consultar trámite de titulación | Must | SRC-002 | Candidate |
-| FR-028 | El sistema debe mostrar un dashboard con indicadores de los trámites de titulación | UC-010 Consultar estadísticas | Must | SRC-002 | Candidate |
-| FR-029 | El sistema debe generar reportes y estadísticas de titulación | UC-010 Consultar estadísticas | Must | SRC-002 | Candidate |
+| FR-027 | El sistema debe mostrar el calendario académico con las predefensas y defensas finales programadas | UC-008 Consultar trámite de titulación | Should | SRC-002 | Candidate |
+| FR-028 | El sistema debe mostrar un dashboard con indicadores de los trámites de titulación | UC-010 Consultar estadísticas | Could | SRC-002 | Candidate |
+| FR-029 | El sistema debe generar reportes y estadísticas de titulación | UC-010 Consultar estadísticas | Could | SRC-002 | Candidate |
 | FR-030 | El sistema debe mostrar los datos de una cuenta de usuario y la lista de cuentas de usuario con sus roles y su estado | UC-001 Gestionar usuarios | Must | SRC-004 | Candidate |
 | FR-031 | El sistema debe modificar los datos y los roles de una cuenta de usuario | UC-001 Gestionar usuarios | Must | SRC-004 | Candidate |
 | FR-032 | El sistema debe desactivar y reactivar cuentas de usuario; una cuenta desactivada no puede usar el sistema y conserva su historial | UC-001 Gestionar usuarios | Must | SRC-004 | Candidate |
 | FR-033 | El sistema debe rechazar una cuenta de usuario cuya dirección de correo o registro universitario ya pertenece a otra | UC-001 Gestionar usuarios | Must | SRC-004 | Candidate |
-| FR-034 | El sistema debe advertir al administrador cuando la cuenta de usuario que desactiva, o el rol que quita, participa en trámites en curso, y dejar esos trámites pendientes de reasignación | UC-001 Gestionar usuarios | Must | SRC-004 | Candidate |
-| FR-035 | El sistema debe notificar al usuario por correo la creación, desactivación y reactivación de su cuenta de usuario y los cambios de sus roles | UC-001 Gestionar usuarios | Must | SRC-004 | Candidate |
-| FR-036 | El sistema debe rechazar las combinaciones de roles no permitidas: el estudiante, el secretario(a) de dirección de carrera y el administrador tienen un solo rol, y el docente de Taller de Grado solo se combina con el rol de docente | UC-001 Gestionar usuarios | Must | SRC-004 | Candidate |
-| FR-037 | El sistema debe permitir que cada usuario cargue o cambie la foto de perfil de su propia cuenta de usuario | UC-002 Gestionar datos personales | Must | SRC-004 | Candidate |
+| FR-034 | El sistema debe advertir al administrador cuando la cuenta de usuario que desactiva, o el rol que quita, participa en trámites en curso, y dejar esos trámites pendientes de reasignación | UC-001 Gestionar usuarios | Should | SRC-004 | Candidate |
+| FR-035 | El sistema debe notificar al usuario por correo la creación, desactivación y reactivación de su cuenta de usuario y los cambios de sus roles | UC-001 Gestionar usuarios | Should | SRC-004 | Candidate |
+| FR-036 | El sistema debe rechazar las combinaciones de roles no permitidas: el estudiante, el secretario(a) de dirección de carrera y el administrador tienen un solo rol, y el docente de Taller de Grado solo se combina con el rol de docente | UC-001 Gestionar usuarios | Should | SRC-004 | Candidate |
+| FR-037 | El sistema debe permitir que cada usuario cargue o cambie la foto de perfil de su propia cuenta de usuario | UC-002 Gestionar datos personales | Could | SRC-004 | Candidate |
 | FR-038 | El sistema debe rechazar que se desactive, o que pierda el rol de administrador, la única cuenta de administrador activa | UC-001 Gestionar usuarios | Must | SRC-004 | Candidate |
 | FR-039 | El sistema debe rechazar que una segunda cuenta de usuario activa tenga el rol de docente de Taller de Grado | UC-001 Gestionar usuarios | Must | SRC-004 | Candidate |
 | FR-040 | El sistema debe admitir una versión nueva del documento del proyecto solo cuando el tutor observó la versión vigente, o cuando todos los miembros del tribunal la revisaron y al menos uno registró observaciones | UC-004 Gestionar proyecto de grado | Must | SRC-005 | Candidate |
@@ -69,20 +69,21 @@
 | FR-046 | El sistema debe notificar al estudiante las observaciones del tutor cuando este observa una versión | UC-006 Evaluar proyecto de grado | Must | SRC-006 | Candidate |
 | FR-047 | El sistema debe notificar al estudiante el resultado y las observaciones de cada miembro del tribunal cuando los tres revisaron una versión | UC-006 Evaluar proyecto de grado | Must | SRC-006 | Candidate |
 | FR-048 | El sistema debe notificar al estudiante, al secretario(a) de dirección de carrera y al director de carrera cuando el documento del proyecto queda aprobado | UC-006 Evaluar proyecto de grado | Must | SRC-006 | Candidate |
-| FR-049 | El sistema debe permitir que cada usuario modifique la dirección de correo y el teléfono de su propia cuenta de usuario | UC-002 Gestionar datos personales | Must | SRC-007 | Candidate |
+| FR-049 | El sistema debe permitir que cada usuario modifique la dirección de correo y el teléfono de su propia cuenta de usuario | UC-002 Gestionar datos personales | Should | SRC-007 | Candidate |
 | FR-050 | El sistema debe permitir que el director de carrera gestione las cuentas de usuario cuyos roles son docente, docente de Taller de Grado o secretario(a) de dirección de carrera | UC-001 Gestionar usuarios | Must | SRC-007, SRC-008 | Candidate |
 | FR-051 | El sistema debe crear la cuenta de usuario del estudiante cuando el secretario(a) de dirección de carrera abre su trámite de titulación, una vez verificados sus documentos iniciales | UC-003 Gestionar trámite de titulación | Must | SRC-007 | Candidate |
-| FR-052 | El sistema debe mostrar el registro de cambios al administrador, al director de carrera y al secretario(a) de dirección de carrera, a cada uno dentro de su alcance | UC-009 Consultar registro de cambios | Must | SRC-007 | Candidate |
+| FR-052 | El sistema debe mostrar el registro de cambios al administrador, al director de carrera y al secretario(a) de dirección de carrera, a cada uno dentro de su alcance | UC-009 Consultar registro de cambios | Should | SRC-007 | Candidate |
 | FR-053 | El sistema debe permitir que solo el administrador asigne o quite los roles de director de carrera y de administrador, y gestione las cuentas de usuario que los tienen | UC-001 Gestionar usuarios | Must | SRC-008 | Candidate |
-| FR-054 | El sistema debe notificar al estudiante por correo la apertura y el cierre de su trámite de titulación | UC-003 Gestionar trámite de titulación | Must | SRC-009 | Candidate |
-| FR-055 | El sistema debe permitir que el secretario(a) de dirección de carrera reemplace un documento inicial de un trámite de titulación en curso | UC-003 Gestionar trámite de titulación | Must | SRC-009 | Candidate |
+| FR-054 | El sistema debe notificar al estudiante por correo la apertura y el cierre de su trámite de titulación | UC-003 Gestionar trámite de titulación | Should | SRC-009 | Candidate |
+| FR-055 | El sistema debe permitir que el secretario(a) de dirección de carrera reemplace un documento inicial de un trámite de titulación en curso | UC-003 Gestionar trámite de titulación | Should | SRC-009 | Candidate |
 | FR-056 | El sistema debe abrir el trámite de titulación sobre la cuenta de usuario existente del estudiante, y rechazar la apertura si esa cuenta está desactivada o ya tiene un trámite de titulación en curso | UC-003 Gestionar trámite de titulación | Must | SRC-009 | Candidate |
 | FR-057 | El sistema debe notificar al docente de Taller de Grado cada perfil de proyecto que presenta un estudiante | UC-004 Gestionar proyecto de grado | Must | SRC-010 | Candidate |
 | FR-058 | El sistema debe admitir un perfil de proyecto solo cuando el estudiante no tiene uno o su último perfil de proyecto fue rechazado u observado | UC-004 Gestionar proyecto de grado | Must | SRC-010 | Candidate |
-| FR-059 | El sistema debe mostrar al estudiante su proyecto de grado: el título del proyecto, sus perfiles de proyecto y las versiones del documento del proyecto, con el estado de cada uno | UC-004 Gestionar proyecto de grado | Must | SRC-010 | Candidate |
+| FR-059 | El sistema debe mostrar al estudiante su proyecto de grado: el título del proyecto, sus perfiles de proyecto y las versiones del documento del proyecto, con el estado de cada uno | UC-004 Gestionar proyecto de grado | Should | SRC-010 | Candidate |
 
 ### Notes
 
+- Priority: la escala es MoSCoW. **Must**: sin esto la prueba de concepto por correo no lleva un trámite de titulación de la apertura al cierre; incluye las notificaciones que hacen actuar al siguiente actor, porque en la versión por correo son la interfaz. **Should**: importante, pero el flujo funciona sin ello. **Could**: lo primero que se recorta; además tiene reglas sin definir. La prioridad no recorta el alcance de la primera entrega (los diez casos de uso, SRC-011): ordena el trabajo de E2 y C1 y define qué se recorta primero, con acuerdo del docente, si se cumple RSK-005 (2026-11-07).
 - FR-008, FR-040: el estudiante puede entregar la primera versión desde que su perfil de proyecto tiene visto bueno y tiene tutor asignado (SRC-010). Si el tribunal se designa después, revisa la versión vigente que el tutor ya aprobó (FR-042).
 - FR-040, FR-044: cada versión se revisa en dos etapas. Primero la revisa el tutor, como filtro previo; si la observa, el estudiante entrega otra sin que el tribunal la vea. Si la aprueba, pasa a los miembros del tribunal evaluador.
 - FR-004, FR-023, FR-058: el estudiante puede presentar el perfil de proyecto desde que el secretario(a) abre su trámite de titulación. El primer perfil crea el proyecto de grado. Si el docente de Taller de Grado lo rechaza u observa, el estudiante presenta un perfil nuevo, que puede cambiar el título del proyecto; los anteriores se conservan (SRC-010).
@@ -110,7 +111,7 @@
 
 | ID | Requirement | Fit criterion | Scope | Priority | Source |
 | --- | --- | --- | --- | --- | --- |
-| NFR-US-001 | La aplicación web se puede usar desde un celular | TBD | Global | Must | SRC-003 |
+| NFR-US-001 | La aplicación web se puede usar desde un celular | TBD | Global | Should | SRC-003 |
 
 ### Security and Privacy
 
@@ -136,7 +137,7 @@
 | CON-005 | Los documentos iniciales del trámite se entregan como imagen PNG o JPG/JPEG, o como PDF, con un tamaño máximo de 1 MB por archivo | El sistema rechaza archivos que no son PNG, JPG/JPEG o PDF, o que superan 1 MB | UC-003 | Must | SRC-003 |
 | CON-006 (A) | Para la presentación del proyecto, el sistema usa el servidor de correo provisto por el docente de Tecnología Web, `mail.tecnoweb.org.bo`: recibe por POP3 y envía por SMTP, en los puertos por defecto (110 y 25), sin cifrado. El SMTP no pide contraseña y valida al remitente por su dirección IP: el equipo pide al docente que agregue a la lista de direcciones permitidas su dirección IP pública para las pruebas y la de su servidor de despliegue de contingencia; la presentación se hace desde la dirección IP del laboratorio | El sistema recibe y envía todos sus correos a través de `mail.tecnoweb.org.bo` con esa configuración | Global | Must | SRC-003 |
 | CON-007 (A) | Para la presentación del proyecto, el sistema usa la base de datos PostgreSQL provista por el docente de Tecnología Web: base `db_grupo03sc` en el servidor `db.tecnoweb.org.bo`, puerto por defecto (5432), con el usuario y la contraseña que entrega el docente | El sistema guarda todos sus datos en `db_grupo03sc` de `db.tecnoweb.org.bo` | Global | Must | SRC-003 |
-| CON-008 | La foto de perfil se entrega como imagen PNG o JPG/JPEG con un tamaño máximo de 1 MB | El sistema rechaza fotos que no son PNG o JPG/JPEG, o que superan 1 MB | UC-002 | Must | SRC-004 |
+| CON-008 | La foto de perfil se entrega como imagen PNG o JPG/JPEG con un tamaño máximo de 1 MB | El sistema rechaza fotos que no son PNG o JPG/JPEG, o que superan 1 MB | UC-002 | Could | SRC-004 |
 
 ## Out of Scope
 

@@ -6,7 +6,7 @@
 | Iteration | I1 |
 | Primary actor | ACT-010 Usuario |
 | Supporting actors | None |
-| Priority | Must |
+| Priority | Should |
 | Architecturally significant | No: actualiza datos de la propia cuenta de usuario |
 | Feature | FEAT-001 |
 | Functional requirements (derived) | FR-037, FR-049 |
