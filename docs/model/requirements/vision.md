@@ -28,7 +28,7 @@ Con el sistema, cada etapa del trámite queda registrada en un expediente digita
 | FEAT-005 | Revisión, versionado y control de plazos del tribunal | Las observaciones del tribunal, las correcciones del estudiante y sus plazos quedan dispersos en cartas y versiones impresas (CU5, SRC-002) | UC-004, UC-006 | Must |
 | FEAT-006 | Programación y registro de evaluaciones | La programación de la predefensa y la defensa final, sus resultados, el acta de graduación, la entrega de ejemplares y el cierre del expediente se registran en papel (CU6, SRC-002) | UC-003, UC-006, UC-007 | Must |
 | FEAT-007 | Monitoreo, trazabilidad, dashboard y calendario académico | Nadie sabe en qué etapa está un trámite ni qué evaluaciones vienen sin preguntar en la secretaría (CU7, SRC-002) | UC-008, UC-009, UC-010 | Must |
-| FEAT-008 | Reportes y estadísticas | La dirección no puede obtener estadísticas de titulación sin revisar las carpetas una por una (CU8, SRC-002) | UC-010 | Must |
+| FEAT-008 | Reportes y estadísticas | La dirección no puede obtener estadísticas de titulación sin revisar las carpetas una por una (CU8, SRC-002) | UC-010 | Could |
 
 ## Scope
 

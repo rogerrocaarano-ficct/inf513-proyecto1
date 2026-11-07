@@ -6,7 +6,7 @@
 | Iteration | I1 |
 | Primary actor | ACT-008 Administrador, ACT-003 Director de carrera, ACT-002 Secretario(a) de dirección de carrera |
 | Supporting actors | None |
-| Priority | Must |
+| Priority | Should |
 | Architecturally significant | No: consulta de datos ya registrados |
 | Feature | FEAT-007 |
 | Functional requirements (derived) | FR-052 |
