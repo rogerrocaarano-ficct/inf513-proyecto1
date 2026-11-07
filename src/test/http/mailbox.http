@@ -1,0 +1,12 @@
+# Mailbox helpers for the Mailpit API: read the replies of mail-app and clear the mailbox.
+@baseUrl = http://localhost:8025
+@mailbox = admin@mailapp.local
+# Other mailboxes of the examples: secretaria@mailapp.local (replies of 08 to 10),
+# juan.soto@mailapp.local (notices of the student and replies of 11 to 13), taller@mailapp.local (notices of
+# each profile) and tutor@mailapp.local (notices of each version). Change @mailbox to read them.
+
+### Last 10 messages received by @mailbox, newest first
+GET {{baseUrl}}/api/v1/search?query=to:{{mailbox}}&limit=10
+
+### Delete every message in the mailbox
+DELETE {{baseUrl}}/api/v1/messages

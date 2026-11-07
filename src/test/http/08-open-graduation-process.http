@@ -1,0 +1,124 @@
+# AbrirTramite(nombreCompleto; correo; registro; cedula; telefono): opens a graduation process (UC-003)
+# The four initial documents go as attachments, without naming them in the command: the system recognizes
+# each one by a word of its file name (carta, hojadevida or cv, cedula, boleta). PNG, JPG/JPEG or PDF, up to 1 MB.
+# Sends the commands to mail-app through the Mailpit API. The replies arrive after the next poll: see mailbox.http.
+@baseUrl = http://localhost:8025
+@systemAddress = sistema@mailapp.local
+@adminAddress = admin@mailapp.local
+@secretaryAddress = secretaria@mailapp.local
+@studentAddress = juan.soto@mailapp.local
+@registration = 2026101
+
+### Create the secretary account that sends the graduation process commands (UC-001)
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{adminAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "CrearUsuario(Secretaria de Prueba; {{secretaryAddress}}; secretario)",
+  "Text": ""
+}
+
+### Open the process with the four documents: creates the student account and notifies the student twice
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{secretaryAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "AbrirTramite(Juan Soto; {{studentAddress}}; {{registration}}; 1234567; 70000001)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "Carta_Soto.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "CV.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "Cédula.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "boleta-2026.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" }
+  ]
+}
+
+### Rejected: an inline image (a signature logo) is ignored, so it is only rejected because the student already has a process in progress
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{secretaryAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "AbrirTramite(Juan Soto; {{studentAddress}}; {{registration}}; 1234567; 70000001)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "Carta_Soto.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "CV.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "Cédula.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "boleta-2026.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "logo.png", "ContentType": "image/png", "Content": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "ContentID": "logo@mailapp.local" }
+  ]
+}
+
+### Rejected: the enrollment slip is missing
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{secretaryAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "AbrirTramite(Ana Rojas; ana.rojas@mailapp.local; 2026102; 7654321; 70000002)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "Carta_Soto.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "CV.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "Cédula.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" }
+  ]
+}
+
+### Rejected: two request letters
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{secretaryAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "AbrirTramite(Ana Rojas; ana.rojas@mailapp.local; 2026102; 7654321; 70000002)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "Carta_Soto.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "CV.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "Cédula.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "boleta-2026.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "carta2.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" }
+  ]
+}
+
+### Rejected: an attachment whose name is not recognized
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{secretaryAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "AbrirTramite(Ana Rojas; ana.rojas@mailapp.local; 2026102; 7654321; 70000002)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "Carta_Soto.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "CV.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "Cédula.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "foto.png", "ContentType": "image/png", "Content": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" }
+  ]
+}
+
+### Rejected: a Word file
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{secretaryAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "AbrirTramite(Ana Rojas; ana.rojas@mailapp.local; 2026102; 7654321; 70000002)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "Carta_Soto.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "CV.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "Cédula.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" },
+    { "Filename": "boleta.docx", "ContentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "Content": "UEsDBA==" }
+  ]
+}

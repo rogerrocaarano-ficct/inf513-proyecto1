@@ -1,0 +1,85 @@
+# EntregarVersion(comentario): delivers a version of the project document (UC-004 A2, A3)
+# The student sends it, with the document in PDF (up to 25 MB) as the only attachment. Run 11 first. The tutor
+# receives a notice. Each version needs states that UC-005 and UC-006 will register; until then, set them by
+# hand from the repository root, where each request says:
+# 1. The profile approved (before the first version):
+#   docker compose exec postgres psql -U mailapp -d mailapp -c "WITH old AS (SELECT p.id, p.status FROM graduation_projects p JOIN graduation_processes g ON g.id = p.graduation_process_id JOIN user_accounts u ON u.id = g.student_account_id WHERE g.status = 'IN_PROGRESS' AND u.student_registration_number = '2026101'), upd AS (UPDATE graduation_projects p SET status = 'PROFILE_APPROVED', version = version + 1 FROM old WHERE p.id = old.id RETURNING p.id) INSERT INTO change_log_entries (id, actor_id, target_type, target_id, field, old_value, new_value) SELECT gen_random_uuid(), (SELECT id FROM user_accounts WHERE email = 'admin@mailapp.local'), 'GraduationProject', old.id, 'status', old.status, 'PROFILE_APPROVED' FROM old"
+# 2. The tutor (before the first version), after creating the tutor account with the first request:
+#   docker compose exec postgres psql -U mailapp -d mailapp -c "INSERT INTO graduation_process_participants (graduation_process_id, user_account_id, kind) SELECT g.id, t.id, 'TUTOR' FROM graduation_processes g JOIN user_accounts u ON u.id = g.student_account_id, user_accounts t WHERE g.status = 'IN_PROGRESS' AND u.student_registration_number = '2026101' AND t.email = 'tutor@mailapp.local'"
+# 3. The current version approved and the pre-defense approved (before the final defense version):
+#   docker compose exec postgres psql -U mailapp -d mailapp -c "WITH old AS (SELECT p.id, p.status FROM graduation_projects p JOIN graduation_processes g ON g.id = p.graduation_process_id JOIN user_accounts u ON u.id = g.student_account_id WHERE g.status = 'IN_PROGRESS' AND u.student_registration_number = '2026101'), upd AS (UPDATE graduation_projects p SET status = 'APPROVED', version = version + 1 FROM old WHERE p.id = old.id RETURNING p.id) INSERT INTO change_log_entries (id, actor_id, target_type, target_id, field, old_value, new_value) SELECT gen_random_uuid(), (SELECT id FROM user_accounts WHERE email = 'admin@mailapp.local'), 'GraduationProject', old.id, 'status', old.status, 'APPROVED' FROM old"
+#   docker compose exec postgres psql -U mailapp -d mailapp -c "UPDATE graduation_processes SET stage = 'PREDEFENSE_APPROVED' WHERE status = 'IN_PROGRESS' AND student_account_id = (SELECT id FROM user_accounts WHERE student_registration_number = '2026101')"
+# With docker-compose.dev.yml, add -f docker-compose.dev.yml after "docker compose". Use DB_USER and DB_NAME of .env.
+# Sends the commands to mail-app through the Mailpit API. The replies arrive after the next poll: see mailbox.http.
+@baseUrl = http://localhost:8025
+@systemAddress = sistema@mailapp.local
+@adminAddress = admin@mailapp.local
+@studentAddress = juan.soto@mailapp.local
+@tutorAddress = tutor@mailapp.local
+
+### Create the tutor account (UC-001); UC-005 will designate it, set it with psql command 2
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{adminAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "CrearUsuario(Tutor de Prueba; {{tutorAddress}}; docente)",
+  "Text": ""
+}
+
+### Rejected: the profile has no approval yet (before psql command 1)
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{studentAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "EntregarVersion(Primera versión)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "documento.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" }
+  ]
+}
+
+### Version 1, after psql commands 1 and 2: notifies the tutor
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{studentAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "EntregarVersion(Primera versión)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "documento.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" }
+  ]
+}
+
+### Rejected: version 1 is still in review by the tutor
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{studentAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "EntregarVersion(Segunda versión)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "documento-v2.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" }
+  ]
+}
+
+### Version for the final defense, after psql commands 3
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{studentAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "EntregarVersion(Versión para la defensa final)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "documento-final.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" }
+  ]
+}

@@ -1,0 +1,82 @@
+# PresentarPerfil(titulo): presents the project profile of the student's graduation process (UC-004 basic flow, A1)
+# The student sends it, with the profile in PDF (up to 25 MB) as the only attachment. Run 08 first, and these
+# examples (11 to 13) before 10, which closes the process. The thesis workshop professor receives a notice.
+# A new profile is only accepted after the current one is observed or rejected, which UC-006 will register.
+# Until then, set it by hand before the last request, from the repository root:
+#   docker compose exec postgres psql -U mailapp -d mailapp -c "WITH old AS (SELECT p.id, p.status FROM graduation_projects p JOIN graduation_processes g ON g.id = p.graduation_process_id JOIN user_accounts u ON u.id = g.student_account_id WHERE g.status = 'IN_PROGRESS' AND u.student_registration_number = '2026101'), upd AS (UPDATE graduation_projects p SET status = 'PROFILE_OBSERVED', version = version + 1 FROM old WHERE p.id = old.id RETURNING p.id) INSERT INTO change_log_entries (id, actor_id, target_type, target_id, field, old_value, new_value) SELECT gen_random_uuid(), (SELECT id FROM user_accounts WHERE email = 'admin@mailapp.local'), 'GraduationProject', old.id, 'status', old.status, 'PROFILE_OBSERVED' FROM old"
+# The UPDATE changes the status; the INSERT records it in the change log, so ConsultarProyecto() shows it.
+# With docker-compose.dev.yml, add -f docker-compose.dev.yml after "docker compose". Use DB_USER and DB_NAME of .env.
+# Sends the commands to mail-app through the Mailpit API. The replies arrive after the next poll: see mailbox.http.
+@baseUrl = http://localhost:8025
+@systemAddress = sistema@mailapp.local
+@adminAddress = admin@mailapp.local
+@studentAddress = juan.soto@mailapp.local
+@workshopProfessorAddress = taller@mailapp.local
+
+### Create the thesis workshop professor, who receives the notice of each profile (UC-001)
+# Skip it if another active account already has that role: there is only one (FR-039).
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{adminAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "CrearUsuario(Docente de Taller; {{workshopProfessorAddress}}; docente, docente de taller de grado)",
+  "Text": ""
+}
+
+### Rejected: the attachment is not a PDF
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{studentAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "PresentarPerfil(Sistema de ventas)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "perfil.docx", "ContentType": "application/octet-stream", "Content": "UEsDBA==" }
+  ]
+}
+
+### Present the first profile: creates the graduation project and notifies the thesis workshop professor
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{studentAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "PresentarPerfil(Sistema de inventario)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "perfil.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" }
+  ]
+}
+
+### Rejected: the current profile is still pending evaluation
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{studentAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "PresentarPerfil(Sistema de ventas)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "perfil2.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" }
+  ]
+}
+
+### New profile, after setting PROFILE_OBSERVED with the psql command above: changes the title
+POST {{baseUrl}}/api/v1/send
+Content-Type: application/json
+
+{
+  "From": { "Email": "{{studentAddress}}" },
+  "To": [{ "Email": "{{systemAddress}}" }],
+  "Subject": "PresentarPerfil(Sistema de ventas)",
+  "Text": "",
+  "Attachments": [
+    { "Filename": "perfil2.pdf", "ContentType": "application/pdf", "Content": "JVBERi0xLjQKJSVFT0YK" }
+  ]
+}

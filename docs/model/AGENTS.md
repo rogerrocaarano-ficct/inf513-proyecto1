@@ -14,11 +14,13 @@ rules specific to its artifacts; read this file first. How to work with git
 | `use-cases/` | Requirements, analysis, design | Use-case catalog, actors and one folder per use case with its description and its analysis and design realizations |
 | `analysis/` | Analysis | Analysis packages, their classes and the analysis mechanisms |
 | `design/` | Design | Architecture, subsystems and interfaces, deployment, logical database model |
+| `management/` | Management (not a workflow) | Risk list, project plan and iteration plans |
 
 Order of work: vision → actors and use cases → requirements → analysis
 (packages, classes, analysis realizations) → design (architecture,
 subsystems and interfaces, deployment and database, design realizations). The
-glossary grows alongside all of them. The order is a guide, not a waterfall:
+glossary grows alongside all of them, and the risk list is reviewed in every
+iteration. The order is a guide, not a waterfall:
 each iteration goes through the workflows it needs, and later workflows feed
 corrections back to earlier ones.
 
@@ -70,6 +72,7 @@ corrections back to earlier ones.
 | `UC` | Use case | `use-cases/use-cases.md` |
 | `AM` | Analysis mechanism | `analysis/architecture.md` |
 | `AD` | Architectural decision | `design/architecture.md` |
+| `RSK` | Risk | `management/risks.md` |
 
 - Steps of a use case: `3` (basic flow), `A1`, `A1.2` (alternative flow),
   `E1`, `E1.1` (exception). See `use-cases/AGENTS.md`.
