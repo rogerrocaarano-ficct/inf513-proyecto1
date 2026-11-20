@@ -42,9 +42,17 @@ instead of copying it to another document.
   running.
 - Run the application against a container database:
   `./gradlew bootTestRun` (it starts `TestCpmsApplication`).
-- The base package is `bo.org.tecnoweb.cpms`. The package structure below it
-  is not fixed yet: propose it to the user before creating the first
-  packages, and record it here once it is agreed.
+- The base package is `bo.org.tecnoweb.cpms`. Below it there is one package
+  per EA design subsystem, each split in layers:
+
+  | Package | Content |
+  | --- | --- |
+  | `common` | Shared domain types from `Design/common` (`AggregateRoot`, `DomainEvent`, `DomainException`, …), no layers |
+  | `<subsystem>.domain` | Domain classes of the EA package `Design/<Subsystem>/domain`, without framework annotations |
+  | `<subsystem>.application` | Application services and ports (interfaces) of `Design/<Subsystem>/application` |
+  | `<subsystem>.infrastructure` | Adapters that implement the ports (JPA, POP3, SMTP, schedulers, configuration). Not modeled in EA |
+
+  Subsystems: `mail`, `users`. A new subsystem follows the same layers.
 - Add a dependency only when a use case needs it, and say why in the commit.
 
 ## Languages

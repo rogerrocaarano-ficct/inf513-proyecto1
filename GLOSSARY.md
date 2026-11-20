@@ -8,7 +8,8 @@
 | Calendario académico | Vista de las predefensas y defensas finales programadas, por fecha | |
 | Calificación final | Nota que el tribunal evaluador asigna al proyecto al concluir la defensa final | |
 | Cédula de identidad | Número del documento de identidad del estudiante, registrado en su cuenta de usuario | |
-| Comando | Solicitud que el usuario escribe en el asunto de un correo con la forma de una llamada a función, `Comando(arg1; arg2; …)`, con los argumentos separados por punto y coma, en la prueba de concepto por correo | |
+| Comando | Solicitud que el usuario escribe en el asunto de un correo con la forma `Comando[arg1; arg2; …]`, con los argumentos separados por punto y coma, en la prueba de concepto por correo | `EmailCommandHandler` (atiende un comando; su nombre es `actionKey`) |
+| Correo recibido | Correo que el sistema lee del buzón y guarda para procesar el comando de su asunto | `ReceivedEmail` |
 | Cronograma de defensas | Fechas, horas y lugares de las defensas que programa el director de carrera | |
 | Cuenta de usuario | Registro de un usuario en el sistema con su nombre completo, dirección de correo, uno o más roles, foto de perfil opcional y estado (activa o desactivada); la de un estudiante incluye su registro universitario, cédula de identidad y teléfono | |
 | Dashboard | Panel con indicadores de los trámites de titulación en curso | |
@@ -40,7 +41,7 @@
 | Revisor | Tutor o miembro del tribunal evaluador designado en un trámite para revisar el documento del proyecto | |
 | Rol | Función general que una cuenta de usuario tiene en el sistema, una o varias por cuenta: estudiante, docente, docente de Taller de Grado, secretario(a) de dirección de carrera, director de carrera o administrador | |
 | Secretario(a) de dirección de carrera | Personal de la Dirección de Carrera que recibe los documentos del trámite y lleva el expediente de titulación | |
-| Servicio de correo | Servicio de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones | |
+| Servicio de correo | Servicio de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones | `EmailInbox` (recepción), `EmailSender` (envío) |
 | Solicitud de titulación | Pedido del estudiante para iniciar el trámite de titulación, que acompaña a los documentos iniciales | |
 | Título del proyecto | Nombre del proyecto de grado que el estudiante indica al presentar su perfil de proyecto; un perfil de proyecto nuevo puede cambiarlo | |
 | Trámite de titulación | Proceso que sigue un estudiante desde su solicitud de titulación hasta el archivo de su expediente | |
