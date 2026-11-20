@@ -1,0 +1,55 @@
+schema: spec-driven
+
+context: |
+  Write all artifacts in Spanish; code names stay in English.
+  The use cases, analysis and design live in the Enterprise Architect model,
+  read through the Enterprise Architect MCP server. Read the
+  elements that realize the use case before writing any artifact, and cite
+  them by package path and name.
+  Warn the user about anything the change needs that the EA model does not
+  back (missing or contradicting classes, operations, attributes, relations
+  or behavior), and ask before going on. Do not modify the EA model unless
+  the user asks.
+  If the EA tools do not respond, stop and ask the user to open EA with the
+  project loaded.
+
+rules:
+  proposal:
+    - Name the use case (UC-xxx in README.md) or the shared work the change belongs to
+    - List the EA elements and diagrams the change is based on
+  design:
+    - Follow the EA design; names of classes, interfaces and operations come from the model
+    - Record every gap with the EA model under a heading "Diferencias con el modelo", or write "Ninguna"
+  tasks:
+    - Include a task to check the implementation against the EA elements cited in the design
+
+# Project context (optional)
+# Add only constraints that should guide OpenSpec artifacts and workflows.
+# Include constraints an agent cannot infer by reading the code.
+# Keep general project documentation and discoverable codebase facts out.
+# Example:
+#   context: |
+#     Designs and tasks must cover Windows, macOS, and Linux
+#     Write all artifacts in Spanish
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
