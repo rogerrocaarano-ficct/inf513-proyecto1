@@ -45,6 +45,9 @@ class UserAccountEntity {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(nullable = false)
+    private boolean active;
+
     /**
      * Constructor required by JPA.
      */
@@ -126,5 +129,13 @@ class UserAccountEntity {
 
     void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    boolean isActive() {
+        return active;
+    }
+
+    void setActive(boolean active) {
+        this.active = active;
     }
 }

@@ -12,6 +12,7 @@ package bo.org.tecnoweb.cpms.users.application;
  * @param emailAddress email address of the account
  * @param role         label of the role, e.g. {@code docente}
  * @param ci           identity card number, or {@code null} if it has none
+ * @param active       {@code true} if the account is active; disabled accounts are listed too
  */
 public record ListUsersQueryItem(
         String fullName,
@@ -19,5 +20,6 @@ public record ListUsersQueryItem(
         String code,
         String emailAddress,
         String role,
-        String ci) {
+        String ci,
+        boolean active) {
 }

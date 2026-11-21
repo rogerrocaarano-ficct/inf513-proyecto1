@@ -124,6 +124,7 @@ class JpaUserRepository implements UserRepository {
         entity.setCi(user.getCi());
         entity.setUagrmCode(user.getUagrmCode());
         entity.setPhoneNumber(user.getPhoneNumber());
+        entity.setActive(user.isActive());
     }
 
     private static User toDomain(UserAccountEntity entity) {
@@ -136,6 +137,7 @@ class JpaUserRepository implements UserRepository {
                 .withSecondLastName(entity.getSecondLastName())
                 .withCi(entity.getCi())
                 .withUagrmCode(entity.getUagrmCode())
-                .withPhoneNumber(entity.getPhoneNumber());
+                .withPhoneNumber(entity.getPhoneNumber())
+                .withActive(entity.isActive());
     }
 }

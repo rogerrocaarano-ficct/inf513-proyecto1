@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -23,6 +24,9 @@ class JpaUserRepositoryTest {
 
     @Autowired
     private SpringDataUserAccountRepository springData;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @BeforeEach
     void clean() {
@@ -123,5 +127,26 @@ class JpaUserRepositoryTest {
         assertThatThrownBy(() -> repository.update(ana.withEmailAddress("luis@uagrm.bo")))
                 .isInstanceOfSatisfying(DomainValidationException.class,
                         e -> assertThat(e.getErrors()).containsOnlyKeys(User.EMAIL));
+    }
+
+    @Test
+    void updateStoresTheStatusAndReadsReturnIt() {
+        User ana = account("ana@uagrm.bo", "218001234");
+        repository.insert(ana);
+        assertThat(repository.getById(ana.getId()).orElseThrow().isActive()).isTrue();
+
+        repository.update(ana.withActive(false));
+
+        assertThat(repository.getByEmail("ana@uagrm.bo").orElseThrow().isActive()).isFalse();
+        assertThat(repository.getByRole(Role.STUDENT)).singleElement()
+                .satisfies(read -> assertThat(read.isActive()).isFalse());
+    }
+
+    @Test
+    void rowWithoutStatusIsActive() {
+        jdbc.update("INSERT INTO user_account (id, email_address, role, first_name, last_name) "
+                + "VALUES (gen_random_uuid(), 'old@uagrm.bo', 'PROFESSOR', 'Luis', 'Rojas')");
+
+        assertThat(repository.getByEmail("old@uagrm.bo").orElseThrow().isActive()).isTrue();
     }
 }

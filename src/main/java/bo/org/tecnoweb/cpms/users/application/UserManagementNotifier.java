@@ -1,5 +1,7 @@
 package bo.org.tecnoweb.cpms.users.application;
 
+import bo.org.tecnoweb.cpms.users.domain.UserDisabledEvent;
+import bo.org.tecnoweb.cpms.users.domain.UserEnabledEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserSignedUpEvent;
 
 /**
@@ -23,4 +25,20 @@ public interface UserManagementNotifier {
      * @param queryResult the accounts and the requester
      */
     void sendUserList(ListUsersQueryResult queryResult);
+
+    /**
+     * Confirms to the requester that an account was disabled and notifies that account (UC-001 A2,
+     * FR-035).
+     *
+     * @param event the disabled account and its requester
+     */
+    void notifyUserDisabled(UserDisabledEvent event);
+
+    /**
+     * Confirms to the requester that an account was enabled again and notifies that account (UC-001 A2,
+     * FR-035).
+     *
+     * @param event the enabled account and its requester
+     */
+    void notifyUserEnabled(UserEnabledEvent event);
 }

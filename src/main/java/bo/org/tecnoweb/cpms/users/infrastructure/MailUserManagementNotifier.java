@@ -5,6 +5,8 @@ import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.users.application.ListUsersQueryItem;
 import bo.org.tecnoweb.cpms.users.application.ListUsersQueryResult;
 import bo.org.tecnoweb.cpms.users.application.UserManagementNotifier;
+import bo.org.tecnoweb.cpms.users.domain.UserDisabledEvent;
+import bo.org.tecnoweb.cpms.users.domain.UserEnabledEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserSignedUpEvent;
 import java.util.List;
 import org.slf4j.Logger;
@@ -98,8 +100,8 @@ class MailUserManagementNotifier implements UserManagementNotifier {
     }
 
     /**
-     * Body of the list: one numbered entry per account, with {@code -} for missing data, or a notice
-     * when there are no accounts.
+     * Body of the list: one numbered entry per account, with {@code -} for missing data and its status,
+     * or a notice when there are no accounts.
      *
      * @param result the list
      * @return the body
@@ -115,9 +117,100 @@ class MailUserManagementNotifier implements UserManagementNotifier {
                     .append("   Correo: ").append(user.emailAddress()).append('\n')
                     .append("   CI: ").append(orDash(user.ci()))
                     .append(" | Código: ").append(orDash(user.code()))
-                    .append(" | Teléfono: ").append(orDash(user.phoneNumber())).append('\n');
+                    .append(" | Teléfono: ").append(orDash(user.phoneNumber())).append('\n')
+                    .append("   Estado: ").append(user.active() ? "activa" : "desactivada").append('\n');
         }
         return body.toString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void notifyUserDisabled(UserDisabledEvent event) {
+        publisher.publishEvent(event);
+    }
+
+    /**
+     * Sends the confirmation to the requester and the notice to the disabled account (FR-035), after
+     * the commit.
+     *
+     * @param event the disabled account and its requester
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void onUserDisabled(UserDisabledEvent event) {
+        userDisabledMails(event).forEach(mail -> send(mail.to(), mail.subject(), mail.body()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void notifyUserEnabled(UserEnabledEvent event) {
+        publisher.publishEvent(event);
+    }
+
+    /**
+     * Sends the confirmation to the requester and the notice to the enabled account (FR-035), after the
+     * commit.
+     *
+     * @param event the enabled account and its requester
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void onUserEnabled(UserEnabledEvent event) {
+        userEnabledMails(event).forEach(mail -> send(mail.to(), mail.subject(), mail.body()));
+    }
+
+    /**
+     * Emails of a disabled account: the confirmation to the requester and the notice to the account.
+     *
+     * @param event the disabled account and its requester
+     * @return the two emails
+     */
+    static List<OutgoingMail> userDisabledMails(UserDisabledEvent event) {
+        return List.of(
+                new OutgoingMail(event.requesterUserEmail(), "Cuenta desactivada: " + event.disabledUserFullName(),
+                        "Se desactivó la cuenta de " + event.disabledUserFullName() + " (" + event.disabledUserEmail()
+                                + ").\n\n"
+                                + "Esa persona ya no puede enviar comandos al sistema; su historial se conserva."),
+                new OutgoingMail(event.disabledUserEmail(),
+                        "Su cuenta en el sistema de trámites de titulación fue desactivada",
+                        "Hola, " + event.disabledUserFullName() + ":\n\n"
+                                + event.requesterUserFullName()
+                                + " desactivó su cuenta en el sistema de trámites de titulación.\n\n"
+                                + "Desde ahora el sistema no atenderá los comandos que envíe desde esta dirección. "
+                                + "Si cree que es un error, comuníquese con la Dirección de Carrera."));
+    }
+
+    /**
+     * Emails of an enabled account: the confirmation to the requester and the notice to the account.
+     *
+     * @param event the enabled account and its requester
+     * @return the two emails
+     */
+    static List<OutgoingMail> userEnabledMails(UserEnabledEvent event) {
+        return List.of(
+                new OutgoingMail(event.requesterUserEmail(), "Cuenta activada: " + event.enabledUserFullName(),
+                        "Se activó la cuenta de " + event.enabledUserFullName() + " (" + event.enabledUserEmail()
+                                + ").\n\n"
+                                + "Esa persona ya puede volver a enviar comandos al sistema."),
+                new OutgoingMail(event.enabledUserEmail(),
+                        "Su cuenta en el sistema de trámites de titulación fue activada",
+                        "Hola, " + event.enabledUserFullName() + ":\n\n"
+                                + event.requesterUserFullName()
+                                + " activó nuevamente su cuenta en el sistema de trámites de titulación.\n\n"
+                                + "Desde esta dirección (" + event.enabledUserEmail()
+                                + ") puede volver a enviar solicitudes al sistema."));
+    }
+
+    /**
+     * One email to send.
+     *
+     * @param to      recipient address
+     * @param subject subject
+     * @param body    plain-text body
+     */
+    record OutgoingMail(String to, String subject, String body) {
     }
 
     private static String orDash(String value) {
