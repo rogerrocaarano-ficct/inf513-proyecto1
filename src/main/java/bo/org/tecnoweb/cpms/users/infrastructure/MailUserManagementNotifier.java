@@ -2,7 +2,9 @@ package bo.org.tecnoweb.cpms.users.infrastructure;
 
 import bo.org.tecnoweb.cpms.mail.application.EmailSender;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
-import bo.org.tecnoweb.cpms.users.application.UserManagementEventBus;
+import bo.org.tecnoweb.cpms.users.application.ListUsersQueryItem;
+import bo.org.tecnoweb.cpms.users.application.ListUsersQueryResult;
+import bo.org.tecnoweb.cpms.users.application.UserManagementNotifier;
 import bo.org.tecnoweb.cpms.users.domain.UserSignedUpEvent;
 import java.util.List;
 import org.slf4j.Logger;
@@ -13,27 +15,27 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
- * Implementation of {@link UserManagementEventBus} that answers and notifies by email.
+ * Implementation of {@link UserManagementNotifier} that answers and notifies by email.
  *
  * <p>Events are published as Spring application events and the emails are sent only after the
  * transaction of the use case commits: if it rolls back, no email leaves. A failure sending an email
  * is logged and does not undo the account.
  */
 @Component
-class MailUserManagementEventBus implements UserManagementEventBus {
+class MailUserManagementNotifier implements UserManagementNotifier {
 
-    private static final Logger log = LoggerFactory.getLogger(MailUserManagementEventBus.class);
+    private static final Logger log = LoggerFactory.getLogger(MailUserManagementNotifier.class);
 
     private final ApplicationEventPublisher publisher;
     private final EmailSender outbox;
 
     /**
-     * Creates the bus.
+     * Creates the notifier.
      *
      * @param publisher Spring's event publisher
      * @param outbox    SMTP port of the mail subsystem
      */
-    MailUserManagementEventBus(ApplicationEventPublisher publisher, EmailSender outbox) {
+    MailUserManagementNotifier(ApplicationEventPublisher publisher, EmailSender outbox) {
         this.publisher = publisher;
         this.outbox = outbox;
     }
@@ -42,7 +44,7 @@ class MailUserManagementEventBus implements UserManagementEventBus {
      * {@inheritDoc}
      */
     @Override
-    public void notifyUserSignedUpEvent(UserSignedUpEvent event) {
+    public void notifyUserSignedUp(UserSignedUpEvent event) {
         publisher.publishEvent(event);
     }
 
@@ -65,6 +67,61 @@ class MailUserManagementEventBus implements UserManagementEventBus {
                         + "Desde esta dirección (" + event.signedUpUser() + ") puede enviar solicitudes al sistema "
                         + "escribiendo el comando en el asunto del correo. "
                         + ReceivedEmail.SYNTAX_HELP);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void sendUserList(ListUsersQueryResult queryResult) {
+        publisher.publishEvent(queryResult);
+    }
+
+    /**
+     * Sends the list to the requester, after the commit (UC-001 A3).
+     *
+     * @param result the accounts and the requester
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void onUserList(ListUsersQueryResult result) {
+        send(result.requesterUserEmail(), userListSubject(result), userListBody(result));
+    }
+
+    /**
+     * Subject of the list: {@code Cuentas de usuario: <role> (<count>)}.
+     *
+     * @param result the list
+     * @return the subject
+     */
+    static String userListSubject(ListUsersQueryResult result) {
+        return "Cuentas de usuario: " + result.role() + " (" + result.users().size() + ")";
+    }
+
+    /**
+     * Body of the list: one numbered entry per account, with {@code -} for missing data, or a notice
+     * when there are no accounts.
+     *
+     * @param result the list
+     * @return the body
+     */
+    static String userListBody(ListUsersQueryResult result) {
+        if (result.users().isEmpty()) {
+            return "No hay cuentas con rol " + result.role() + ".";
+        }
+        StringBuilder body = new StringBuilder("Cuentas con rol ").append(result.role()).append(":\n");
+        int number = 1;
+        for (ListUsersQueryItem user : result.users()) {
+            body.append('\n').append(number++).append(". ").append(user.fullName()).append('\n')
+                    .append("   Correo: ").append(user.emailAddress()).append('\n')
+                    .append("   CI: ").append(orDash(user.ci()))
+                    .append(" | Código: ").append(orDash(user.code()))
+                    .append(" | Teléfono: ").append(orDash(user.phoneNumber())).append('\n');
+        }
+        return body.toString();
+    }
+
+    private static String orDash(String value) {
+        return value == null || value.isBlank() ? "-" : value;
     }
 
     private void send(String to, String subject, String body) {

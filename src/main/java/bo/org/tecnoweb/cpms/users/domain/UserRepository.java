@@ -1,6 +1,7 @@
 package bo.org.tecnoweb.cpms.users.domain;
 
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,4 +43,13 @@ public interface UserRepository {
      * @return the account, or empty if it does not exist
      */
     Optional<User> getById(UUID id);
+
+    /**
+     * Finds every account of a role.
+     *
+     * @param role the role
+     * @return the accounts of that role, ordered by first surname, second surname (an account without
+     *         one goes first) and names; empty if there are none
+     */
+    List<User> getByRole(Role role);
 }

@@ -81,3 +81,35 @@ usuarios.crearCuenta[Ana María; Pérez; Rojas; 1234567; 218001234; ana@uagrm.bo
 usuarios.crearCuenta[Luis; Rojas; ; ; ; luis@uagrm.bo; ; docente]
 usuarios.crearCuenta[Carla; Suárez; Vaca; ; 100; carla@uagrm.bo; ; director]
 ```
+
+### `usuarios.listar`: listar las cuentas de un rol
+
+Envía la lista de las cuentas que tienen un rol (UC-001). Recibe 1 argumento y ningún adjunto.
+
+```text
+usuarios.listar[rol]
+```
+
+El rol es obligatorio y se escribe como en `usuarios.crearCuenta`, sin distinguir mayúsculas. `usuarios.listar[]` se rechaza porque falta el argumento.
+
+**Quién puede listar cada rol:** los mismos que pueden crear cuentas de ese rol (ver la tabla de `usuarios.crearCuenta`). El administrador lista todos los roles; el director, `docente`, `docente_taller`, `administrativo` y `estudiante`; el administrativo, `estudiante`. Docentes, docente de Taller de Grado y estudiantes no listan cuentas.
+
+**Respuesta:** solo quien envió el comando recibe la lista; las cuentas listadas no reciben ningún correo. El asunto indica el rol y la cantidad de cuentas. Cada cuenta muestra su nombre completo, correo, CI, código y teléfono, con `-` en los datos que no tiene; las cuentas van ordenadas por primer apellido, segundo apellido y nombres. El correo es el dato que identifica a la cuenta en los demás comandos. Si no hay cuentas con ese rol, la respuesta lo dice; no es un error.
+
+**Ejemplo:** `usuarios.listar[estudiante]` responde:
+
+```text
+Asunto: Cuentas de usuario: estudiante (2)
+
+Cuentas con rol estudiante:
+
+1. Beto Arce
+   Correo: beto@uagrm.bo
+   CI: 7654321 | Código: 218005678 | Teléfono: 70000000
+
+2. Ana María Pérez Rojas
+   Correo: ana@uagrm.bo
+   CI: 1234567 | Código: 218001234 | Teléfono: 71234567
+```
+
+Sin cuentas del rol, `usuarios.listar[docente_taller]` responde con el asunto `Cuentas de usuario: docente_taller (0)` y el texto `No hay cuentas con rol docente_taller.`
