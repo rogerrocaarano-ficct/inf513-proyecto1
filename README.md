@@ -148,12 +148,20 @@ La aplicación está lista cuando la consola muestra `Started CpmsApplication`.
 
 ### Probar un comando
 
-1. Abrir <http://localhost:8025>.
-2. Iniciar sesión con cualquier dirección del dominio `cpms.local` y cualquier contraseña, por ejemplo `ana@cpms.local`. Cada dirección tiene su propio buzón, así que se pueden simular varios usuarios (director, secretario(a), estudiante…) entrando con direcciones distintas.
-3. Redactar un correo a `sistema@cpms.local` con el comando en el asunto, por ejemplo `usuarios.listar[]`. El cuerpo puede ir vacío.
-4. La aplicación revisa el buzón cada 10 segundos. La respuesta llega a la bandeja de entrada del mismo usuario en Roundcube.
+Al arrancar, la aplicación crea la cuenta de administrador **`admin@cpms.local`**: es la única cuenta que existe al principio, y con ella se crean las demás. El sistema solo atiende comandos de direcciones que tienen cuenta; a cualquier otra le responde que no está registrada.
 
-La sintaxis de los comandos es `comando[arg1; arg2; …]` (NFR-003). Mientras no haya casos de uso implementados, todo comando recibe la respuesta "El comando … no existe".
+1. Abrir <http://localhost:8025>.
+2. Iniciar sesión como `admin@cpms.local`, con cualquier contraseña. Cada dirección del dominio `cpms.local` tiene su propio buzón, así que para actuar como otro usuario se cierra la sesión y se entra con su dirección.
+3. Redactar un correo a `sistema@cpms.local` con el comando en el asunto. Por ejemplo, para crear la cuenta de una directora:
+
+   ```text
+   usuarios.crearCuenta[Carla; Suárez; Vaca; ; 100; carla@cpms.local; ; director]
+   ```
+
+4. La aplicación revisa el buzón cada 10 segundos. La respuesta llega a la bandeja de entrada de quien envió el comando, y la cuenta nueva recibe un aviso en su propio buzón.
+5. Entrar como `carla@cpms.local` y crear, por ejemplo, la cuenta de un docente: `usuarios.crearCuenta[Luis; Rojas; ; ; ; luis@cpms.local; ; docente]`.
+
+La sintaxis de los comandos, cada comando con sus argumentos y las respuestas del sistema están en la [guía de comandos](USER-GUIDE.md).
 
 ### Detener y reiniciar
 
