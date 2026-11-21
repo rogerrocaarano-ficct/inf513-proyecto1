@@ -60,19 +60,22 @@ public class User implements AggregateRoot {
     private String ci;
     private String uagrmCode;
     private String phoneNumber;
+    private boolean active;
     private final List<DomainEvent> events = new ArrayList<>();
 
     private User() {
     }
 
     /**
-     * Starts a new account with a new identity.
+     * Starts a new account with a new identity. A new account is active.
      *
-     * @return an empty account with a random identifier, to complete with the {@code with*} methods
+     * @return an empty, active account with a random identifier, to complete with the {@code with*}
+     *         methods
      */
     public static User builder() {
         User user = new User();
         user.id = UUID.randomUUID();
+        user.active = true;
         return user;
     }
 
@@ -187,6 +190,17 @@ public class User implements AggregateRoot {
     }
 
     /**
+     * Sets the status, when the account is read from storage. Raises no events.
+     *
+     * @param active {@code true} if the account is active
+     * @return this account
+     */
+    public User withActive(boolean active) {
+        this.active = active;
+        return this;
+    }
+
+    /**
      * Registers this new account on behalf of a requester.
      *
      * <p>First checks that the requester's role allows creating accounts of this account's role. Then
@@ -219,6 +233,43 @@ public class User implements AggregateRoot {
         events.add(new UserSignedUpEvent(emailAddress, getFullName(), role.getLabel(), Instant.now(),
                 requester.getFullName(), requester.getEmailAddress()));
         return this;
+    }
+
+    /**
+     * Disables this account on behalf of a requester (UC-001 A2) and raises a {@link UserDisabledEvent}.
+     *
+     * <p>Who may disable which account is checked by the use case, not here.
+     *
+     * @param requester the account that asked to disable this one
+     * @throws DomainValidationException if this account is already disabled
+     */
+    public void disable(User requester) {
+        Objects.requireNonNull(requester, "requester");
+        if (!active) {
+            throw new DomainValidationException(Map.of(EMAIL, "La cuenta " + emailAddress + " ya está desactivada."));
+        }
+        active = false;
+        events.add(new UserDisabledEvent(emailAddress, getFullName(), Instant.now(), requester.getFullName(),
+                requester.getEmailAddress()));
+    }
+
+    /**
+     * Enables this disabled account again on behalf of a requester (UC-001 A2) and raises a {@link
+     * UserEnabledEvent}.
+     *
+     * <p>Who may enable which account is checked by the use case, not here.
+     *
+     * @param requester the account that asked to enable this one
+     * @throws DomainValidationException if this account is already active
+     */
+    public void enable(User requester) {
+        Objects.requireNonNull(requester, "requester");
+        if (active) {
+            throw new DomainValidationException(Map.of(EMAIL, "La cuenta " + emailAddress + " ya está activa."));
+        }
+        active = true;
+        events.add(new UserEnabledEvent(emailAddress, getFullName(), Instant.now(), requester.getFullName(),
+                requester.getEmailAddress()));
     }
 
     private void validate() {
@@ -293,6 +344,15 @@ public class User implements AggregateRoot {
      */
     public boolean hasPermissionTo(RolePermission rolePermission) {
         return role != null && role.isAllowedTo(rolePermission);
+    }
+
+    /**
+     * Tells whether the account is active. A disabled account may not send commands (FR-032).
+     *
+     * @return {@code true} if the account is active
+     */
+    public boolean isActive() {
+        return active;
     }
 
     /**

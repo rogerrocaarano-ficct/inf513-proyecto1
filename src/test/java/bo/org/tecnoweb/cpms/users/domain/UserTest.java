@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -55,6 +56,18 @@ class UserTest {
             assertThat(user.getRole()).isEqualTo(Role.PROFESSOR);
             assertThat(user.getFullName()).isEqualTo("Luis Vaca");
             assertThat(user.pullEvents()).isEmpty();
+        }
+
+        @Test
+        void newAccountIsActive() {
+            assertThat(User.builder().isActive()).isTrue();
+            assertThat(newStudent().signUp(ADMIN).isActive()).isTrue();
+        }
+
+        @Test
+        void rehydratedAccountTakesItsStatus() {
+            assertThat(account(Role.STUDENT).withActive(false).isActive()).isFalse();
+            assertThat(account(Role.STUDENT).withActive(true).isActive()).isTrue();
         }
 
         @Test
@@ -180,6 +193,68 @@ class UserTest {
             User professor = newStudent().withRole(Role.PROFESSOR).withPhoneNumber("abc");
 
             assertThat(validationError(professor, account(Role.DIRECTOR)).getErrors()).containsOnlyKeys(User.PHONE);
+        }
+    }
+
+    @Nested
+    class ChangeStatus {
+
+        private final User director = account(Role.DIRECTOR);
+
+        private User professor(boolean active) {
+            return User.rehydrate().withId(UUID.randomUUID()).withEmailAddress("luis@uagrm.bo")
+                    .withFirstName("Luis").withLastName("Rojas").withRole(Role.PROFESSOR).withActive(active);
+        }
+
+        @Test
+        void disableDeactivatesAndRaisesTheEvent() {
+            User luis = professor(true);
+
+            luis.disable(director);
+
+            assertThat(luis.isActive()).isFalse();
+            assertThat(luis.pullEvents()).singleElement().isInstanceOfSatisfying(UserDisabledEvent.class, e -> {
+                assertThat(e.disabledUserEmail()).isEqualTo("luis@uagrm.bo");
+                assertThat(e.disabledUserFullName()).isEqualTo("Luis Rojas");
+                assertThat(e.requesterUserEmail()).isEqualTo(director.getEmailAddress());
+                assertThat(e.requesterUserFullName()).isEqualTo("Ana Rojas");
+                assertThat(e.occurredOn()).isNotNull();
+            });
+        }
+
+        @Test
+        void enableActivatesAndRaisesTheEvent() {
+            User luis = professor(false);
+
+            luis.enable(director);
+
+            assertThat(luis.isActive()).isTrue();
+            assertThat(luis.pullEvents()).singleElement().isInstanceOfSatisfying(UserEnabledEvent.class, e -> {
+                assertThat(e.enabledUserEmail()).isEqualTo("luis@uagrm.bo");
+                assertThat(e.enabledUserFullName()).isEqualTo("Luis Rojas");
+                assertThat(e.requesterUserEmail()).isEqualTo(director.getEmailAddress());
+            });
+        }
+
+        @Test
+        void disablingADisabledAccountIsRejectedWithoutEvents() {
+            User luis = professor(false);
+
+            assertThatThrownBy(() -> luis.disable(director))
+                    .isInstanceOfSatisfying(DomainValidationException.class, e -> assertThat(e.getErrors())
+                            .containsExactly(Map.entry(User.EMAIL, "La cuenta luis@uagrm.bo ya está desactivada.")));
+            assertThat(luis.isActive()).isFalse();
+            assertThat(luis.pullEvents()).isEmpty();
+        }
+
+        @Test
+        void enablingAnActiveAccountIsRejectedWithoutEvents() {
+            User luis = professor(true);
+
+            assertThatThrownBy(() -> luis.enable(director))
+                    .isInstanceOfSatisfying(DomainValidationException.class, e -> assertThat(e.getErrors())
+                            .containsExactly(Map.entry(User.EMAIL, "La cuenta luis@uagrm.bo ya está activa.")));
+            assertThat(luis.pullEvents()).isEmpty();
         }
     }
 }

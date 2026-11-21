@@ -3,8 +3,8 @@ package bo.org.tecnoweb.cpms.users.domain;
 import bo.org.tecnoweb.cpms.common.DomainException;
 
 /**
- * The sender of a command may not perform it: the address has no account, or the account's role
- * lacks the permission (UC-001, E1).
+ * The sender of a command may not perform it: the address has no account, the account is disabled, or
+ * the account's role lacks the permission (UC-001, E1).
  */
 public class UserNotAuthorizedException extends DomainException {
 
@@ -34,5 +34,16 @@ public class UserNotAuthorizedException extends DomainException {
     public static UserNotAuthorizedException notRegistered(String email) {
         return new UserNotAuthorizedException("La dirección " + email + " no está registrada en el sistema. "
                 + "Solicite una cuenta a la Dirección de Carrera.");
+    }
+
+    /**
+     * The account exists but is disabled, so it may not use the system (FR-032).
+     *
+     * @param email the sender's address
+     * @return the exception, with a message saying the account is disabled
+     */
+    public static UserNotAuthorizedException disabled(String email) {
+        return new UserNotAuthorizedException("La cuenta " + email + " está desactivada. "
+                + "Comuníquese con la Dirección de Carrera.");
     }
 }

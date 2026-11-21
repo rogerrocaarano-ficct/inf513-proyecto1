@@ -9,7 +9,8 @@ import java.util.Set;
  *
  * <p>The {@code SIGNUP_<role>} permissions allow creating accounts of that role, and the {@code
  * LIST_<role>} permissions listing them; each {@code LIST_} is granted to the same roles as its
- * {@code SIGNUP_}.
+ * {@code SIGNUP_}. The {@code CHANGE_STATUS_<role>} permissions allow disabling and enabling accounts
+ * of that role; only directors and administrators hold them.
  */
 public enum RolePermission {
 
@@ -49,7 +50,27 @@ public enum RolePermission {
     LIST_DIRECTORS("listar cuentas de director", Role.SYSTEM_ADMIN),
 
     /** List system administrator accounts. */
-    LIST_ADMINS("listar cuentas de administrador", Role.SYSTEM_ADMIN);
+    LIST_ADMINS("listar cuentas de administrador", Role.SYSTEM_ADMIN),
+
+    /** Disable and enable student accounts. */
+    CHANGE_STATUS_STUDENTS("cambiar el estado de cuentas de estudiante", Role.DIRECTOR, Role.SYSTEM_ADMIN),
+
+    /** Disable and enable administrative staff accounts. */
+    CHANGE_STATUS_ADMINISTRATIVES("cambiar el estado de cuentas de administrativo", Role.DIRECTOR,
+            Role.SYSTEM_ADMIN),
+
+    /** Disable and enable professor accounts. */
+    CHANGE_STATUS_PROFESSORS("cambiar el estado de cuentas de docente", Role.DIRECTOR, Role.SYSTEM_ADMIN),
+
+    /** Disable and enable the capstone project professor accounts. */
+    CHANGE_STATUS_CAPSTONE_PROJECT_PROFESSORS("cambiar el estado de cuentas de docente de Taller de Grado",
+            Role.DIRECTOR, Role.SYSTEM_ADMIN),
+
+    /** Disable and enable director accounts. */
+    CHANGE_STATUS_DIRECTORS("cambiar el estado de cuentas de director", Role.SYSTEM_ADMIN),
+
+    /** Disable and enable system administrator accounts. */
+    CHANGE_STATUS_ADMINS("cambiar el estado de cuentas de administrador", Role.SYSTEM_ADMIN);
 
     private final String label;
     private final Set<Role> allowedRoles;
@@ -90,6 +111,23 @@ public enum RolePermission {
             case CAPSTONE_PROJECT_PROFESSOR -> LIST_CAPSTONE_PROJECT_PROFESSORS;
             case DIRECTOR -> LIST_DIRECTORS;
             case SYSTEM_ADMIN -> LIST_ADMINS;
+        };
+    }
+
+    /**
+     * Returns the permission needed to disable or enable accounts of a role (UC-001 A2).
+     *
+     * @param role the role of the affected account
+     * @return the matching {@code CHANGE_STATUS_} permission
+     */
+    public static RolePermission toChangeStatus(Role role) {
+        return switch (role) {
+            case STUDENT -> CHANGE_STATUS_STUDENTS;
+            case ADMINISTRATIVE -> CHANGE_STATUS_ADMINISTRATIVES;
+            case PROFESSOR -> CHANGE_STATUS_PROFESSORS;
+            case CAPSTONE_PROJECT_PROFESSOR -> CHANGE_STATUS_CAPSTONE_PROJECT_PROFESSORS;
+            case DIRECTOR -> CHANGE_STATUS_DIRECTORS;
+            case SYSTEM_ADMIN -> CHANGE_STATUS_ADMINS;
         };
     }
 

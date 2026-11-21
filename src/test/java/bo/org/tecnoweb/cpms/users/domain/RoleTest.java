@@ -85,6 +85,32 @@ class RoleTest {
         }
     }
 
+    /** "Quién puede desactivar y activar cada cuenta": rows are who changes, columns the affected roles. */
+    @Test
+    void changeStatusPermissionsFollowTheAgreedTable() {
+        assertChangesStatus(Role.SYSTEM_ADMIN, EnumSet.allOf(Role.class));
+        assertChangesStatus(Role.DIRECTOR, EnumSet.of(Role.PROFESSOR, Role.CAPSTONE_PROJECT_PROFESSOR,
+                Role.ADMINISTRATIVE, Role.STUDENT));
+        assertChangesStatus(Role.ADMINISTRATIVE, EnumSet.noneOf(Role.class));
+        assertChangesStatus(Role.PROFESSOR, EnumSet.noneOf(Role.class));
+        assertChangesStatus(Role.CAPSTONE_PROJECT_PROFESSOR, EnumSet.noneOf(Role.class));
+        assertChangesStatus(Role.STUDENT, EnumSet.noneOf(Role.class));
+    }
+
+    private static void assertChangesStatus(Role requester, Set<Role> affected) {
+        for (Role role : Role.values()) {
+            assertThat(requester.isAllowedTo(RolePermission.toChangeStatus(role)))
+                    .as("%s changes the status of %s", requester, role)
+                    .isEqualTo(affected.contains(role));
+        }
+    }
+
+    @Test
+    void changeStatusPermissionLabelNamesTheRole() {
+        assertThat(RolePermission.toChangeStatus(Role.DIRECTOR).getLabel())
+                .isEqualTo("cambiar el estado de cuentas de director");
+    }
+
     @Test
     void permissionsOfARoleAreThoseThatIncludeIt() {
         assertThat(Role.ADMINISTRATIVE.getPermissions())

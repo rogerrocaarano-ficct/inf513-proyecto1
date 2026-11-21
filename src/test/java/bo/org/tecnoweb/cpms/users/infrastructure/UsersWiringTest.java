@@ -29,7 +29,7 @@ class UsersWiringTest {
     @Test
     void handlersAreRegisteredInTheMailChannel() {
         assertThat(handlers).extracting(EmailCommandHandler::actionKey)
-                .contains("usuarios.crearCuenta", "usuarios.listar");
+                .contains("usuarios.crearCuenta", "usuarios.listar", "usuarios.desactivar", "usuarios.activar");
     }
 
     @Test
