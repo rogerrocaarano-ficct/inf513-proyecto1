@@ -29,7 +29,7 @@
 | FR-023 | El sistema debe registrar un nuevo perfil de proyecto cuando el anterior fue rechazado u observado | |
 | FR-024 | El sistema debe controlar el plazo de revisión del tutor y de cada miembro del tribunal sobre cada versión del documento del proyecto | |
 | FR-025 | El sistema debe registrar la entrega del documento del proyecto para la defensa final | |
-| FR-026 | El sistema debe crear cuentas de usuario con nombre completo, dirección de correo y uno o más roles, y para un estudiante además registro universitario, cédula de identidad y teléfono | |
+| FR-026 | El sistema debe crear cuentas de usuario con nombre completo, dirección de correo y un rol, y para un estudiante además registro universitario, cédula de identidad y teléfono | |
 | FR-027 | El sistema debe mostrar el calendario académico con las predefensas y defensas finales programadas | |
 | FR-028 | El sistema debe mostrar un dashboard con indicadores de los trámites de titulación | |
 | FR-029 | El sistema debe generar reportes y estadísticas de titulación | |
@@ -39,7 +39,7 @@
 | FR-033 | El sistema debe rechazar una cuenta de usuario cuya dirección de correo o registro universitario ya pertenece a otra | |
 | FR-034 | El sistema debe advertir al administrador cuando la cuenta de usuario que desactiva, o el rol que quita, participa en trámites en curso, y dejar esos trámites pendientes de reasignación | |
 | FR-035 | El sistema debe notificar al usuario por correo la creación, desactivación y reactivación de su cuenta de usuario y los cambios de sus roles | |
-| FR-036 | El sistema debe rechazar las combinaciones de roles no permitidas: el estudiante, el secretario(a) de dirección de carrera y el administrador tienen un solo rol, y el docente de Taller de Grado solo se combina con el rol de docente | |
+| FR-036 | El sistema debe asignar un solo rol a cada cuenta de usuario | |
 | FR-037 | El sistema debe permitir que cada usuario cargue o cambie la foto de perfil de su propia cuenta de usuario | |
 | FR-038 | El sistema debe rechazar que se desactive, o que pierda el rol de administrador, la única cuenta de administrador activa | |
 | FR-039 | El sistema debe rechazar que una segunda cuenta de usuario activa tenga el rol de docente de Taller de Grado | |
@@ -53,8 +53,8 @@
 | FR-047 | El sistema debe notificar al estudiante el resultado y las observaciones de cada miembro del tribunal cuando los tres revisaron una versión | |
 | FR-048 | El sistema debe notificar al estudiante, al secretario(a) de dirección de carrera y al director de carrera cuando el documento del proyecto queda aprobado | |
 | FR-049 | El sistema debe permitir que cada usuario modifique la dirección de correo y el teléfono de su propia cuenta de usuario | |
-| FR-050 | El sistema debe permitir que el director de carrera gestione las cuentas de usuario cuyos roles son docente, docente de Taller de Grado o secretario(a) de dirección de carrera | |
-| FR-051 | El sistema debe crear la cuenta de usuario del estudiante cuando el secretario(a) de dirección de carrera abre su trámite de titulación, una vez verificados sus documentos iniciales | |
+| FR-050 | El sistema debe permitir que el director de carrera gestione las cuentas de usuario cuyos roles son docente, docente de Taller de Grado, secretario(a) de dirección de carrera o estudiante | |
+| FR-051 | El sistema debe crear la cuenta de usuario del estudiante cuando la pide el secretario(a) de dirección de carrera, el director de carrera o el administrador, y cuando el secretario(a) abre su trámite de titulación, una vez verificados sus documentos iniciales | |
 | FR-052 | El sistema debe mostrar el registro de cambios al administrador, al director de carrera y al secretario(a) de dirección de carrera, a cada uno dentro de su alcance | |
 | FR-053 | El sistema debe permitir que solo el administrador asigne o quite los roles de director de carrera y de administrador, y gestione las cuentas de usuario que los tienen | |
 | FR-054 | El sistema debe notificar al estudiante por correo la apertura y el cierre de su trámite de titulación | |
@@ -71,8 +71,8 @@
 - FR-040, FR-044: cada versión se revisa en dos etapas. Primero la revisa el tutor, como filtro previo; si la observa, el estudiante entrega otra sin que el tribunal la vea. Si la aprueba, pasa a los miembros del tribunal evaluador.
 - FR-004, FR-023, FR-058: el estudiante puede presentar el perfil de proyecto desde que el secretario(a) abre su trámite de titulación. El primer perfil crea el proyecto de grado. Si el docente de Taller de Grado lo rechaza u observa, el estudiante presenta un perfil nuevo, que puede cambiar el título del proyecto; los anteriores se conservan (SRC-010).
 - FR-025, FR-043: la versión para la defensa final se entrega después de aprobar la predefensa y se revisa en las mismas dos etapas.
-- FR-026, FR-036: una cuenta de usuario puede tener varios roles. El director de carrera es también docente: su cuenta de usuario tiene siempre los dos roles, y como cualquier docente puede ser designado tutor o miembro del tribunal (SRC-007). El estudiante, el secretario(a) y el administrador tienen un solo rol: quien administra y además participa en el trámite usa dos cuentas de usuario distintas. Docente de Taller de Grado es un rol de cuenta: la carrera tiene uno solo y revisa todos los perfiles de proyecto (FR-039). Ser tutor o miembro del tribunal sale de las designaciones de cada trámite, no de la cuenta de usuario.
-- FR-050, FR-053: el director de carrera gestiona las cuentas de usuario de docentes, del docente de Taller de Grado y de secretarios(as), y puede asignar esos roles; el administrador gestiona todas las cuentas de usuario y es el único que asigna el rol de director de carrera (SRC-008).
+- FR-026, FR-036: cada cuenta de usuario tiene un solo rol (decisión de diseño del 2026-11-20, que reemplaza las combinaciones de roles acordadas en SRC-007). Lo que puede hacer cada rol lo definen los permisos del sistema: el director de carrera actúa también como docente porque los permisos de docente incluyen al director, y como cualquier docente puede ser designado tutor o miembro del tribunal (SRC-007). Quien administra y además participa en el trámite usa dos cuentas de usuario distintas. Docente de Taller de Grado es un rol de cuenta: la carrera tiene uno solo y revisa todos los perfiles de proyecto (FR-039). Ser tutor o miembro del tribunal sale de las designaciones de cada trámite, no de la cuenta de usuario.
+- FR-050, FR-051, FR-053: el director de carrera crea cuentas de usuario de docentes, del docente de Taller de Grado, de secretarios(as) y de estudiantes; el secretario(a) crea cuentas de estudiantes; el administrador crea cuentas de todos los roles y es el único que asigna los roles de director de carrera y de administrador (SRC-008; ampliado el 2026-11-20).
 - FR-035: en la versión por correo, la creación de la cuenta de usuario solo se notifica por correo: el usuario se identifica por su dirección de correo. En la futura versión web, la notificación incluirá una contraseña de un solo uso que el usuario debe cambiar en su primer inicio de sesión (SRC-008).
 - FR-037: la foto de perfil es opcional y solo la carga el propio usuario.
 - FR-001 a FR-019 vienen de RF01 a RF19 de SRC-002, con el mismo número. Se ajustó su texto según lo acordado con el equipo de desarrollo el 2026-10-26:

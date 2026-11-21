@@ -1,0 +1,63 @@
+package bo.org.tecnoweb.cpms.users.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import bo.org.tecnoweb.cpms.common.DomainValidationException;
+import java.util.EnumSet;
+import java.util.Set;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+class RoleTest {
+
+    @ParameterizedTest
+    @CsvSource({
+            "estudiante, STUDENT",
+            "Administrativo, ADMINISTRATIVE",
+            "DOCENTE, PROFESSOR",
+            "docente_taller, CAPSTONE_PROJECT_PROFESSOR",
+            " director , DIRECTOR",
+            "administrador, SYSTEM_ADMIN"})
+    void fromLabelIgnoresCaseAndSpaces(String label, Role expected) {
+        assertThat(Role.fromLabel(label)).isEqualTo(expected);
+    }
+
+    @Test
+    void unknownLabelIsAValidationErrorThatListsTheAcceptedRoles() {
+        assertThatThrownBy(() -> Role.fromLabel("rector"))
+                .isInstanceOfSatisfying(DomainValidationException.class, e -> assertThat(e.getErrors())
+                        .containsOnlyKeys(Role.FIELD)
+                        .extractingByKey(Role.FIELD).asString()
+                        .contains("\"rector\"")
+                        .contains("estudiante, administrativo, docente, docente_taller, director, administrador"));
+    }
+
+    /** "Quién puede crear cada cuenta": rows are who creates, columns the roles they may create. */
+    @Test
+    void signUpPermissionsFollowTheAgreedTable() {
+        assertCreates(Role.SYSTEM_ADMIN, EnumSet.allOf(Role.class));
+        assertCreates(Role.DIRECTOR, EnumSet.of(Role.PROFESSOR, Role.CAPSTONE_PROJECT_PROFESSOR,
+                Role.ADMINISTRATIVE, Role.STUDENT));
+        assertCreates(Role.ADMINISTRATIVE, EnumSet.of(Role.STUDENT));
+        assertCreates(Role.PROFESSOR, EnumSet.noneOf(Role.class));
+        assertCreates(Role.CAPSTONE_PROJECT_PROFESSOR, EnumSet.noneOf(Role.class));
+        assertCreates(Role.STUDENT, EnumSet.noneOf(Role.class));
+    }
+
+    private static void assertCreates(Role creator, Set<Role> created) {
+        for (Role newRole : Role.values()) {
+            assertThat(creator.isAllowedTo(RolePermission.toSignUp(newRole)))
+                    .as("%s creates %s", creator, newRole)
+                    .isEqualTo(created.contains(newRole));
+        }
+    }
+
+    @Test
+    void permissionsOfARoleAreThoseThatIncludeIt() {
+        assertThat(Role.ADMINISTRATIVE.getPermissions()).containsExactly(RolePermission.SIGNUP_STUDENT);
+        assertThat(Role.STUDENT.getPermissions()).isEmpty();
+        assertThat(Role.SYSTEM_ADMIN.getPermissions()).containsExactly(RolePermission.values());
+    }
+}

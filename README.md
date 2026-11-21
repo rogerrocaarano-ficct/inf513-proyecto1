@@ -104,3 +104,90 @@ Con el sistema, cada etapa del trámite queda registrada en un expediente digita
 | RSK-002 | El servidor de correo no acepta adjuntos de hasta 25 MB, y los usuarios no pueden entregar el perfil ni el documento del proyecto | Enviar un adjunto de 25 MB a través de producción y confirmar el límite del buzón | Abierto |
 | RSK-003 | El sondeo del buzón cada 30 segundos sobrecarga el servidor de correo, y las solicitudes de los usuarios no se procesan | Ajustar el intervalo de sondeo a un valor aceptable | Abierto |
 | RSK-004 | Los usuarios escriben mal el comando del asunto o el nombre de los adjuntos, y sus solicitudes fallan | Responder cada error con la sintaxis correcta del comando. Preparar una guía de comandos para la presentación | Abierto |
+
+## Entorno de desarrollo
+
+### Requisitos
+
+| Requisito | Versión | Para qué |
+| --- | --- | --- |
+| Git | cualquiera reciente | Clonar el repositorio y trabajar con las ramas |
+| JDK | 25 (por ejemplo, Eclipse Temurin 25) | Compilar y ejecutar; Gradle no lo descarga, tiene que estar instalado |
+| Docker | Docker Desktop (Windows o macOS) o Docker Engine con Compose v2 (Linux) | Base de datos, servidor de correo y webmail locales; también lo usan las pruebas |
+| Navegador | cualquiera | Webmail para enviar comandos y leer las respuestas |
+
+No hace falta instalar Gradle: el repositorio trae su wrapper (`./gradlew`, o `gradlew.bat` en Windows).
+
+Puertos que deben estar libres en la máquina: **8025** (webmail), **2525**, **1110** y **1143** (correo local) para el entorno de pruebas manuales, y **3025**, **3110** y **3143** para las pruebas automáticas. La base de datos usa un puerto libre que elige Docker.
+
+### Comprobar la instalación
+
+Con Docker en ejecución, desde la raíz del repositorio:
+
+```bash
+./gradlew build
+```
+
+Compila el proyecto y ejecuta todas las pruebas automáticas. Las pruebas levantan su propio PostgreSQL con Testcontainers y su propio servidor de correo embebido; no necesitan el entorno de pruebas manuales.
+
+### Levantar el stack de pruebas manuales
+
+```bash
+./gradlew bootRun
+```
+
+Este comando levanta los contenedores de `compose.yaml` y arranca la aplicación con el perfil `local` (`src/main/resources/application-local.properties`). La primera vez descarga las imágenes, así que tarda más.
+
+| Servicio | Dirección | Uso |
+| --- | --- | --- |
+| PostgreSQL 17 | Puerto asignado por Docker; la aplicación lo detecta sola | Base de datos de la aplicación; los datos se conservan en el volumen `cpms_postgres-data` |
+| GreenMail | SMTP `localhost:2525`, POP3 `localhost:1110`, IMAP `localhost:1143` | Servidor de correo con un buzón por dirección; el buzón del sistema es `sistema@cpms.local` |
+| Roundcube | <http://localhost:8025> | Webmail para enviar comandos y leer las respuestas |
+
+La aplicación está lista cuando la consola muestra `Started CpmsApplication`.
+
+### Probar un comando
+
+Al arrancar, la aplicación crea la cuenta de administrador **`admin@cpms.local`**: es la única cuenta que existe al principio, y con ella se crean las demás. El sistema solo atiende comandos de direcciones que tienen cuenta; a cualquier otra le responde que no está registrada.
+
+1. Abrir <http://localhost:8025>.
+2. Iniciar sesión como `admin@cpms.local`, con cualquier contraseña. Cada dirección del dominio `cpms.local` tiene su propio buzón, así que para actuar como otro usuario se cierra la sesión y se entra con su dirección.
+3. Redactar un correo a `sistema@cpms.local` con el comando en el asunto. Por ejemplo, para crear la cuenta de una directora:
+
+   ```text
+   usuarios.crearCuenta[Carla; Suárez; Vaca; ; 100; carla@cpms.local; ; director]
+   ```
+
+4. La aplicación revisa el buzón cada 10 segundos. La respuesta llega a la bandeja de entrada de quien envió el comando, y la cuenta nueva recibe un aviso en su propio buzón.
+5. Entrar como `carla@cpms.local` y crear, por ejemplo, la cuenta de un docente: `usuarios.crearCuenta[Luis; Rojas; ; ; ; luis@cpms.local; ; docente]`.
+
+La sintaxis de los comandos, cada comando con sus argumentos y las respuestas del sistema están en la [guía de comandos](USER-GUIDE.md).
+
+### Detener y reiniciar
+
+- `Ctrl+C` detiene la aplicación. Los contenedores siguen en ejecución, así que el siguiente `./gradlew bootRun` arranca más rápido y conserva los correos.
+- `docker compose down` detiene los contenedores y conserva la base de datos.
+- `docker compose down -v` detiene los contenedores y además **borra la base de datos**.
+
+GreenMail guarda los correos en memoria: se pierden cada vez que se reinicia su contenedor. Además, al recrearlo vuelve a numerar los mensajes desde 1, y la base todavía guarda correos con esos mismos números: los comandos nuevos se borrarían sin ejecutarse (el log de la aplicación lo avisa con un `WARN` "Deleting message … without executing it"). Por eso, **después de recrear GreenMail, borrar también la base con `docker compose down -v`**.
+
+### Problemas frecuentes
+
+| Síntoma | Causa y solución |
+| --- | --- |
+| `bootRun` falla con un error de Docker Compose | Docker no está en ejecución: iniciar Docker Desktop y volver a ejecutar |
+| Un contenedor no arranca porque un puerto está ocupado | Otro programa usa ese puerto: liberarlo, o cambiarlo en `compose.yaml` y en `application-local.properties` |
+| Un comando no recibe respuesta y el log muestra `Deleting message … without executing it` | Se recreó GreenMail sin borrar la base: ejecutar `docker compose down -v` y volver a levantar |
+| El build pide Java 25 | Instalar un JDK 25 y comprobar con `java -version` |
+
+### Ejecutar contra el servidor de producción
+
+El perfil `local` solo se usa con `bootRun`. Fuera de él, la aplicación toma la configuración del correo de variables de entorno (NFR-007):
+
+| Variable | Valor |
+| --- | --- |
+| `CPMS_MAIL_POP3_HOST`, `CPMS_MAIL_SMTP_HOST` | `mail.tecnoweb.org.bo` |
+| `CPMS_MAIL_USERNAME`, `CPMS_MAIL_PASSWORD` | Usuario y contraseña del buzón del sistema |
+| `CPMS_MAIL_ADDRESS` | Dirección del sistema, remitente de las respuestas |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://db.tecnoweb.org.bo:5432/db_grupo03sc` (NFR-008) |
+| `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | Usuario y contraseña de la base que entrega el docente |

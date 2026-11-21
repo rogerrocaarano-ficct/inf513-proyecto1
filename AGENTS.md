@@ -10,7 +10,8 @@ names it.
 
 | Path | Content |
 | --- | --- |
-| `README.md` | Vision: problem, process flow, approved use cases (`UC-xxx`), scope, and the project plan: team, milestones, iterations and risks (`RSK-xxx`) |
+| `README.md` | Vision: problem, process flow, approved use cases (`UC-xxx`), scope, and the project plan: team, milestones, iterations and risks (`RSK-xxx`); and the development environment: requirements and how to run the project |
+| `USER-GUIDE.md` | User guide: how to write email commands, every command with its arguments, and the system's replies. Update it in the same change that adds or changes a command |
 | `REQUIREMENTS.md` | Functional (`FR-xxx`) and non-functional (`NFR-xx-xxx`) requirements |
 | `GLOSSARY.md` | Domain terms, their definitions and the name each one takes in the code |
 | `USDP-FRAMEWORK.md` | Reference of the process: phases, workflows, artifacts and exit criteria |
@@ -35,17 +36,34 @@ instead of copying it to another document.
 | Persistence | Spring Data JPA, PostgreSQL, Flyway migrations |
 | Mail | Spring Boot mail starter (JavaMail) |
 | Tests | JUnit 5, Spring Boot test starters, Testcontainers (PostgreSQL) |
-| Development | Spring Boot DevTools |
+| Development | Spring Boot DevTools, Docker Compose (`compose.yaml`: PostgreSQL, GreenMail, Roundcube) |
 
 - Build and run the tests: `./gradlew build` (`gradlew.bat build` on
   Windows). The tests start PostgreSQL in a container, so Docker must be
   running.
-- Run the application against a container database:
-  `./gradlew bootTestRun` (it starts `TestCpmsApplication`).
-- The base package is `bo.org.tecnoweb.cpms`. The package structure below it
-  is not fixed yet: propose it to the user before creating the first
-  packages, and record it here once it is agreed.
+- Run the application in the local environment: `./gradlew bootRun` (see
+  "Local environment" and `README.md`).
+- `./gradlew bootTestRun` starts `TestCpmsApplication` against a throwaway
+  Testcontainers database, without the mail server.
+- The base package is `bo.org.tecnoweb.cpms`. Below it there is one package
+  per EA design subsystem, each split in layers:
+
+  | Package | Content |
+  | --- | --- |
+  | `common` | Shared domain types from `Design/common` (`AggregateRoot`, `DomainEvent`, `DomainException`, …), no layers |
+  | `<subsystem>.domain` | Domain classes of the EA package `Design/<Subsystem>/domain`, without framework annotations |
+  | `<subsystem>.application` | Application services and ports (interfaces) of `Design/<Subsystem>/application` |
+  | `<subsystem>.infrastructure` | Adapters that implement the ports (JPA, POP3, SMTP, schedulers, configuration). Not modeled in EA |
+
+  Subsystems: `mail`, `users`. A new subsystem follows the same layers.
 - Add a dependency only when a use case needs it, and say why in the commit.
+
+### Local environment
+
+The requirements and the steps to set up and use the local environment are in
+`README.md`, section "Entorno de desarrollo". In short: `./gradlew bootRun`
+starts `compose.yaml` (PostgreSQL, GreenMail, Roundcube) with the `local`
+profile, and the webmail is at <http://localhost:8025>.
 
 ## Languages
 
@@ -54,9 +72,9 @@ instead of copying it to another document.
 | Documentation language | Spanish |
 | Code language | English |
 
-- **Spanish:** the content of `README.md`, `REQUIREMENTS.md` and
-  `GLOSSARY.md`, branch names taken from a use case, and the description and
-  body of commit messages.
+- **Spanish:** the content of `README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`
+  and `USER-GUIDE.md`, branch names taken from a use case, and the description
+  and body of commit messages.
 - **English:** identifiers, comments, log messages and database names in the
   code; `AGENTS.md`, `USDP-FRAMEWORK.md` and the commit types.
 - Text the system shows to its users (mail replies, error messages) is in
@@ -84,7 +102,8 @@ instead of copying it to another document.
 
 Every change to the source code (`src/`, the build files and the Flyway
 migrations) goes through an OpenSpec change. Changes that only touch the
-documents in the root (`README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`) do not.
+documents in the root (`README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`,
+`USER-GUIDE.md`) do not.
 
 1. **Propose** (`/opsx:propose` or `/opsx:explore` first): create the change
    in `openspec/changes/<name>/` with its proposal, specs, design and tasks.
