@@ -23,4 +23,13 @@ class UserNotAuthorizedExceptionTest {
         assertThat(e.getErrorCode()).isEqualTo(UserNotAuthorizedException.ERROR_CODE);
         assertThat(e.getMessage()).contains("extrano@gmail.com").contains("no está registrada en el sistema");
     }
+
+    @Test
+    void disabledSaysTheAccountIsDisabledAndWhomToContact() {
+        UserNotAuthorizedException e = UserNotAuthorizedException.disabled("luis@uagrm.bo");
+
+        assertThat(e.getErrorCode()).isEqualTo(UserNotAuthorizedException.ERROR_CODE);
+        assertThat(e.getMessage()).isEqualTo(
+                "La cuenta luis@uagrm.bo está desactivada. Comuníquese con la Dirección de Carrera.");
+    }
 }

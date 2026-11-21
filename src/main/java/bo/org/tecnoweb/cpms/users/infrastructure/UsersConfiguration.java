@@ -1,5 +1,7 @@
 package bo.org.tecnoweb.cpms.users.infrastructure;
 
+import bo.org.tecnoweb.cpms.users.application.DisableUserCommandHandler;
+import bo.org.tecnoweb.cpms.users.application.EnableUserCommandHandler;
 import bo.org.tecnoweb.cpms.users.application.ListUsersQueryHandler;
 import bo.org.tecnoweb.cpms.users.application.SignUpUserCommandHandler;
 import bo.org.tecnoweb.cpms.users.application.UserManagementNotifier;
@@ -47,5 +49,27 @@ class UsersConfiguration {
     @Bean
     ListUsersQueryHandler listUsersQueryHandler(UserManagementUseCase useCase) {
         return new ListUsersQueryHandler(useCase);
+    }
+
+    /**
+     * Creates the handler of {@code usuarios.desactivar}.
+     *
+     * @param useCase the use case it runs
+     * @return the handler
+     */
+    @Bean
+    DisableUserCommandHandler disableUserCommandHandler(UserManagementUseCase useCase) {
+        return new DisableUserCommandHandler(useCase);
+    }
+
+    /**
+     * Creates the handler of {@code usuarios.activar}.
+     *
+     * @param useCase the use case it runs
+     * @return the handler
+     */
+    @Bean
+    EnableUserCommandHandler enableUserCommandHandler(UserManagementUseCase useCase) {
+        return new EnableUserCommandHandler(useCase);
     }
 }
