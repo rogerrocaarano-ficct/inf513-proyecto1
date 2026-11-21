@@ -1,7 +1,10 @@
 package bo.org.tecnoweb.cpms.users.infrastructure.persistence;
 
+import bo.org.tecnoweb.cpms.users.domain.Role;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -34,4 +37,13 @@ interface SpringDataUserAccountRepository extends JpaRepository<UserAccountEntit
      * @return {@code true} if an account other than {@code id} has the code
      */
     boolean existsByUagrmCodeAndIdNot(String uagrmCode, UUID id);
+
+    /**
+     * Finds the accounts of a role.
+     *
+     * @param role the role
+     * @param sort the order of the result
+     * @return the entities, in that order
+     */
+    List<UserAccountEntity> findByRole(Role role, Sort sort);
 }

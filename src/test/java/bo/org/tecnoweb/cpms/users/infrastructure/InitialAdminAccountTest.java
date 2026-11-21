@@ -69,5 +69,10 @@ class InitialAdminAccountTest {
         public Optional<User> getById(UUID id) {
             return inserted.stream().filter(u -> u.getId().equals(id)).findFirst();
         }
+
+        @Override
+        public List<User> getByRole(Role role) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

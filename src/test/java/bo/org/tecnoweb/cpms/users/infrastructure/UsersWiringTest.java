@@ -27,8 +27,9 @@ class UsersWiringTest {
     private UserRepository users;
 
     @Test
-    void signUpHandlerIsRegisteredInTheMailChannel() {
-        assertThat(handlers).extracting(EmailCommandHandler::actionKey).contains("usuarios.crearCuenta");
+    void handlersAreRegisteredInTheMailChannel() {
+        assertThat(handlers).extracting(EmailCommandHandler::actionKey)
+                .contains("usuarios.crearCuenta", "usuarios.listar");
     }
 
     @Test
