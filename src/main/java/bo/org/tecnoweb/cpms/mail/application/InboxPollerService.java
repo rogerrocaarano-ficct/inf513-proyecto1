@@ -112,7 +112,13 @@ public class InboxPollerService {
             if (stored.isEmpty()) {
                 receivedEmails.store(email);
             } else if (stored.get().getState().isFinal()) {
-                // Read again after a restart that happened before the message was deleted.
+                // Read again after a restart that happened before the message was deleted. If the
+                // server reused the UIDL (e.g. a recreated GreenMail), this drops a new command:
+                // warn so it does not go unnoticed.
+                log.warn("Deleting message {} without executing it: an email with that UIDL is already {} "
+                                + "(stored subject \"{}\", read subject \"{}\"). If the subjects differ, the server "
+                                + "reused the UIDL",
+                        email.getMailboxId(), stored.get().getState(), stored.get().getSubject(), email.getSubject());
                 deleteFromServer(email.getMailboxId());
             }
             // RECEIVED or VALIDATED: getNotProcessed() takes it up.

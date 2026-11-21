@@ -1,0 +1,53 @@
+# Local development environment. `./gradlew bootRun` starts it through spring-boot-docker-compose.
+# Not used by the tests (Testcontainers) nor in production.
+name: cpms
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: cpms
+      POSTGRES_USER: cpms
+      POSTGRES_PASSWORD: cpms
+    ports:
+      # Free host port chosen by Docker; Spring Boot reads it and configures the DataSource.
+      - "5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  greenmail:
+    image: greenmail/standalone:2.1.15
+    environment:
+      # Inside Docker: SMTP 3025, POP3 3110, IMAP 3143. Any address can log in (auth disabled);
+      # the system mailbox is sistema@cpms.local / secret.
+      GREENMAIL_OPTS: >-
+        -Dgreenmail.setup.test.all
+        -Dgreenmail.hostname=0.0.0.0
+        -Dgreenmail.auth.disabled
+        -Dgreenmail.users=sistema:secret@cpms.local
+        -Dgreenmail.users.login=email
+    ports:
+      # Host ports differ from 3025/3110/3143, which the tests' embedded GreenMail uses,
+      # so the build passes while this environment is running.
+      - "2525:3025"
+      - "1110:3110"
+      - "1143:3143"
+
+  roundcube:
+    image: roundcube/roundcubemail:1.6.19-apache
+    depends_on:
+      - greenmail
+    environment:
+      ROUNDCUBEMAIL_DEFAULT_HOST: greenmail
+      ROUNDCUBEMAIL_DEFAULT_PORT: 3143
+      ROUNDCUBEMAIL_SMTP_SERVER: greenmail
+      ROUNDCUBEMAIL_SMTP_PORT: 3025
+      ROUNDCUBEMAIL_DB_TYPE: sqlite
+    ports:
+      - "8025:80"
+    labels:
+      # The application does not use the webmail: do not wait for it on startup.
+      org.springframework.boot.readiness-check.tcp.disable: "true"
+
+volumes:
+  postgres-data:

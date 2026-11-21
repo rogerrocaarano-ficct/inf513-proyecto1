@@ -16,6 +16,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionOperations;
@@ -91,6 +94,24 @@ class InboxPollerServiceTest {
             assertThat(repository.all()).hasSize(1);
             assertThat(inbox.deleted).containsExactly("uid-1");
             assertThat(sender.sent).isEmpty();
+        }
+
+        @Test
+        @ExtendWith(OutputCaptureExtension.class)
+        void reusedUidlIsDeletedWithAWarning(CapturedOutput output) {
+            TestHandler handler = new TestHandler("usuarios.crearcuenta", 1, 0);
+            repository.put(stored("1", "usuarios.listar[]", ReceivedEmailState.DISCARDED));
+            inbox.add("1", "ana@uagrm.bo", "usuarios.crearCuenta[Ana]");
+
+            service(handler).pollAndProcess();
+
+            assertThat(handler.calls).isZero();
+            assertThat(inbox.deleted).containsExactly("1");
+            assertThat(output.getOut())
+                    .contains("WARN")
+                    .contains("Deleting message 1 without executing it")
+                    .contains("stored subject \"usuarios.listar[]\"")
+                    .contains("read subject \"usuarios.crearCuenta[Ana]\"");
         }
 
         @Test

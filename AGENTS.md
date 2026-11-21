@@ -10,7 +10,7 @@ names it.
 
 | Path | Content |
 | --- | --- |
-| `README.md` | Vision: problem, process flow, approved use cases (`UC-xxx`), scope, and the project plan: team, milestones, iterations and risks (`RSK-xxx`) |
+| `README.md` | Vision: problem, process flow, approved use cases (`UC-xxx`), scope, and the project plan: team, milestones, iterations and risks (`RSK-xxx`); and the development environment: requirements and how to run the project |
 | `REQUIREMENTS.md` | Functional (`FR-xxx`) and non-functional (`NFR-xx-xxx`) requirements |
 | `GLOSSARY.md` | Domain terms, their definitions and the name each one takes in the code |
 | `USDP-FRAMEWORK.md` | Reference of the process: phases, workflows, artifacts and exit criteria |
@@ -35,13 +35,15 @@ instead of copying it to another document.
 | Persistence | Spring Data JPA, PostgreSQL, Flyway migrations |
 | Mail | Spring Boot mail starter (JavaMail) |
 | Tests | JUnit 5, Spring Boot test starters, Testcontainers (PostgreSQL) |
-| Development | Spring Boot DevTools |
+| Development | Spring Boot DevTools, Docker Compose (`compose.yaml`: PostgreSQL, GreenMail, Roundcube) |
 
 - Build and run the tests: `./gradlew build` (`gradlew.bat build` on
   Windows). The tests start PostgreSQL in a container, so Docker must be
   running.
-- Run the application against a container database:
-  `./gradlew bootTestRun` (it starts `TestCpmsApplication`).
+- Run the application in the local environment: `./gradlew bootRun` (see
+  "Local environment" and `README.md`).
+- `./gradlew bootTestRun` starts `TestCpmsApplication` against a throwaway
+  Testcontainers database, without the mail server.
 - The base package is `bo.org.tecnoweb.cpms`. Below it there is one package
   per EA design subsystem, each split in layers:
 
@@ -54,6 +56,13 @@ instead of copying it to another document.
 
   Subsystems: `mail`, `users`. A new subsystem follows the same layers.
 - Add a dependency only when a use case needs it, and say why in the commit.
+
+### Local environment
+
+The requirements and the steps to set up and use the local environment are in
+`README.md`, section "Entorno de desarrollo". In short: `./gradlew bootRun`
+starts `compose.yaml` (PostgreSQL, GreenMail, Roundcube) with the `local`
+profile, and the webmail is at <http://localhost:8025>.
 
 ## Languages
 
