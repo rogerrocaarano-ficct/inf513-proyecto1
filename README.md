@@ -144,6 +144,8 @@ Este comando levanta los contenedores de `compose.yaml` y arranca la aplicación
 | GreenMail | SMTP `localhost:2525`, POP3 `localhost:1110`, IMAP `localhost:1143` | Servidor de correo con un buzón por dirección; el buzón del sistema es `sistema@cpms.local` |
 | Roundcube | <http://localhost:8025> | Webmail para enviar comandos y leer las respuestas |
 
+Los archivos que guarda la aplicación (documentos adjuntos y sus versiones) van a la carpeta `data/storage` de la raíz del repositorio, que git ignora. La base de datos guarda solo sus datos descriptivos, así que la carpeta y la base van juntas: si se borra una, conviene borrar también la otra.
+
 La aplicación está lista cuando la consola muestra `Started CpmsApplication`.
 
 ### Probar un comando
@@ -167,7 +169,7 @@ La sintaxis de los comandos, cada comando con sus argumentos y las respuestas de
 
 - `Ctrl+C` detiene la aplicación. Los contenedores siguen en ejecución, así que el siguiente `./gradlew bootRun` arranca más rápido y conserva los correos.
 - `docker compose down` detiene los contenedores y conserva la base de datos.
-- `docker compose down -v` detiene los contenedores y además **borra la base de datos**.
+- `docker compose down -v` detiene los contenedores y además **borra la base de datos**. Después, borrar también la carpeta `data/storage`, que guarda los archivos de esa base.
 
 GreenMail guarda los correos en memoria: se pierden cada vez que se reinicia su contenedor. Además, al recrearlo vuelve a numerar los mensajes desde 1, y la base todavía guarda correos con esos mismos números: los comandos nuevos se borrarían sin ejecutarse (el log de la aplicación lo avisa con un `WARN` "Deleting message … without executing it"). Por eso, **después de recrear GreenMail, borrar también la base con `docker compose down -v`**.
 
@@ -182,7 +184,7 @@ GreenMail guarda los correos en memoria: se pierden cada vez que se reinicia su 
 
 ### Ejecutar contra el servidor de producción
 
-El perfil `local` solo se usa con `bootRun`. Fuera de él, la aplicación toma la configuración del correo de variables de entorno (NFR-007):
+El perfil `local` solo se usa con `bootRun`. Fuera de él, la aplicación toma la configuración del correo, de la base y de la carpeta de archivos de variables de entorno (NFR-007):
 
 | Variable | Valor |
 | --- | --- |
@@ -191,3 +193,4 @@ El perfil `local` solo se usa con `bootRun`. Fuera de él, la aplicación toma l
 | `CPMS_MAIL_ADDRESS` | Dirección del sistema, remitente de las respuestas |
 | `SPRING_DATASOURCE_URL` | `jdbc:postgresql://db.tecnoweb.org.bo:5432/db_grupo03sc` (NFR-008) |
 | `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | Usuario y contraseña de la base que entrega el docente |
+| `CPMS_STORAGE_ROOT` | Carpeta persistente donde la aplicación guarda los archivos, con permiso de escritura. Es obligatoria: sin ella la aplicación no arranca. Se respalda junto con la base de datos |

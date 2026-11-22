@@ -19,7 +19,7 @@ names it.
 | `src/main/java/bo/org/tecnoweb/cpms/` | Application code |
 | `src/main/resources/` | Configuration (`application.properties`) and, later, Flyway migrations in `db/migration/` |
 | `src/test/java/bo/org/tecnoweb/cpms/` | Tests |
-| `.agents/skills/` | Agent skills shared by every agent ([Agent Skills](https://agentskills.io) format). `ea-drift [use case \| package]` lists the deviations of the EA model from the current code, to fix them in EA |
+| `.agents/skills/` | Agent skills shared by every agent ([Agent Skills](https://agentskills.io) format). `ea-drift [use case \| package]` lists the deviations of the EA model from the current code, to fix them in EA. `ea-checklist [element \| package]` presents the changes still to make by hand in EA as tables per element, read from the current model |
 | `.claude/skills/` | Pointers for Claude Code, which only reads this folder: each `SKILL.md` repeats the name and description and sends to the one in `.agents/skills/`. Edit the skill in `.agents/skills/` only |
 | `openspec/` | OpenSpec changes (`changes/`), archived changes (`changes/archive/`), the specs of the system (`specs/`) and its configuration (`config.yaml`) |
 
@@ -55,7 +55,7 @@ instead of copying it to another document.
   | `<subsystem>.application` | Application services and ports (interfaces) of `Design/<Subsystem>/application` |
   | `<subsystem>.infrastructure` | Adapters that implement the ports (JPA, POP3, SMTP, schedulers, configuration). Not modeled in EA |
 
-  Subsystems: `mail`, `users`, `procedures`. A new subsystem follows the same layers and
+  Subsystems: `mail`, `users`, `procedures`, `storage`. A new subsystem follows the same layers and
   the "Reference Architecture" below.
 - Add a dependency only when a use case needs it, and say why in the commit.
 
@@ -176,6 +176,30 @@ Not modeled in EA.
 email as processed. The use case does not open its own. A `DomainException`
 rolls it back and its message goes to the sender. Emails leave only after the
 commit, through the notifier.
+
+### File storage
+
+Files (attachments, documents and their versions) are kept on disk by the
+`storage` subsystem; the database keeps only their metadata (`stored_file`).
+
+- A use case stores, versions and reads files only through
+  `storage.application.StoredFileService` (`store`, `storeNewVersion`,
+  `readContent`, `getHistory`). Never use `StoredFileRepository` or
+  `FileStorage` from another subsystem.
+- The owner of a file (an aggregate of another subsystem) keeps the `UUID` of
+  the current version and replaces it with the one `storeNewVersion` returns.
+  The previous versions are kept; `getHistory` rebuilds the chain from any of
+  them.
+- The service runs inside the caller's transaction, like a use case. A file
+  written in a transaction that rolls back is deleted, so the use case does
+  nothing to clean up.
+- No bytes in the database: no `byte[]` field in a JPA entity and no new
+  `BYTEA` column.
+- Size and format limits of each document (NFR-005) are rules of the use case
+  that receives it, checked before calling the service.
+- Tests of a use case replace `StoredFileService` with a test double; its
+  integration test uses the throwaway folder that `TestcontainersConfiguration`
+  sets in `cpms.storage.root`.
 
 ### Documentation and tests
 
