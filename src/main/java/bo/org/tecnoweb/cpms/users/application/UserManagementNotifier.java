@@ -19,6 +19,9 @@ public interface UserManagementNotifier {
      */
     void notifyUserSignedUp(UserSignedUpEvent event);
 
+    /** Sends the existing FR-035 notice to a student created during UC-002. */
+    void notifyNewAccount(UserSignedUpEvent event);
+
     /**
      * Sends to the requester the list of accounts of {@code usuarios.listar[role]} (UC-001 A3).
      *

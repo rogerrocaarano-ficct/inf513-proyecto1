@@ -21,7 +21,7 @@
 | Docente | Profesor de la carrera que puede participar en un trámite de titulación como docente de Taller de Grado, tutor o miembro del tribunal | `Role.PROFESSOR` (etiqueta `docente`) |
 | Docente de Taller de Grado | Docente de la materia Taller de Grado, único en la carrera, que evalúa la viabilidad de todos los perfiles de proyecto; en el sistema, rol de cuenta | `Role.CAPSTONE_PROJECT_PROFESSOR` (etiqueta `docente_taller`) |
 | Documento del proyecto | Documento escrito del Proyecto de Grado que el estudiante entrega para la revisión del tribunal evaluador y del tutor, en una o más versiones | |
-| Documentos iniciales | Carta de solicitud, hoja de vida, fotocopia de cédula de identidad y boleta de inscripción con Modalidad de Graduación que el estudiante presenta para iniciar el trámite | |
+| Documentos iniciales | Carta de solicitud, hoja de vida, fotocopia de cédula de identidad y boleta de inscripción con Modalidad de Graduación que el estudiante presenta para iniciar el trámite | `InitialDocument` |
 | Ejemplar físico | Copia impresa del proyecto aprobado que se archiva: una en la biblioteca y otra en la Dirección de Carrera | |
 | Estadísticas | Indicadores y reportes de titulación de la carrera, obtenidos de los trámites de titulación registrados | |
 | Estudiante | Postulante que realiza el trámite de titulación por Proyecto de Grado | `Role.STUDENT` (etiqueta `estudiante`) |
@@ -44,7 +44,8 @@
 | Servicio de correo | Servicio de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones | `EmailInbox` (recepción), `EmailSender` (envío) |
 | Solicitud de titulación | Pedido del estudiante para iniciar el trámite de titulación, que acompaña a los documentos iniciales | |
 | Título del proyecto | Nombre del proyecto de grado que el estudiante indica al presentar su perfil de proyecto; un perfil de proyecto nuevo puede cambiarlo | |
-| Trámite de titulación | Proceso que sigue un estudiante desde su solicitud de titulación hasta el archivo de su expediente | |
+| Referencia del trámite | Identificador del expediente que figura en las respuestas y se usa en comandos como el de sustitución de documentos. Ejemplo `TR-001` | `DegreeProcedure.reference` |
+| Trámite de titulación | Proceso que sigue un estudiante desde su solicitud de titulación hasta el archivo de su expediente | `DegreeProcedure` |
 | Tribunal evaluador | Grupo de tres docentes que revisa el documento del proyecto y evalúa la predefensa y la defensa final de un estudiante | |
 | Tutor | Docente que guía al estudiante en su proyecto y revisa el documento del proyecto junto al tribunal evaluador | |
 | Usuario | Persona con una cuenta de usuario en el sistema | |

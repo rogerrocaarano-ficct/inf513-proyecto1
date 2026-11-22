@@ -1,11 +1,13 @@
 package bo.org.tecnoweb.cpms.users.infrastructure.persistence;
 
 import bo.org.tecnoweb.cpms.users.domain.Role;
+import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 
 /**
  * Spring Data repository of {@link UserAccountEntity}, used only by {@link JpaUserRepository}.
@@ -19,6 +21,10 @@ interface SpringDataUserAccountRepository extends JpaRepository<UserAccountEntit
      * @return the entity, or empty
      */
     Optional<UserAccountEntity> findByEmailAddress(String emailAddress);
+
+    /** Finds and locks an account by its normalized email address (UC-002, FR-056). */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<UserAccountEntity> findForUpdateByEmailAddress(String emailAddress);
 
     /**
      * Tells whether another account has an email address.

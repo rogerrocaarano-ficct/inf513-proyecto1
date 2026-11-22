@@ -174,3 +174,29 @@ Un rechazo se ve así:
 No se pudo ejecutar el comando "usuarios.desactivar":
 - correo: La cuenta luis@uagrm.bo ya está desactivada.
 ```
+
+### `tramites.abrirTramite`
+
+Secretaría abre el trámite de titulación desde una cuenta administrativa activa (UC-002).
+
+```text
+tramites.abrirTramite[Ana María; Pérez; ; 1234567; 218001234; ana@cpms.local; 71234567]
+```
+
+Los siete argumentos son nombres, primer apellido, segundo apellido opcional, CI, registro universitario, correo y teléfono. Los datos siguen las reglas de `usuarios.crearCuenta` para estudiantes.
+
+Adjunta la carta de solicitud, la hoja de vida, la copia de la cédula y la boleta de inscripción con Modalidad de Graduación. Envía un PDF de hasta 25 MB por documento. Usa las palabras `carta`, `cv`, `ci` y `boleta` en los nombres, por ejemplo `carta_solicitud.pdf`, `cv.pdf`, `ci.pdf` y `boleta.pdf`. El escaneo de la carta física es suficiente.
+
+Si correo y registro están libres, el sistema crea la cuenta de estudiante. Si ambos identifican la misma cuenta activa de estudiante, la reutiliza. Si los datos son incompatibles, la cuenta está desactivada o ya tiene un trámite en curso, el sistema rechaza la apertura.
+
+Secretaría recibe la referencia del trámite, por ejemplo `TR-001`. El estudiante recibe el aviso de apertura y, si se creó su cuenta, el aviso de alta.
+
+### `tramites.reemplazarDocumento`
+
+Secretaría puede sustituir un documento inicial mientras el trámite esté en curso. Usa la referencia recibida al abrirlo y adjunta un PDF con la palabra que identifica el tipo de documento.
+
+```text
+tramites.reemplazarDocumento[TR-001]
+```
+
+Por ejemplo, adjunta `carta_corregida.pdf` para sustituir la carta. Secretaría recibe una confirmación que identifica el trámite y el documento sustituido.
