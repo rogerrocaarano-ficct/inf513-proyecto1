@@ -10,18 +10,20 @@ context: |
   back (missing or contradicting classes, operations, attributes, relations
   or behavior), and ask before going on. Do not modify the EA model unless
   the user asks.
-  If the EA tools do not respond, stop and ask the user to open EA with the
-  project loaded.
+  If the EA tools do not respond or the use case has no design in the model,
+  do not stop: follow "Working without the model" and "Reference
+  Architecture" in AGENTS.md.
 
 rules:
   proposal:
     - Name the use case (UC-xxx in README.md) or the shared work the change belongs to
-    - List the EA elements and diagrams the change is based on
+    - List the EA elements and diagrams the change is based on, or say that the use case has no design in EA
   design:
-    - Follow the EA design; names of classes, interfaces and operations come from the model
+    - Follow the EA design; names of classes, interfaces and operations come from the model. Without a design in EA, follow the Reference Architecture of AGENTS.md
     - Record every gap with the EA model under a heading "Diferencias con el modelo", or write "Ninguna"
+    - Name every Command or Query record skipped under the exception of the Reference Architecture, and say why
   tasks:
-    - Include a task to check the implementation against the EA elements cited in the design
+    - Include a task to check the implementation against the EA elements cited in the design, or against the Reference Architecture of AGENTS.md when there is no design in EA
 
 # Project context (optional)
 # Add only constraints that should guide OpenSpec artifacts and workflows.
