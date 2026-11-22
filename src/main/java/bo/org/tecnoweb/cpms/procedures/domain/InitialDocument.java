@@ -34,6 +34,18 @@ public enum InitialDocument {
 
     /** Validates the PDF and identifies its type from the filename. */
     public static InitialDocument classify(File file) {
+        String lowerName = validatePdf(file);
+        Set<String> words = Arrays.stream(lowerName.substring(0, lowerName.length() - 4)
+                .split("[^\\p{L}\\p{N}]+")).collect(Collectors.toSet());
+        List<InitialDocument> matches = Arrays.stream(values()).filter(type -> words.contains(type.keyword)).toList();
+        if (matches.size() != 1) {
+            throw invalid("No se pudo identificar el tipo de documento del archivo " + file.getName() + ".");
+        }
+        return matches.getFirst();
+    }
+
+    /** Validates the format and size shared by procedure PDFs (NFR-005). */
+    static String validatePdf(File file) {
         String name = file.getName() == null ? "" : file.getName();
         String lowerName = name.toLowerCase(Locale.ROOT);
         byte[] content = file.getData();
@@ -44,13 +56,7 @@ public enum InitialDocument {
                 || Arrays.mismatch(content, 0, PDF_HEADER.length, PDF_HEADER, 0, PDF_HEADER.length) != -1) {
             throw invalid("El archivo " + name + " debe ser un PDF.");
         }
-        Set<String> words = Arrays.stream(lowerName.substring(0, lowerName.length() - 4)
-                .split("[^\\p{L}\\p{N}]+")).collect(Collectors.toSet());
-        List<InitialDocument> matches = Arrays.stream(values()).filter(type -> words.contains(type.keyword)).toList();
-        if (matches.size() != 1) {
-            throw invalid("No se pudo identificar el tipo de documento del archivo " + name + ".");
-        }
-        return matches.getFirst();
+        return lowerName;
     }
 
     /** Creates an attachment validation error for UC-002. */

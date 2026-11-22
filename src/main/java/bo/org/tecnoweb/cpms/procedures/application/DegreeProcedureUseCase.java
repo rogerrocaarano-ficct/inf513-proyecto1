@@ -65,7 +65,7 @@ public class DegreeProcedureUseCase {
     /** A2: replaces a document in an ongoing procedure (FR-055). */
     public void replace(String requesterEmail, ReplaceInitialDocumentCommand command) {
         User requester = requireActiveRequester(requesterEmail, RolePermission.REPLACE_INITIAL_DOCUMENT);
-        DegreeProcedure procedure = procedures.getOpenByReferenceForUpdate(parseReference(command.reference()))
+        DegreeProcedure procedure = procedures.getOpenByReferenceForUpdate(DegreeProcedure.parseReference(command.reference()))
                 .orElseThrow(DegreeProcedure::unavailable);
         procedure.replaceInitialDocument(requester, command.attachment());
         procedures.update(procedure);
@@ -98,17 +98,6 @@ public class DegreeProcedureUseCase {
                 userNotifier.notifyNewAccount(signedUp);
             }
         }
-    }
-
-    private static long parseReference(String reference) {
-        if (reference.matches("TR-[0-9]+")) {
-            try {
-                return Long.parseLong(reference.substring(3));
-            } catch (NumberFormatException ignored) {
-                // Out-of-range references receive the same validation error.
-            }
-        }
-        throw new DomainValidationException(Map.of("referencia", "Ingrese la referencia del trámite, por ejemplo TR-001."));
     }
 
 }

@@ -14,4 +14,8 @@ interface SpringDataDegreeProcedureRepository extends JpaRepository<DegreeProced
     /** Locks a procedure that is still open for initial document replacement (FR-055). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<DegreeProcedureEntity> findForUpdateByReferenceAndClosedAtIsNull(long reference);
+
+    /** Locks the student's ongoing procedure before registering a profile (UC-003, FR-004). */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<DegreeProcedureEntity> findForUpdateByStudentIdAndClosedAtIsNull(UUID studentId);
 }
