@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -23,6 +24,9 @@ class JpaUserRepositoryTest {
 
     @Autowired
     private SpringDataUserAccountRepository springData;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @BeforeEach
     void clean() {
@@ -49,6 +53,30 @@ class JpaUserRepositoryTest {
         assertThat(read.getUagrmCode()).isEqualTo("218001234");
         assertThat(read.getPhoneNumber()).isEqualTo("71234567");
         assertThat(read.pullEvents()).isEmpty();
+    }
+
+    private static User named(String email, Role role, String firstName, String lastName, String secondLastName) {
+        return User.builder().withEmailAddress(email).withRole(role).withFirstName(firstName)
+                .withLastName(lastName).withSecondLastName(secondLastName);
+    }
+
+    @Test
+    void getByRoleReturnsOnlyThatRoleOrderedBySurnamesAndNames() {
+        repository.insert(named("carla@uagrm.bo", Role.PROFESSOR, "Carla", "Suarez", "Vaca"));
+        repository.insert(named("luis@uagrm.bo", Role.PROFESSOR, "Luis", "Perez", "Rojas"));
+        repository.insert(named("ana@uagrm.bo", Role.PROFESSOR, "Ana", "Perez", "Rojas"));
+        repository.insert(named("beto@uagrm.bo", Role.PROFESSOR, "Beto", "Perez", null));
+        repository.insert(named("dir@uagrm.bo", Role.DIRECTOR, "Diego", "Arce", null));
+
+        assertThat(repository.getByRole(Role.PROFESSOR)).extracting(User::getEmailAddress)
+                .containsExactly("beto@uagrm.bo", "ana@uagrm.bo", "luis@uagrm.bo", "carla@uagrm.bo");
+    }
+
+    @Test
+    void getByRoleWithoutAccountsIsEmpty() {
+        repository.insert(named("dir@uagrm.bo", Role.DIRECTOR, "Diego", "Arce", null));
+
+        assertThat(repository.getByRole(Role.CAPSTONE_PROJECT_PROFESSOR)).isEmpty();
     }
 
     @Test
@@ -99,5 +127,26 @@ class JpaUserRepositoryTest {
         assertThatThrownBy(() -> repository.update(ana.withEmailAddress("luis@uagrm.bo")))
                 .isInstanceOfSatisfying(DomainValidationException.class,
                         e -> assertThat(e.getErrors()).containsOnlyKeys(User.EMAIL));
+    }
+
+    @Test
+    void updateStoresTheStatusAndReadsReturnIt() {
+        User ana = account("ana@uagrm.bo", "218001234");
+        repository.insert(ana);
+        assertThat(repository.getById(ana.getId()).orElseThrow().isActive()).isTrue();
+
+        repository.update(ana.withActive(false));
+
+        assertThat(repository.getByEmail("ana@uagrm.bo").orElseThrow().isActive()).isFalse();
+        assertThat(repository.getByRole(Role.STUDENT)).singleElement()
+                .satisfies(read -> assertThat(read.isActive()).isFalse());
+    }
+
+    @Test
+    void rowWithoutStatusIsActive() {
+        jdbc.update("INSERT INTO user_account (id, email_address, role, first_name, last_name) "
+                + "VALUES (gen_random_uuid(), 'old@uagrm.bo', 'PROFESSOR', 'Luis', 'Rojas')");
+
+        assertThat(repository.getByEmail("old@uagrm.bo").orElseThrow().isActive()).isTrue();
     }
 }

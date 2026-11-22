@@ -1,13 +1,16 @@
 package bo.org.tecnoweb.cpms.users.infrastructure.persistence;
 
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
+import bo.org.tecnoweb.cpms.users.domain.Role;
 import bo.org.tecnoweb.cpms.users.domain.User;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 class JpaUserRepository implements UserRepository {
 
     private static final String TAKEN = "Ya pertenece a otra cuenta.";
+
+    /** Order of account lists: first surname, second surname (missing ones first) and names. */
+    private static final Sort BY_NAME = Sort.by(
+            Sort.Order.asc("lastName"),
+            Sort.Order.asc("secondLastName").nullsFirst(),
+            Sort.Order.asc("firstName"));
 
     private final SpringDataUserAccountRepository accounts;
 
@@ -79,6 +88,15 @@ class JpaUserRepository implements UserRepository {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getByRole(Role role) {
+        return accounts.findByRole(role, BY_NAME).stream().map(JpaUserRepository::toDomain).toList();
+    }
+
+    /**
      * Rejects the account if its email address or its code belong to another account.
      *
      * @param user the account about to be saved
@@ -106,6 +124,7 @@ class JpaUserRepository implements UserRepository {
         entity.setCi(user.getCi());
         entity.setUagrmCode(user.getUagrmCode());
         entity.setPhoneNumber(user.getPhoneNumber());
+        entity.setActive(user.isActive());
     }
 
     private static User toDomain(UserAccountEntity entity) {
@@ -118,6 +137,7 @@ class JpaUserRepository implements UserRepository {
                 .withSecondLastName(entity.getSecondLastName())
                 .withCi(entity.getCi())
                 .withUagrmCode(entity.getUagrmCode())
-                .withPhoneNumber(entity.getPhoneNumber());
+                .withPhoneNumber(entity.getPhoneNumber())
+                .withActive(entity.isActive());
     }
 }
