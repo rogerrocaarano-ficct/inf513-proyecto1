@@ -96,7 +96,12 @@ Alternativa descartada: escribir en disco después del commit. Si la escritura f
 
 ## Diferencias con el modelo
 
-Ninguna en dominio y aplicación: el change implementa los elementos de `Design/Storage` tal como están en EA. La infraestructura no se modela (`LocalDiskFileStorage`, `StorageProperties`, `StorageConfiguration` y la persistencia JPA).
+Clases, atributos, operaciones y relaciones de `Design/Storage/domain` y `Design/Storage/application` coinciden con el código (comparación de la tarea 5.4). La infraestructura no se modela (`LocalDiskFileStorage`, `StorageProperties`, `StorageConfiguration` y la persistencia JPA). Las constantes con los nombres de campo de los errores (`StoredFile.ORIGINAL_NAME`, …) no se modelan, como en los demás agregados.
+
+Diferencias de comportamiento respecto de las notas de EA, decididas al implementar:
+- `StoredFileService.storeNewVersion`: llama a `previous.supersedeBy(next)` **antes** de `FileStorage.write`, no después. Así una versión no vigente se rechaza sin escribir nada en disco. La nota de EA lista `write` antes de `supersedeBy`.
+- `StoredFileService.getHistory`: ordena la cadena siguiendo los enlaces `nextVersionId` desde la primera versión, no por `storedAt`. Dos versiones guardadas casi a la vez podrían tener el mismo `storedAt`; los enlaces dan siempre el orden correcto. `getByFirstVersionId` sigue devolviendo las versiones ordenadas por `storedAt`.
+- `StoredFile.store()`: guarda `storedAt` con precisión de microsegundos, la de PostgreSQL, para que el valor leído de la base sea igual al asignado.
 
 Detalles del modelo que se corrigen en EA, sin efecto en el código:
 - `StoredFileService.store`: el parámetro `content` figura como `Byte[]`; el código usa `byte[]`, como el resto de las operaciones.
