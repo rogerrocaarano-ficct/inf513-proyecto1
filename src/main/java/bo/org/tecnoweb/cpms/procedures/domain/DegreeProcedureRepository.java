@@ -14,6 +14,9 @@ public interface DegreeProcedureRepository {
     /** Finds and locks the ongoing procedure identified by its public reference (FR-055). */
     Optional<DegreeProcedure> getOpenByReferenceForUpdate(long reference);
 
+    /** Finds and locks the student's ongoing procedure (UC-003, FR-004). */
+    Optional<DegreeProcedure> getOpenByStudentForUpdate(UUID studentId);
+
     /** Saves document changes made to an existing aggregate (FR-055). */
     void update(DegreeProcedure procedure);
 }

@@ -20,6 +20,15 @@ public enum RolePermission {
     /** Replace an initial document (UC-002, FR-055). */
     REPLACE_INITIAL_DOCUMENT("reemplazar documentos iniciales", Role.ADMINISTRATIVE),
 
+    /** Register the initial project profile (UC-003, FR-004). */
+    REGISTER_INITIAL_PROFILE("registrar el perfil de proyecto", Role.STUDENT),
+
+    /** Assign the project tutor (UC-003, FR-003). */
+    ASSIGN_TUTOR("asignar un tutor", Role.DIRECTOR),
+
+    /** Be eligible for the project tutor designation (UC-003, FR-003). */
+    BE_PROJECT_TUTOR("ser tutor de proyecto", Role.PROFESSOR, Role.CAPSTONE_PROJECT_PROFESSOR, Role.DIRECTOR),
+
     /** Create student accounts. */
     SIGNUP_STUDENT("crear cuentas de estudiante", Role.ADMINISTRATIVE, Role.DIRECTOR, Role.SYSTEM_ADMIN),
 

@@ -200,3 +200,23 @@ tramites.reemplazarDocumento[TR-001]
 ```
 
 Por ejemplo, adjunta `carta_corregida.pdf` para sustituir la carta. Secretaría recibe una confirmación que identifica el trámite y el documento sustituido.
+
+### `proyectos.registrarPerfil`
+
+Desde tu cuenta de estudiante activa, envía el título como único argumento y adjunta un PDF de hasta 25 MB.
+
+```text
+proyectos.registrarPerfil[Redes comunitarias]
+```
+
+Necesitas un trámite en curso y esta debe ser tu primera entrega. El sistema registra el proyecto y envía el perfil al docente de Taller de Grado. Si no hay un docente de Taller activo, recibirás un rechazo y podrás reintentar cuando haya uno.
+
+### `proyectos.asignarTutor`
+
+Desde la cuenta activa de Dirección, indica la referencia del trámite y el correo del docente activo. Envía el correo sin adjuntos.
+
+```text
+proyectos.asignarTutor[TR-001; docente@cpms.local]
+```
+
+El perfil requiere el visto bueno de Taller de Grado y el proyecto debe estar sin tutor. El estudiante recibe por correo la designación. El visto bueno se registra mediante UC-004.

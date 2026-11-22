@@ -1,18 +1,42 @@
 package bo.org.tecnoweb.cpms.procedures.infrastructure;
 
+import bo.org.tecnoweb.cpms.procedures.application.AssignTutorCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.DegreeProcedureNotifier;
 import bo.org.tecnoweb.cpms.procedures.application.DegreeProcedureUseCase;
 import bo.org.tecnoweb.cpms.procedures.application.OpenDegreeProcedureCommandHandler;
+import bo.org.tecnoweb.cpms.procedures.application.RegisterInitialProfileCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.ReplaceInitialDocumentCommandHandler;
+import bo.org.tecnoweb.cpms.procedures.application.TutorAssignmentNotifier;
+import bo.org.tecnoweb.cpms.procedures.application.TutorAssignmentUseCase;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
+import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectRepository;
 import bo.org.tecnoweb.cpms.users.application.UserManagementNotifier;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** Spring wiring for UC-002 and its two email command handlers. */
+/** Spring wiring for UC-002, UC-003 and their email command handlers. */
 @Configuration(proxyBeanMethods = false)
 class ProceduresConfiguration {
+    /** Creates the UC-003 application service. */
+    @Bean
+    TutorAssignmentUseCase tutorAssignmentUseCase(UserRepository users, DegreeProcedureRepository procedures,
+            DegreeProjectRepository projects, TutorAssignmentNotifier notifier) {
+        return new TutorAssignmentUseCase(users, procedures, projects, notifier);
+    }
+
+    /** Registers the UC-003 basic flow (FR-003). */
+    @Bean
+    AssignTutorCommandHandler assignTutorCommandHandler(TutorAssignmentUseCase useCase) {
+        return new AssignTutorCommandHandler(useCase);
+    }
+
+    /** Registers the UC-003 alternative flow A1 (FR-004). */
+    @Bean
+    RegisterInitialProfileCommandHandler registerInitialProfileCommandHandler(TutorAssignmentUseCase useCase) {
+        return new RegisterInitialProfileCommandHandler(useCase);
+    }
+
     /** Creates the UC-002 application service. */
     @Bean
     DegreeProcedureUseCase degreeProcedureUseCase(UserRepository users, DegreeProcedureRepository procedures,

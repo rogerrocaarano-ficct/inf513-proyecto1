@@ -38,6 +38,12 @@ class JpaDegreeProcedureRepository implements DegreeProcedureRepository {
 
     /** {@inheritDoc} */
     @Override
+    public Optional<DegreeProcedure> getOpenByStudentForUpdate(UUID studentId) {
+        return procedures.findForUpdateByStudentIdAndClosedAtIsNull(studentId).map(DegreeProcedureEntity::toDomain);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void update(DegreeProcedure procedure) {
         procedures.findById(procedure.getReference()).orElseThrow().updateDocuments(procedure);
     }

@@ -122,6 +122,18 @@ public final class DegreeProcedure implements AggregateRoot {
         return "TR-" + String.format(Locale.ROOT, "%03d", reference);
     }
 
+    /** Parses the public procedure reference used by the email commands (UC-002, UC-003). */
+    public static long parseReference(String reference) {
+        if (reference != null && reference.matches("TR-[0-9]+")) {
+            try {
+                return Long.parseLong(reference.substring(3));
+            } catch (NumberFormatException ignored) {
+                // Out-of-range references receive the same validation error.
+            }
+        }
+        throw new DomainValidationException(Map.of("referencia", "Ingrese la referencia del trámite, por ejemplo TR-001."));
+    }
+
     /** Returns the aggregate UUID. */
     @Override
     public UUID getId() {
