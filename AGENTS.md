@@ -19,7 +19,7 @@ names it.
 | `src/main/java/bo/org/tecnoweb/cpms/` | Application code |
 | `src/main/resources/` | Configuration (`application.properties`) and, later, Flyway migrations in `db/migration/` |
 | `src/test/java/bo/org/tecnoweb/cpms/` | Tests |
-| `.agents/skills/` | Agent skills shared by every agent ([Agent Skills](https://agentskills.io) format). `ea-drift [use case \| package]` lists the deviations of the EA model from the current code, to fix them in EA |
+| `.agents/skills/` | Agent skills shared by every agent ([Agent Skills](https://agentskills.io) format). `ea-drift [use case \| package]` lists the deviations of the EA model from the current code, to fix them in EA. `ea-checklist [element \| package]` presents the changes still to make by hand in EA as tables per element, read from the current model |
 | `.claude/skills/` | Pointers for Claude Code, which only reads this folder: each `SKILL.md` repeats the name and description and sends to the one in `.agents/skills/`. Edit the skill in `.agents/skills/` only |
 | `openspec/` | OpenSpec changes (`changes/`), archived changes (`changes/archive/`), the specs of the system (`specs/`) and its configuration (`config.yaml`) |
 
