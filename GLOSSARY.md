@@ -31,10 +31,10 @@
 | Miembro del tribunal | Docente designado como uno de los tres integrantes del tribunal evaluador de un estudiante | |
 | Modalidad de Graduación | Forma por la que el estudiante obtiene el título; en este sistema, Proyecto de Grado | |
 | Observación | Corrección o cambio que un docente pide al estudiante sobre su perfil de proyecto o su documento del proyecto, y que el estudiante debe subsanar | |
-| Perfil de proyecto | Documento breve con la propuesta del proyecto que el estudiante presenta para que el docente de Taller de Grado evalúe su viabilidad | |
+| Perfil de proyecto | Documento breve con la propuesta del proyecto que el estudiante presenta para que el docente de Taller de Grado evalúe su viabilidad | `ProjectProfile` |
 | Plazo de revisión | Tiempo del que disponen el tribunal evaluador y el tutor para revisar una versión del documento del proyecto | |
 | Predefensa | Defensa interna del proyecto de grado y revisión del prototipo ante el tribunal evaluador, que habilita la defensa final | |
-| Proyecto de Grado | Proyecto que el estudiante desarrolla y defiende para titularse en la Modalidad de Graduación del mismo nombre; nace con el perfil de proyecto y avanza con las versiones del documento del proyecto hasta la defensa final | |
+| Proyecto de Grado | Proyecto que el estudiante desarrolla y defiende para titularse en la Modalidad de Graduación del mismo nombre; nace con el perfil de proyecto y avanza con las versiones del documento del proyecto hasta la defensa final | `DegreeProject` |
 | Referencia del trámite | Identificador del expediente que figura en las respuestas y se usa en comandos como el de sustitución de documentos. Ejemplo `TR-001` | `DegreeProcedure.reference` |
 | Registro de cambios | Historial de los cambios hechos en el sistema: quién cambió qué dato y cuándo | |
 | Registro universitario | Código que la universidad asigna a cada estudiante y que no se repite entre estudiantes | `uagrmCode` (que también guarda el código administrativo o de docente de las demás cuentas) |
@@ -44,10 +44,10 @@
 | Secretario(a) de dirección de carrera | Personal de la Dirección de Carrera que recibe los documentos del trámite y lleva el expediente de titulación | `Role.ADMINISTRATIVE` (etiqueta `administrativo`) |
 | Servicio de correo | Servicio de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones | `EmailInbox` (recepción), `EmailSender` (envío) |
 | Solicitud de titulación | Pedido del estudiante para iniciar el trámite de titulación, que acompaña a los documentos iniciales | |
-| Título del proyecto | Nombre del proyecto de grado que el estudiante indica al presentar su perfil de proyecto; un perfil de proyecto nuevo puede cambiarlo | |
+| Título del proyecto | Nombre del proyecto de grado que el estudiante indica al presentar su perfil de proyecto; un perfil de proyecto nuevo puede cambiarlo | `DegreeProject.title` |
 | Trámite de titulación | Proceso que sigue un estudiante desde su solicitud de titulación hasta el archivo de su expediente | `DegreeProcedure` |
 | Tribunal evaluador | Grupo de tres docentes que revisa el documento del proyecto y evalúa la predefensa y la defensa final de un estudiante | |
-| Tutor | Docente que guía al estudiante en su proyecto y revisa el documento del proyecto junto al tribunal evaluador | |
+| Tutor | Docente que guía al estudiante en su proyecto y revisa el documento del proyecto junto al tribunal evaluador | `DegreeProject.tutorId` referencia su cuenta `User` |
 | Usuario | Persona con una cuenta de usuario en el sistema | |
 | Versión del documento | Cada entrega sucesiva del documento del proyecto, con un comentario general del estudiante y sus observaciones; la última entregada es la versión vigente | |
 | Versión para la defensa final | Versión del documento del proyecto que el estudiante entrega después de aprobar la predefensa, y que el tutor y el tribunal evaluador revisan antes de la defensa final | |
