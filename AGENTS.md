@@ -55,7 +55,8 @@ instead of copying it to another document.
   | `<subsystem>.application` | Application services and ports (interfaces) of `Design/<Subsystem>/application` |
   | `<subsystem>.infrastructure` | Adapters that implement the ports (JPA, POP3, SMTP, schedulers, configuration). Not modeled in EA |
 
-  Subsystems: `mail`, `users`. A new subsystem follows the same layers.
+  Subsystems: `mail`, `users`. A new subsystem follows the same layers and
+  the "Reference Architecture" below.
 - Add a dependency only when a use case needs it, and say why in the commit.
 
 ### Local environment
@@ -64,6 +65,128 @@ The requirements and the steps to set up and use the local environment are in
 `README.md`, section "Entorno de desarrollo". In short: `./gradlew bootRun`
 starts `compose.yaml` (PostgreSQL, GreenMail, Roundcube) with the `local`
 profile, and the webmail is at <http://localhost:8025>.
+
+## Reference Architecture
+
+This is the architecture that the subsystems `users` and `mail` already
+follow. When the EA model has the design of a use case, the names come from
+the model and the structure comes from this section. When the model has no
+design for it, this section is the design (see "Working without the model").
+Each rule names the file of `users` that shows it; read it before writing a
+new one.
+
+### Domain (`<subsystem>.domain`)
+
+No Spring or JPA annotations.
+
+- One aggregate root per concept, implementing `common.AggregateRoot`: a
+  `UUID` id, its own rules and validations, and the domain events it raises,
+  collected with `pullEvents()`. A new instance is built with `builder()` and
+  `with*` methods and registered with an operation that validates it
+  (`User.signUp(requester)`); an instance read from storage is built with
+  `rehydrate()` and raises no events (`User`).
+- Domain events are records that implement `DomainEvent`, named
+  `<Aggregate><PastVerb>Event` (`UserSignedUpEvent`).
+- The repository of the aggregate is a port in `domain`,
+  `<Aggregate>Repository`, that takes and returns domain objects
+  (`UserRepository`). `mail.application.ReceivedEmailRepository` is an older
+  exception; do not copy it.
+- Errors: `DomainValidationException` with one Spanish message per field,
+  `UserNotAuthorizedException` when the sender may not do it, and a subclass of
+  `DomainException` for anything else.
+- Authorization goes through a permission enum that lists the allowed roles
+  (`RolePermission`, `User.hasPermissionTo`). Never compare roles directly
+  (`role == Role.ADMINISTRATIVE`) in a use case.
+
+### How a use case is implemented
+
+The mail channel (`mail`) already receives the emails, parses the subject,
+checks the number of arguments and attachments, opens the transaction and
+replies with the error when a `DomainException` is thrown. A use case does not
+touch any of that: it plugs into the channel by implementing
+`mail.application.EmailCommandHandler`.
+
+1. **Use case.** One class `<Name>UseCase` in `<subsystem>.application` per use
+   case: plain Java, dependencies through the constructor. **Each flow of the
+   use case (basic flow, alternative flows) is one public method**, and its
+   Javadoc names the flow (`UserManagementUseCase.signUpUser` is the basic
+   flow, `listUsers` is A3). Each method: gets the active requester
+   (`requireActiveRequester`), checks the permission, runs the domain
+   operation, saves through the repository, and passes the events from
+   `pullEvents()` to the notifier.
+2. **One handler per email command,** implementing `EmailCommandHandler`:
+   - `<Verb><Object>CommandHandler` if the command changes state,
+     `<Verb><Object>QueryHandler` if it only reads (`SignUpUserCommandHandler`,
+     `ListUsersQueryHandler`).
+   - A constant `public static final String ACTION` with the command name
+     (`usuarios.crearCuenta`), returned by `actionKey()`.
+   - `requiredArgs()` and `requiredFiles()` return the exact counts.
+   - `handle(email)` has no logic: it reads `email.parseArgs()` (and the
+     attachments), builds the contract and calls one method of the use case
+     with `email.getFrom()` as the requester.
+3. **Contract.** As a rule, the arguments are grouped in a record
+   `<Verb><Object>Command` or `<Verb><Object>Query` in `application`
+   (`SignUpUserCommand`; `ListUsersQuery` is used even with one argument). The
+   only accepted exception is a command whose single argument identifies the
+   affected entity, which may pass it directly
+   (`DisableUserCommandHandler` calls `disableUser(requesterEmail, userEmail)`).
+   Skipping the record is not the norm; the design of the change says why.
+4. **Replies and notices.** An outgoing port `<UseCase>Notifier` in
+   `application`, with one method per reply or notice, taking domain events or
+   result records (`UserManagementNotifier`). The use case and the handler
+   never send email themselves.
+5. **Wiring.** The use case and each handler are declared as `@Bean` in the
+   subsystem configuration (see Infrastructure); the mail channel finds the
+   handlers by itself. No generic handlers, lambdas or private records inside
+   the configuration.
+6. **Other subsystems.** Reuse the domain and application of another subsystem
+   instead of repeating its rules or its messages (for instance, a student
+   account created by another use case follows the rules and the notice of
+   UC-001). Never depend on the infrastructure of another subsystem.
+
+### Infrastructure (`<subsystem>.infrastructure`)
+
+Not modeled in EA.
+
+- `<Subsystem>Configuration`: package-private,
+  `@Configuration(proxyBeanMethods = false)`, declares the use case and the
+  handlers (`UsersConfiguration`).
+- `Mail<UseCase>Notifier`: a `@Component` that implements the notifier,
+  publishes each event with `ApplicationEventPublisher` and sends the emails
+  with `EmailSender` in `@TransactionalEventListener(phase = AFTER_COMMIT)`
+  methods. A failed send is logged and not rethrown
+  (`MailUserManagementNotifier`).
+- `infrastructure.persistence`: a package-private `Jpa<Aggregate>Repository`
+  (`@Repository`, `@Transactional`) implements the repository port, maps the
+  aggregate to and from a package-private JPA entity `<Table>Entity`, and
+  queries through `SpringData<Table>Repository extends JpaRepository`
+  (`JpaUserRepository`, `UserAccountEntity`,
+  `SpringDataUserAccountRepository`).
+- **No SQL in `src/main`.** All data access goes through the ORM, with Spring
+  Data derived methods (`findBy…`, `existsBy…`). No `JdbcTemplate`, no
+  `EntityManager`, no native queries, no SQL in strings. If a query cannot be
+  written that way, ask the user before going on. The only SQL is the schema,
+  in a new Flyway migration `V<n>__<name>.sql`; never edit a migration that is
+  already in `develop`. In `src/test`, `JdbcTemplate` is allowed only to clean,
+  prepare and check data, as the integration tests already do.
+
+### Transactions
+
+`InboxPollerService` runs `handle` inside the transaction that also marks the
+email as processed. The use case does not open its own. A `DomainException`
+rolls it back and its message goes to the sender. Emails leave only after the
+commit, through the notifier.
+
+### Documentation and tests
+
+- Javadoc in English on every type and every public or package-private method,
+  citing the use case and requirement IDs (`UC-001`, `FR-035`).
+- The tests mirror the packages: unit tests of the domain, of the use case with
+  test doubles of its ports, of each handler and of the notifier
+  (`UserTest`, `UserManagementUseCaseTest`, `SignUpUserCommandHandlerTest`,
+  `MailUserManagementNotifierTest`); a repository test with Testcontainers
+  (`JpaUserRepositoryTest`); a wiring test (`UsersWiringTest`); and one
+  integration test per command with GreenMail (`SignUpByEmailIntegrationTest`).
 
 ## Languages
 
@@ -117,6 +240,9 @@ documents in the root (`README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`,
 
 - Do not edit code outside a change. If the user asks for a code change
   without one, propose creating it first.
+- Create the change with the OpenSpec CLI or skills (`/opsx:propose`), never
+  by hand, so that it has its `.openspec.yaml` and every artifact.
+- Mark each task as done when it is done, not all of them at the end.
 - One change belongs to one use case or to one piece of shared work, like the
   branches (see Git).
 - OpenSpec artifacts are documentation: write them in Spanish, with
@@ -129,22 +255,44 @@ The model is not in git: it is read from the EA instance open on the user's
 machine, through the Enterprise Architect MCP server.
 
 - When proposing, exploring or applying an OpenSpec change, read the model
-  first: find the use case by its ID and the analysis and design elements and
+  first, when it is available: find the use case by its ID and the analysis and design elements and
   diagrams that realize it (classes, interfaces, operations, attributes,
   relations). Cite them by package path and name in the proposal and the
   design of the change.
 - The code follows the design in EA: class, interface, operation and attribute
   names come from the model.
-- **Warn the user** before proposing or applying anything the model does not
-  back: a class, operation, attribute, relation or behavior that is not in EA,
+- **Warn the user** before proposing or applying anything the model, when it
+  has the design of the use case, does not back: a class, operation, attribute, relation or behavior that is not in EA,
   or that contradicts it. Say what is missing or different, and ask whether to
   update the model first or to go on. If they go on, record the gap in the
   design of the change under a heading "Diferencias con el modelo".
 - Only read the model. Do not create or change EA elements unless the user
   asks for it.
-- If the EA tools do not respond (EA closed or the project not loaded), tell
-  the user and ask them to open it. Do not go on from memory or from guesses
-  about the model.
+- If the EA tools do not respond (EA closed, the project not loaded, or no EA
+  on this machine), or the use case has no design in the model, follow
+  "Working without the model". Never go on from memory or from guesses about
+  the model.
+
+### Working without the model
+
+Not every member of the team can read or edit the EA model. Without it, the
+work goes on with the "Reference Architecture" as its design:
+
+- Tell the user once that the model is not available or has no design for
+  the use case, and go on. Do not stop the change for that.
+- The structure comes from "Reference Architecture"; the names come from the
+  column "Término adoptado en el código" of `GLOSSARY.md` and from
+  `REQUIREMENTS.md`. Propose the names that are missing and add them to the
+  glossary in the same change.
+- Do not invent a structure different from the reference. If the use case
+  needs something the reference does not cover (a new kind of adapter, file
+  storage, a new channel…), ask the user before designing it.
+- In the design of the change, the heading "Diferencias con el modelo" says
+  "UC-xxx sin diseño en EA; se sigue la arquitectura de referencia" and lists
+  the classes, operations and relations the change creates, so that whoever
+  keeps the model can bring them to EA later with `ea-drift`.
+- The task that checks the implementation compares it with the "Reference
+  Architecture" instead of the EA elements.
 
 ## Git
 
