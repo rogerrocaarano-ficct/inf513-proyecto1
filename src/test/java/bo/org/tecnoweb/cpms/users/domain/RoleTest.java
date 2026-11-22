@@ -116,9 +116,11 @@ class RoleTest {
         assertThat(Role.ADMINISTRATIVE.getPermissions())
                 .containsExactly(RolePermission.OPEN_DEGREE_PROCEDURE, RolePermission.REPLACE_INITIAL_DOCUMENT,
                         RolePermission.SIGNUP_STUDENT, RolePermission.LIST_STUDENTS);
-        assertThat(Role.STUDENT.getPermissions()).isEmpty();
+        assertThat(Role.STUDENT.getPermissions()).containsExactly(RolePermission.REGISTER_INITIAL_PROFILE);
         assertThat(Role.SYSTEM_ADMIN.getPermissions())
-                .doesNotContain(RolePermission.OPEN_DEGREE_PROCEDURE, RolePermission.REPLACE_INITIAL_DOCUMENT)
-                .hasSize(RolePermission.values().length - 2);
+                .doesNotContain(RolePermission.OPEN_DEGREE_PROCEDURE, RolePermission.REPLACE_INITIAL_DOCUMENT,
+                        RolePermission.REGISTER_INITIAL_PROFILE, RolePermission.ASSIGN_TUTOR,
+                        RolePermission.BE_PROJECT_TUTOR)
+                .hasSize(RolePermission.values().length - 5);
     }
 }

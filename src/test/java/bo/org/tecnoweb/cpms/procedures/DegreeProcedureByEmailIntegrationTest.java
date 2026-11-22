@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import bo.org.tecnoweb.cpms.TestcontainersConfiguration;
 import bo.org.tecnoweb.cpms.mail.application.InboxPollerService;
+import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedure;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.user.GreenMailUser;
 import com.icegreen.greenmail.util.ServerSetupTest;
@@ -28,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+/** Exercises UC-002 and UC-003 through the real email channel. */
 @SpringBootTest(properties = {
         "cpms.users.admin-email=admin@procedures.test",
         "cpms.mail.pop3.port=3110",
@@ -40,6 +42,10 @@ class DegreeProcedureByEmailIntegrationTest {
     private static final String ADMIN = "admin@procedures.test";
     private static final String SECRETARY = "secretaria@procedures.test";
     private static final String STUDENT = "ana@procedures.test";
+    private static final String WORKSHOP = "taller@procedures.test";
+    private static final String DIRECTOR = "direccion@procedures.test";
+    private static final String TUTOR = "docente@procedures.test";
+    private static final String PROFILE = "proyectos.registrarPerfil[Redes comunitarias]";
     private static final String OPEN = "tramites.abrirTramite[Ana; Pérez; ; 1234; 123456; " + STUDENT + "; 7123456]";
     private static final String[] DOCUMENTS = {"carta.pdf", "cv.pdf", "ci.pdf", "boleta.pdf"};
 
@@ -56,6 +62,7 @@ class DegreeProcedureByEmailIntegrationTest {
 
     @BeforeEach
     void setup() throws Exception {
+        jdbc.update("DELETE FROM degree_project");
         jdbc.update("DELETE FROM initial_document");
         jdbc.update("DELETE FROM degree_procedure");
         jdbc.update("DELETE FROM received_email");
@@ -63,6 +70,52 @@ class DegreeProcedureByEmailIntegrationTest {
         system = greenMail.setUser(SYSTEM, "sistema", "secret");
         command(ADMIN, "usuarios.crearCuenta[Laura; Rojas; ; ; ; " + SECRETARY + "; ; administrativo]");
         greenMail.purgeEmailFromAllMailboxes();
+    }
+
+    /** Registers one profile, then assigns a tutor only after FR-005 is satisfied. */
+    @Test
+    void registersProfileAndAssignsTutorAfterApproval() throws Exception {
+        command(ADMIN, "usuarios.crearCuenta[Carla; Rojas; ; ; ; " + DIRECTOR + "; ; director]");
+        command(DIRECTOR, "usuarios.crearCuenta[Luis; Rojas; ; ; ; " + TUTOR + "; ; docente]");
+        command(SECRETARY, OPEN, DOCUMENTS);
+        long reference = jdbc.queryForObject("SELECT reference FROM degree_procedure", Long.class);
+        String label = DegreeProcedure.referenceLabel(reference);
+        String assign = "proyectos.asignarTutor[" + label + "; " + TUTOR + "]";
+        greenMail.purgeEmailFromAllMailboxes();
+
+        command(STUDENT, PROFILE, "perfil.pdf");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM degree_project", Integer.class)).isZero();
+        assertThat(subjectsTo(STUDENT)).hasSize(1);
+
+        command(DIRECTOR, "usuarios.crearCuenta[Rosa; Rojas; ; ; ; " + WORKSHOP + "; ; docente_taller]");
+        greenMail.purgeEmailFromAllMailboxes();
+        command(STUDENT, PROFILE, "perfil.pdf");
+        command(STUDENT, PROFILE, "perfil.pdf");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM degree_project", Integer.class)).isEqualTo(1);
+        assertThat(subjectsTo(WORKSHOP)).containsExactly("Perfil de proyecto: " + label);
+        var notice = java.util.Arrays.stream(greenMail.getReceivedMessages())
+                .filter(message -> hasSubject(message, "Perfil de proyecto: " + label)).findFirst().orElseThrow();
+        var parts = (MimeMultipart) notice.getContent();
+        assertThat(parts.getBodyPart(1).getFileName()).isEqualTo("perfil.pdf");
+
+        command(DIRECTOR, assign);
+        assertThat(jdbc.queryForList("SELECT tutor_id FROM degree_project WHERE tutor_id IS NOT NULL")).isEmpty();
+        jdbc.update("UPDATE degree_project SET profile_approved = true");
+        command(DIRECTOR, assign);
+        command(DIRECTOR, assign);
+        assertThat(jdbc.queryForObject("""
+                SELECT email_address FROM degree_project JOIN user_account ON tutor_id = user_account.id
+                """, String.class)).isEqualTo(TUTOR);
+        assertThat(subjectsTo(STUDENT).stream().filter(subject -> subject.equals("Tutor asignado: " + label)))
+                .hasSize(1);
+    }
+
+    private boolean hasSubject(MimeMessage message, String subject) {
+        try {
+            return subject.equals(message.getSubject());
+        } catch (jakarta.mail.MessagingException caught) {
+            throw new AssertionError(caught);
+        }
     }
 
     @Test
