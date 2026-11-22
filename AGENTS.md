@@ -55,7 +55,7 @@ instead of copying it to another document.
   | `<subsystem>.application` | Application services and ports (interfaces) of `Design/<Subsystem>/application` |
   | `<subsystem>.infrastructure` | Adapters that implement the ports (JPA, POP3, SMTP, schedulers, configuration). Not modeled in EA |
 
-  Subsystems: `mail`, `users`. A new subsystem follows the same layers and
+  Subsystems: `mail`, `users`, `procedures`. A new subsystem follows the same layers and
   the "Reference Architecture" below.
 - Add a dependency only when a use case needs it, and say why in the commit.
 
