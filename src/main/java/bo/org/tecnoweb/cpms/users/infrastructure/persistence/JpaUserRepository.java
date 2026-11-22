@@ -78,6 +78,14 @@ class JpaUserRepository implements UserRepository {
         return accounts.findByEmailAddress(email.strip().toLowerCase(Locale.ROOT)).map(JpaUserRepository::toDomain);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    @Transactional
+    public Optional<User> getByEmailForUpdate(String email) {
+        return accounts.findForUpdateByEmailAddress(email.strip().toLowerCase(Locale.ROOT))
+                .map(JpaUserRepository::toDomain);
+    }
+
     /**
      * {@inheritDoc}
      */

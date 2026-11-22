@@ -4,7 +4,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * Permission to perform an operation on user accounts, separate from the role: it lists the roles
+ * Permission to perform an operation, separate from the role: it lists the roles
  * allowed to perform it.
  *
  * <p>The {@code SIGNUP_<role>} permissions allow creating accounts of that role, and the {@code
@@ -13,6 +13,12 @@ import java.util.Set;
  * of that role; only directors and administrators hold them.
  */
 public enum RolePermission {
+
+    /** Open a graduation procedure (UC-002, FR-001). */
+    OPEN_DEGREE_PROCEDURE("abrir trámites de titulación", Role.ADMINISTRATIVE),
+
+    /** Replace an initial document (UC-002, FR-055). */
+    REPLACE_INITIAL_DOCUMENT("reemplazar documentos iniciales", Role.ADMINISTRATIVE),
 
     /** Create student accounts. */
     SIGNUP_STUDENT("crear cuentas de estudiante", Role.ADMINISTRATIVE, Role.DIRECTOR, Role.SYSTEM_ADMIN),

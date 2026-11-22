@@ -114,8 +114,11 @@ class RoleTest {
     @Test
     void permissionsOfARoleAreThoseThatIncludeIt() {
         assertThat(Role.ADMINISTRATIVE.getPermissions())
-                .containsExactly(RolePermission.SIGNUP_STUDENT, RolePermission.LIST_STUDENTS);
+                .containsExactly(RolePermission.OPEN_DEGREE_PROCEDURE, RolePermission.REPLACE_INITIAL_DOCUMENT,
+                        RolePermission.SIGNUP_STUDENT, RolePermission.LIST_STUDENTS);
         assertThat(Role.STUDENT.getPermissions()).isEmpty();
-        assertThat(Role.SYSTEM_ADMIN.getPermissions()).containsExactly(RolePermission.values());
+        assertThat(Role.SYSTEM_ADMIN.getPermissions())
+                .doesNotContain(RolePermission.OPEN_DEGREE_PROCEDURE, RolePermission.REPLACE_INITIAL_DOCUMENT)
+                .hasSize(RolePermission.values().length - 2);
     }
 }

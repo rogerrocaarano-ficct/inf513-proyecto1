@@ -328,6 +328,11 @@ class UserManagementUseCaseTest {
         }
 
         @Override
+        public Optional<User> getByEmailForUpdate(String email) {
+            return getByEmail(email);
+        }
+
+        @Override
         public Optional<User> getById(UUID id) {
             return saved.stream().filter(u -> u.getId().equals(id)).findFirst();
         }
@@ -348,6 +353,11 @@ class UserManagementUseCaseTest {
 
         @Override
         public void notifyUserSignedUp(UserSignedUpEvent event) {
+            events.add(event);
+        }
+
+        @Override
+        public void notifyNewAccount(UserSignedUpEvent event) {
             events.add(event);
         }
 

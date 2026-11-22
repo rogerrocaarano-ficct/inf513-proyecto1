@@ -50,6 +50,21 @@ class MailUserManagementNotifier implements UserManagementNotifier {
         publisher.publishEvent(event);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void notifyNewAccount(UserSignedUpEvent event) {
+        publisher.publishEvent(new NewAccountNotice(event));
+    }
+
+    /** Sends only the account holder's notice after UC-002 commits. */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void onNewAccountNotice(NewAccountNotice notice) {
+        sendNewAccountNotice(notice.event());
+    }
+
+    /** Selects the account-holder notice when the caller confirms its own operation. */
+    record NewAccountNotice(UserSignedUpEvent event) {}
+
     /**
      * Sends the confirmation to the requester and the notice to the new account (FR-035), after the
      * commit.
@@ -62,6 +77,10 @@ class MailUserManagementNotifier implements UserManagementNotifier {
                 "Se creó la cuenta de " + event.signedUpUserFullName() + " (" + event.signedUpUser()
                         + ") con rol " + event.signedUpUserRole() + ".\n\n"
                         + "Esa persona ya puede enviar comandos al sistema desde su dirección de correo.");
+        sendNewAccountNotice(event);
+    }
+
+    private void sendNewAccountNotice(UserSignedUpEvent event) {
         send(event.signedUpUser(), "Su cuenta en el sistema de trámites de titulación",
                 "Hola, " + event.signedUpUserFullName() + ":\n\n"
                         + event.requesterUserFullName() + " creó su cuenta en el sistema de trámites de titulación "

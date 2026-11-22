@@ -36,6 +36,9 @@ public interface UserRepository {
      */
     Optional<User> getByEmail(String email);
 
+    /** Finds and locks the account for use within the opening transaction of UC-002 (FR-056). */
+    Optional<User> getByEmailForUpdate(String email);
+
     /**
      * Finds an account by its identifier.
      *
