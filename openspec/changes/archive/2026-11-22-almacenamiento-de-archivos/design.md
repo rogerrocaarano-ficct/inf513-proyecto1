@@ -75,7 +75,7 @@ Alternativa descartada: escribir en disco después del commit. Si la escritura f
 
 ### D7. Esquema y configuración
 
-- `V5__stored_file.sql`: tabla `stored_file` (`id` PK, `path` único, `original_name`, `content_type`, `size` > 0, `stored_at`, `first_version_id` FK a sí misma, `next_version_id` FK a sí misma y único) e índice por `first_version_id`.
+- `V6__stored_file.sql`: tabla `stored_file` (`id` PK, `path` único, `original_name`, `content_type`, `size` > 0, `stored_at`, `first_version_id` FK a sí misma, `next_version_id` FK a sí misma y único) e índice por `first_version_id`.
 - Persistencia según la arquitectura de referencia: `JpaStoredFileRepository`, `StoredFileEntity`, `SpringDataStoredFileRepository` (`findForUpdateById`, `findByFirstVersionIdOrderByStoredAtAsc`), todos package-private en `storage.infrastructure.persistence`.
 - `StorageProperties` (`@ConfigurationProperties("cpms.storage")`, como `MailProperties`) con `root`. `application.properties`: `cpms.storage.root=${CPMS_STORAGE_ROOT:}`; si queda vacía, la aplicación no arranca y lo dice en el log. `application-local.properties`: `./data/storage`, con `data/` en `.gitignore`. Las pruebas usan una carpeta temporal registrada en `TestcontainersConfiguration`, que también usa `bootTestRun`.
 - `StorageConfiguration` (package-private) declara `StoredFileService` como `@Bean`.
@@ -91,7 +91,7 @@ Alternativa descartada: escribir en disco después del commit. Si la escritura f
 ## Migration Plan
 
 1. Configurar `CPMS_STORAGE_ROOT` en el entorno de producción con una carpeta persistente y con permisos de escritura para la aplicación, antes de desplegar.
-2. Desplegar: Flyway aplica `V5` y crea una tabla vacía. Ningún comando cambia su comportamiento.
+2. Desplegar: Flyway aplica `V6` y crea una tabla vacía. Ningún comando cambia su comportamiento.
 3. Rollback: volver a la versión anterior de la aplicación; la tabla `stored_file` queda sin uso y no molesta.
 
 ## Diferencias con el modelo

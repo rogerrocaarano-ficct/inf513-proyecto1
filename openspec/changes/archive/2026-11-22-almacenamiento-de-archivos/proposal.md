@@ -36,6 +36,6 @@ Ninguna.
   - `Design/common`: `AggregateRoot`, `DomainException`.
   - `Design/Mail/application/FileStorage` queda en el modelo sin uso hasta la segunda parte.
 - **Requisitos**: NFR-005 (tamaño de los PDF; lo sigue validando cada caso de uso). Issue #9.
-- **Código**: paquete nuevo `bo.org.tecnoweb.cpms.storage`; migración `V5__stored_file.sql`; propiedades en `application.properties` y `application-local.properties`. No cambia código de `mail`, `users` ni `procedures`.
+- **Código**: paquete nuevo `bo.org.tecnoweb.cpms.storage`; migración `V6__stored_file.sql`; propiedades en `application.properties` y `application-local.properties`. No cambia código de `mail`, `users` ni `procedures`.
 - **Dependencias**: ninguna nueva.
 - **Documentos**: `AGENTS.md` (arquitectura de referencia), `README.md` (carpeta de archivos en "Entorno de desarrollo"), `GLOSSARY.md` (término "Archivo almacenado"), `.gitignore`.

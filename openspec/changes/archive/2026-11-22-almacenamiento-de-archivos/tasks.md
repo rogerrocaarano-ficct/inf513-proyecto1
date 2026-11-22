@@ -13,7 +13,7 @@
 
 ## 3. Persistencia
 
-- [x] 3.1 Crear la migración `src/main/resources/db/migration/V5__stored_file.sql` según D7 y verificar que Flyway la aplica al arrancar las pruebas con Testcontainers
+- [x] 3.1 Crear la migración `src/main/resources/db/migration/V6__stored_file.sql` según D7 y verificar que Flyway la aplica al arrancar las pruebas con Testcontainers
 - [x] 3.2 Crear `StoredFileEntity`, `SpringDataStoredFileRepository` (con `@Lock(PESSIMISTIC_WRITE)` en `findForUpdateById` y `findByFirstVersionIdOrderByStoredAtAsc`) y `JpaStoredFileRepository`, package-private en `storage.infrastructure.persistence`, sin SQL; verificar con `JpaStoredFileRepositoryTest` (Testcontainers): ida y vuelta de todos los campos, cadena de tres versiones, historial ordenado y unicidad de `next_version_id`
 
 ## 4. Disco y configuración
