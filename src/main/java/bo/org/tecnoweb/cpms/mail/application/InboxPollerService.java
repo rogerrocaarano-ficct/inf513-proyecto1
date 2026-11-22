@@ -2,8 +2,10 @@ package bo.org.tecnoweb.cpms.mail.application;
 
 import bo.org.tecnoweb.cpms.common.DomainException;
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
+import bo.org.tecnoweb.cpms.mail.domain.File;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
+import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -35,6 +37,7 @@ public class InboxPollerService {
     private final ReceivedEmailRepository receivedEmails;
     private final EmailSender outbox;
     private final TransactionOperations transactions;
+    private final StoredFileService storedFiles;
 
     /**
      * Creates the service.
@@ -46,11 +49,13 @@ public class InboxPollerService {
      * @param receivedEmails storage of the received emails
      * @param outbox         sender of the error replies
      * @param transactions   runs the use case and the state change in one transaction
+     * @param storedFiles    file storage, where the content of every attachment is kept (issue #9)
      * @throws IllegalArgumentException if {@code batchSize} is less than 1
      * @throws IllegalStateException    if two handlers declare the same action
      */
     public InboxPollerService(EmailInbox inbox, List<EmailCommandHandler> handlers, int batchSize,
-            ReceivedEmailRepository receivedEmails, EmailSender outbox, TransactionOperations transactions) {
+            ReceivedEmailRepository receivedEmails, EmailSender outbox, TransactionOperations transactions,
+            StoredFileService storedFiles) {
         if (batchSize < 1) {
             throw new IllegalArgumentException("batchSize must be at least 1");
         }
@@ -60,6 +65,7 @@ public class InboxPollerService {
         this.receivedEmails = receivedEmails;
         this.outbox = outbox;
         this.transactions = transactions;
+        this.storedFiles = storedFiles;
     }
 
     private static Map<String, EmailCommandHandler> indexByActionKey(List<EmailCommandHandler> handlers) {
@@ -110,7 +116,7 @@ public class InboxPollerService {
         for (ReceivedEmail email : polled) {
             Optional<ReceivedEmail> stored = receivedEmails.findByMailboxId(email.getMailboxId());
             if (stored.isEmpty()) {
-                receivedEmails.store(email);
+                storeNew(email);
             } else if (stored.get().getState().isFinal()) {
                 // Read again after a restart that happened before the message was deleted. If the
                 // server reused the UIDL (e.g. a recreated GreenMail), this drops a new command:
@@ -122,6 +128,38 @@ public class InboxPollerService {
                 deleteFromServer(email.getMailboxId());
             }
             // RECEIVED or VALIDATED: getNotProcessed() takes it up.
+        }
+    }
+
+    /**
+     * Stores a message read for the first time: keeps the content of each attachment in file
+     * storage and the email, with the identifiers of its stored files, in one transaction (issue #9).
+     * The attachments are kept even if the email is later discarded or its command fails.
+     *
+     * <p>An email with an empty attachment is discarded and answered, keeping none of its
+     * attachments. If storing fails, the transaction rolls back (file storage deletes what it
+     * wrote), the error is logged and the message stays on the server for the next cycle.
+     *
+     * @param email an email just read from the mailbox, with the content of its attachments
+     */
+    private void storeNew(ReceivedEmail email) {
+        Optional<File> empty = email.findEmptyAttachment();
+        if (empty.isPresent()) {
+            email.withAttachments(List.of());
+            discard(email, "No se pudo procesar el correo: el adjunto \"" + empty.get().getName() + "\" está vacío.");
+            deleteFromServer(email.getMailboxId());
+            return;
+        }
+        try {
+            transactions.executeWithoutResult(status -> {
+                for (File file : email.getAttachments()) {
+                    file.withStoredFileId(storedFiles.store(file.getName(), file.getContentType(), file.getData())
+                            .getId());
+                }
+                receivedEmails.store(email);
+            });
+        } catch (RuntimeException e) {
+            log.error("Could not store message {}; it is read again in the next cycle", email.getMailboxId(), e);
         }
     }
 

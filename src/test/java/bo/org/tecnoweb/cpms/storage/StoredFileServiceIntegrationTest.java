@@ -8,6 +8,7 @@ import bo.org.tecnoweb.cpms.TestcontainersConfiguration;
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
+import bo.org.tecnoweb.cpms.storage.domain.StoredFileAlreadyVersionedException;
 import bo.org.tecnoweb.cpms.storage.domain.StoredFileNotCurrentException;
 import bo.org.tecnoweb.cpms.storage.domain.StoredFileNotFoundException;
 import java.io.IOException;
@@ -52,6 +53,10 @@ class StoredFileServiceIntegrationTest {
 
     @BeforeEach
     void clean() {
+        // Other tests sharing this context may leave owners of stored files behind (issue #9).
+        jdbc.update("DELETE FROM received_email_attachment");
+        jdbc.update("DELETE FROM degree_project");
+        jdbc.update("DELETE FROM initial_document");
         jdbc.update("DELETE FROM stored_file");
     }
 
@@ -215,6 +220,99 @@ class StoredFileServiceIntegrationTest {
         assertThat(service.getHistory(first.getId())).extracting(StoredFile::getId, StoredFile::isCurrent)
                 .containsExactly(tuple(first.getId(), true));
         assertThat(service.readContent(first.getId())).isEqualTo(bytes("v1"));
+    }
+
+    private StoredFile append(UUID previousId, UUID nextId) {
+        return transaction.execute(status -> service.appendVersion(previousId, nextId));
+    }
+
+    @Test
+    void appendsAStoredFileAsTheNextVersionWithoutWriting() throws IOException {
+        StoredFile first = store("v1");
+        StoredFile received = store("v2");
+        long before = filesOnDisk();
+
+        append(first.getId(), received.getId());
+
+        assertThat(filesOnDisk()).isEqualTo(before);
+        assertThat(service.getHistory(received.getId())).extracting(StoredFile::getId, StoredFile::isCurrent)
+                .containsExactly(tuple(first.getId(), false), tuple(received.getId(), true));
+        assertThat(service.getHistory(first.getId())).extracting(StoredFile::getId)
+                .containsExactly(first.getId(), received.getId());
+        assertThat(service.readContent(first.getId())).isEqualTo(bytes("v1"));
+    }
+
+    @Test
+    void appendToAnOldVersionIsRejected() {
+        StoredFile first = store("v1");
+        newVersion(first.getId(), "v2");
+        StoredFile received = store("x");
+
+        assertThatThrownBy(() -> append(first.getId(), received.getId()))
+                .isInstanceOf(StoredFileNotCurrentException.class)
+                .hasMessage("Solo se puede crear una versión nueva a partir de la versión vigente del archivo.");
+        assertThat(service.get(received.getId()).getFirstVersionId()).isEqualTo(received.getId());
+    }
+
+    @Test
+    void appendOfAFileThatAlreadyBelongsToAHistoryIsRejected() {
+        StoredFile first = store("v1");
+        StoredFile second = newVersion(first.getId(), "v2");
+        StoredFile current = store("c");
+
+        assertThatThrownBy(() -> append(current.getId(), second.getId()))
+                .isInstanceOf(StoredFileAlreadyVersionedException.class)
+                .hasMessage("El archivo ya forma parte del historial de otro archivo.");
+        assertThatThrownBy(() -> append(second.getId(), first.getId()))
+                .isInstanceOf(StoredFileAlreadyVersionedException.class);
+        assertThatThrownBy(() -> append(current.getId(), current.getId()))
+                .isInstanceOf(StoredFileAlreadyVersionedException.class);
+        assertThatThrownBy(() -> append(current.getId(), UUID.randomUUID()))
+                .isInstanceOf(StoredFileNotFoundException.class);
+        assertThat(service.getHistory(current.getId())).extracting(StoredFile::getId)
+                .containsExactly(current.getId());
+    }
+
+    @Test
+    void twoSimultaneousAppendsDoNotForkTheChain() throws Exception {
+        StoredFile first = store("v1");
+        StoredFile a = store("a");
+        StoredFile b = store("b");
+        CountDownLatch locked = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+
+        CompletableFuture<StoredFile> winner = CompletableFuture.supplyAsync(() -> transaction.execute(status -> {
+            StoredFile next = service.appendVersion(first.getId(), a.getId());
+            locked.countDown();
+            await(release);
+            return next;
+        }));
+        assertThat(locked.await(30, TimeUnit.SECONDS)).isTrue();
+        CompletableFuture<StoredFile> loser = CompletableFuture.supplyAsync(() -> append(first.getId(), b.getId()));
+        Thread.sleep(500); // let the second request reach the lock
+        release.countDown();
+
+        winner.get(30, TimeUnit.SECONDS);
+        assertThatThrownBy(() -> loser.get(30, TimeUnit.SECONDS)).isInstanceOf(ExecutionException.class)
+                .hasCauseInstanceOf(StoredFileNotCurrentException.class);
+        assertThat(service.getHistory(first.getId())).extracting(StoredFile::getId)
+                .containsExactly(first.getId(), a.getId());
+        assertThat(service.get(b.getId()).isCurrent()).isTrue();
+    }
+
+    @Test
+    void getReturnsTheData() {
+        StoredFile file = store("contenido");
+
+        StoredFile found = service.get(file.getId());
+
+        assertThat(found.getOriginalName()).isEqualTo("perfil.pdf");
+        assertThat(found.getContentType()).isEqualTo("application/pdf");
+        assertThat(found.getSize()).isEqualTo(9);
+        assertThat(found.getStoredAt()).isEqualTo(file.getStoredAt());
+        assertThat(found.isCurrent()).isTrue();
+        assertThatThrownBy(() -> service.get(UUID.randomUUID())).isInstanceOf(StoredFileNotFoundException.class)
+                .hasMessage("El archivo solicitado no existe.");
     }
 
     private static void await(CountDownLatch latch) {

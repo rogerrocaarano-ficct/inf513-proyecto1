@@ -5,6 +5,7 @@ import bo.org.tecnoweb.cpms.mail.application.EmailInbox;
 import bo.org.tecnoweb.cpms.mail.application.EmailSender;
 import bo.org.tecnoweb.cpms.mail.application.InboxPollerService;
 import bo.org.tecnoweb.cpms.mail.application.ReceivedEmailRepository;
+import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -35,14 +36,15 @@ class MailConfiguration {
      * @param outbox             SMTP adapter
      * @param properties         mail settings, for the batch size
      * @param transactionManager transaction manager of the database
+     * @param storedFiles        file storage, where the attachments are kept (issue #9)
      * @return the polling service
      */
     @Bean
     InboxPollerService inboxPollerService(EmailInbox inbox, ObjectProvider<EmailCommandHandler> handlers,
             ReceivedEmailRepository receivedEmails, EmailSender outbox, MailProperties properties,
-            PlatformTransactionManager transactionManager) {
+            PlatformTransactionManager transactionManager, StoredFileService storedFiles) {
         return new InboxPollerService(inbox, handlers.orderedStream().toList(), properties.batchSize(),
-                receivedEmails, outbox, new TransactionTemplate(transactionManager));
+                receivedEmails, outbox, new TransactionTemplate(transactionManager), storedFiles);
     }
 
     /**

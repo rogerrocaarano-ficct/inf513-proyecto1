@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -131,6 +133,52 @@ class ReceivedEmailTest {
 
             assertThat(received.getState()).isEqualTo(ReceivedEmailState.DISCARDED);
             assertThat(validated.getState()).isEqualTo(ReceivedEmailState.DISCARDED);
+        }
+    }
+
+    @Nested
+    class Attachments {
+
+        private File read(String name, byte[] data) {
+            return File.builder().withName(name).withContentType("application/pdf").withData(data);
+        }
+
+        @Test
+        void emptyAttachmentIsFoundInMessageOrder() {
+            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(read("carta.pdf", new byte[]{1}),
+                    read("boleta.pdf", new byte[0]), read("cv.pdf", new byte[0])));
+
+            assertThat(email.findEmptyAttachment()).map(File::getName).contains("boleta.pdf");
+        }
+
+        @Test
+        void attachmentsWithContentOrNotLoadedAreNotEmpty() {
+            File rehydrated = File.rehydrate().withId(UUID.randomUUID()).withStoredFileId(UUID.randomUUID());
+            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(read("carta.pdf", new byte[]{1}),
+                    rehydrated));
+
+            assertThat(rehydrated.isEmpty()).isFalse();
+            assertThat(rehydrated.getData()).isNull();
+            assertThat(email.findEmptyAttachment()).isEmpty();
+        }
+
+        @Test
+        void attachmentIdsAreTheStoredFilesInMessageOrder() {
+            UUID first = UUID.randomUUID();
+            UUID second = UUID.randomUUID();
+            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(
+                    read("a.pdf", new byte[]{1}).withStoredFileId(first),
+                    File.rehydrate().withId(UUID.randomUUID()).withStoredFileId(second)));
+
+            assertThat(email.getAttachmentIds()).containsExactly(first, second);
+            assertThat(ReceivedEmail.builder().getAttachmentIds()).isEmpty();
+        }
+
+        @Test
+        void attachmentIdsRequireStoredFiles() {
+            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(read("a.pdf", new byte[]{1})));
+
+            assertThatThrownBy(email::getAttachmentIds).isInstanceOf(IllegalStateException.class);
         }
     }
 }

@@ -14,7 +14,10 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Persisted initial PDF and its audit metadata (UC-002, FR-002, FR-055). */
+/**
+ * Initial document of a procedure: the reference to its stored PDF and its audit metadata (UC-002,
+ * FR-002, FR-055). The PDF itself is kept by the file storage (issue #9).
+ */
 @Entity
 @Table(name = "initial_document")
 class InitialDocumentEntity {
@@ -26,8 +29,8 @@ class InitialDocumentEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "document_type")
     private InitialDocument type;
-    private String filename;
-    private byte[] content;
+    @Column(name = "stored_file_id", nullable = false, unique = true)
+    private UUID storedFileId;
     private UUID updatedBy;
     private Instant updatedAt;
 
@@ -41,16 +44,15 @@ class InitialDocumentEntity {
         this.type = type;
     }
 
-    /** Updates the contents and audit metadata (FR-055). */
+    /** Updates the stored file and audit metadata (FR-055). */
     void update(Document document) {
-        filename = document.filename();
-        content = document.content();
+        storedFileId = document.storedFileId();
         updatedBy = document.updatedBy();
         updatedAt = document.updatedAt();
     }
 
     /** Rehydrates the domain document. */
     Document toDomain() {
-        return new Document(filename, content, updatedBy, updatedAt);
+        return new Document(storedFileId, updatedBy, updatedAt);
     }
 }

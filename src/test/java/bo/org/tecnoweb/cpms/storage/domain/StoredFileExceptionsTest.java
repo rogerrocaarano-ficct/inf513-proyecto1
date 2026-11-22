@@ -23,4 +23,12 @@ class StoredFileExceptionsTest {
         assertThat(exception.getMessage())
                 .isEqualTo("Solo se puede crear una versión nueva a partir de la versión vigente del archivo.");
     }
+
+    @Test
+    void alreadyVersionedHasItsCodeAndSpanishMessage() {
+        StoredFileAlreadyVersionedException exception = new StoredFileAlreadyVersionedException(UUID.randomUUID());
+
+        assertThat(exception.getErrorCode()).isEqualTo("STORED_FILE_ALREADY_VERSIONED");
+        assertThat(exception.getMessage()).isEqualTo("El archivo ya forma parte del historial de otro archivo.");
+    }
 }

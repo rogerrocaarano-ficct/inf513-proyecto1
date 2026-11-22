@@ -8,11 +8,17 @@ import bo.org.tecnoweb.cpms.common.DomainValidationException;
 import bo.org.tecnoweb.cpms.mail.domain.File;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
+import bo.org.tecnoweb.cpms.storage.application.FileStorage;
+import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
+import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
+import bo.org.tecnoweb.cpms.storage.domain.StoredFileRepository;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,9 +35,17 @@ class InboxPollerServiceTest {
     private final InMemoryRepository repository = new InMemoryRepository();
     private final RecordingSender sender = new RecordingSender();
     private final RollbackTransactions transactions = new RollbackTransactions(repository);
+    private final InMemoryStoredFiles storedFileRows = new InMemoryStoredFiles();
+    private final InMemoryFileStorage disk = new InMemoryFileStorage();
+    private final StoredFileService storedFiles = new StoredFileService(storedFileRows, disk);
 
     private InboxPollerService service(int batchSize, EmailCommandHandler... handlers) {
-        return new InboxPollerService(inbox, List.of(handlers), batchSize, repository, sender, transactions);
+        return new InboxPollerService(inbox, List.of(handlers), batchSize, repository, sender, transactions,
+                storedFiles);
+    }
+
+    private static File attachment(String name, byte... data) {
+        return File.builder().withName(name).withContentType("application/pdf").withData(data);
     }
 
     private InboxPollerService service(EmailCommandHandler... handlers) {
@@ -187,7 +201,7 @@ class InboxPollerServiceTest {
         @Test
         void extraAttachmentIsDiscardedWithTheExpectedCount() {
             TestHandler handler = new TestHandler("cmd", 0, 0);
-            inbox.add("uid-1", "ana@uagrm.bo", "cmd[]", File.builder().withName("a.pdf").withData(new byte[] {1}));
+            inbox.add("uid-1", "ana@uagrm.bo", "cmd[]", attachment("a.pdf", (byte) 1));
 
             service(handler).pollAndProcess();
 
@@ -272,7 +286,8 @@ class InboxPollerServiceTest {
             service(handler).pollAndProcess();
 
             assertThat(transactions.rolledBack).isEqualTo(1);
-            assertThat(transactions.committedStates).doesNotContain(ReceivedEmailState.PROCESSED.name() + "@tx1");
+            // tx1 stores the new email; tx2 runs the command and is rolled back.
+            assertThat(transactions.committedStates).doesNotContain(ReceivedEmailState.PROCESSED.name() + "@tx2");
             assertThat(repository.state("uid-1")).isEqualTo(ReceivedEmailState.PROCESSED);
         }
 
@@ -301,7 +316,142 @@ class InboxPollerServiceTest {
         }
     }
 
+    @Nested
+    class Attachments {
+
+        @Test
+        void attachmentsAreStoredInOrderAndTheHandlerSeesTheirIds() {
+            List<UUID> seen = new ArrayList<>();
+            TestHandler handler = new TestHandler("cmd", 0, 2) {
+                @Override
+                public void handle(ReceivedEmail email) {
+                    super.handle(email);
+                    seen.addAll(email.getAttachmentIds());
+                }
+            };
+            inbox.add("uid-1", "ana@uagrm.bo", "cmd[]", attachment("carta.pdf", (byte) 1),
+                    attachment("cv.pdf", (byte) 2, (byte) 3));
+
+            service(handler).pollAndProcess();
+
+            assertThat(handler.calls).isEqualTo(1);
+            assertThat(seen).hasSize(2);
+            assertThat(seen).extracting(id -> storedFiles.get(id).getOriginalName()).containsExactly("carta.pdf",
+                    "cv.pdf");
+            assertThat(storedFiles.readContent(seen.get(1))).containsExactly(2, 3);
+            assertThat(repository.findByMailboxId("uid-1").orElseThrow().getAttachmentIds())
+                    .containsExactlyElementsOf(seen);
+        }
+
+        @Test
+        void pendingEmailIsExecutedWithItsStoredFilesWithoutStoringThemAgain() {
+            TestHandler handler = new TestHandler("cmd", 0, 1);
+            UUID storedId = UUID.randomUUID();
+            repository.put(stored("uid-1", "cmd[]", ReceivedEmailState.VALIDATED).withAttachments(List.of(
+                    File.rehydrate().withId(UUID.randomUUID()).withStoredFileId(storedId))));
+            inbox.add("uid-1", "ana@uagrm.bo", "cmd[]", attachment("carta.pdf", (byte) 1));
+
+            service(handler).pollAndProcess();
+
+            assertThat(handler.calls).isEqualTo(1);
+            assertThat(disk.writes).isZero();
+            assertThat(repository.findByMailboxId("uid-1").orElseThrow().getAttachmentIds()).containsExactly(storedId);
+        }
+
+        @Test
+        void discardedEmailKeepsItsStoredFiles() {
+            inbox.add("uid-1", "ana@uagrm.bo", "noExiste[]", attachment("carta.pdf", (byte) 1));
+
+            service(new TestHandler("cmd", 0, 0)).pollAndProcess();
+
+            assertThat(repository.state("uid-1")).isEqualTo(ReceivedEmailState.DISCARDED);
+            assertThat(disk.writes).isEqualTo(1);
+            assertThat(repository.findByMailboxId("uid-1").orElseThrow().getAttachmentIds()).hasSize(1);
+        }
+
+        @Test
+        void emailWithAnEmptyAttachmentIsDiscardedWithoutStoringFiles() {
+            TestHandler handler = new TestHandler("cmd", 0, 2);
+            inbox.add("uid-1", "ana@uagrm.bo", "cmd[]", attachment("carta.pdf", (byte) 1), attachment("boleta.pdf"));
+
+            service(handler).pollAndProcess();
+
+            assertThat(handler.calls).isZero();
+            assertThat(disk.writes).isZero();
+            assertThat(repository.state("uid-1")).isEqualTo(ReceivedEmailState.DISCARDED);
+            assertThat(sender.only().body).contains("el adjunto \"boleta.pdf\" está vacío");
+            assertThat(inbox.deleted).containsExactly("uid-1");
+        }
+
+        @Test
+        void failureStoringAnEmailDoesNotStopTheCycleNorStoreIt() {
+            TestHandler handler = new TestHandler("cmd", 0, 1);
+            inbox.add("uid-1", "ana@uagrm.bo", "cmd[]", attachment("carta.pdf", (byte) 1));
+            inbox.add("uid-2", "ana@uagrm.bo", "cmd[]", attachment("cv.pdf", (byte) 2));
+            disk.failOnWrite = 1;
+
+            service(handler).pollAndProcess();
+
+            assertThat(repository.findByMailboxId("uid-1")).isEmpty();
+            assertThat(inbox.deleted).containsExactly("uid-2");
+            assertThat(inbox.size()).isEqualTo(1);
+            assertThat(handler.calls).isEqualTo(1);
+            assertThat(sender.sent).isEmpty();
+        }
+    }
+
     // ---- test doubles ----
+
+    /** Keeps the metadata of the stored files, as the database would. */
+    static class InMemoryStoredFiles implements StoredFileRepository {
+        private final Map<UUID, StoredFile> rows = new LinkedHashMap<>();
+
+        @Override
+        public void insert(StoredFile file) {
+            rows.put(file.getId(), file);
+        }
+
+        @Override
+        public void update(StoredFile file) {
+            rows.put(file.getId(), file);
+        }
+
+        @Override
+        public Optional<StoredFile> getById(UUID id) {
+            return Optional.ofNullable(rows.get(id));
+        }
+
+        @Override
+        public Optional<StoredFile> getByIdForUpdate(UUID id) {
+            return getById(id);
+        }
+
+        @Override
+        public List<StoredFile> getByFirstVersionId(UUID firstVersionId) {
+            return rows.values().stream().filter(f -> f.getFirstVersionId().equals(firstVersionId)).toList();
+        }
+    }
+
+    /** Keeps the bytes in memory; can fail on the n-th write. */
+    static class InMemoryFileStorage implements FileStorage {
+        private final Map<String, byte[]> content = new HashMap<>();
+        int writes;
+        int failOnWrite;
+
+        @Override
+        public void write(String path, byte[] bytes) {
+            if (failOnWrite > 0 && --failOnWrite == 0) {
+                throw new IllegalStateException("disk full");
+            }
+            writes++;
+            content.put(path, bytes.clone());
+        }
+
+        @Override
+        public byte[] read(String path) {
+            return content.get(path).clone();
+        }
+    }
 
     private static ReceivedEmail stored(String mailboxId, String subject, ReceivedEmailState state) {
         return ReceivedEmail.builder().withMailboxId(mailboxId).fromSender("ana@uagrm.bo").withSubject(subject)

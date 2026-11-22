@@ -43,10 +43,11 @@ class DegreeProcedureTest {
         var persisted = DegreeProcedure.rehydrate(opened.getId(), 1, student.getId(), secretary.getId(),
                 opened.getOpenedAt(), null, opened.getDocuments());
 
-        persisted.replaceInitialDocument(secretary, pdf("carta_corregida.pdf"));
+        var corrected = pdf("carta_corregida.pdf");
+        persisted.replaceInitialDocument(secretary, corrected);
 
-        assertThat(persisted.getDocuments().get(InitialDocument.LETTER).filename()).isEqualTo("carta_corregida.pdf");
-        assertThat(persisted.getDocuments().get(InitialDocument.RESUME).filename()).isEqualTo("cv.pdf");
+        assertThat(persisted.getDocuments().get(InitialDocument.LETTER).storedFileId()).isEqualTo(corrected.getId());
+        assertThat(persisted.documentOf(InitialDocument.RESUME)).isEqualTo(opened.documentOf(InitialDocument.RESUME));
         assertThat(persisted.pullEvents()).singleElement().isInstanceOf(DegreeProcedureDocumentReplacedEvent.class);
 
         var closed = DegreeProcedure.rehydrate(opened.getId(), 1, student.getId(), secretary.getId(),

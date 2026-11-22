@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import bo.org.tecnoweb.cpms.TestcontainersConfiguration;
 import bo.org.tecnoweb.cpms.mail.application.InboxPollerService;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedure;
+import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
+import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.user.GreenMailUser;
 import com.icegreen.greenmail.util.ServerSetupTest;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -58,6 +61,9 @@ class DegreeProcedureByEmailIntegrationTest {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Autowired
+    private StoredFileService storedFiles;
+
     private GreenMailUser system;
 
     @BeforeEach
@@ -66,6 +72,7 @@ class DegreeProcedureByEmailIntegrationTest {
         jdbc.update("DELETE FROM initial_document");
         jdbc.update("DELETE FROM degree_procedure");
         jdbc.update("DELETE FROM received_email");
+        jdbc.update("DELETE FROM stored_file");
         jdbc.update("DELETE FROM user_account WHERE email_address <> ?", ADMIN);
         system = greenMail.setUser(SYSTEM, "sistema", "secret");
         command(ADMIN, "usuarios.crearCuenta[Laura; Rojas; ; ; ; " + SECRETARY + "; ; administrativo]");
@@ -97,6 +104,10 @@ class DegreeProcedureByEmailIntegrationTest {
                 .filter(message -> hasSubject(message, "Perfil de proyecto: " + label)).findFirst().orElseThrow();
         var parts = (MimeMultipart) notice.getContent();
         assertThat(parts.getBodyPart(1).getFileName()).isEqualTo("perfil.pdf");
+        // The test PDF is plain ASCII, so SMTP sends it as 7bit text and turns "\n" into "\r\n".
+        assertThat(new String(parts.getBodyPart(1).getInputStream().readAllBytes(), StandardCharsets.US_ASCII))
+                .isEqualToIgnoringNewLines(new String(ProcedureFixtures.pdfContent("perfil.pdf"),
+                        StandardCharsets.US_ASCII));
 
         command(DIRECTOR, assign);
         assertThat(jdbc.queryForList("SELECT tutor_id FROM degree_project WHERE tutor_id IS NOT NULL")).isEmpty();
@@ -128,15 +139,35 @@ class DegreeProcedureByEmailIntegrationTest {
         assertThat(subjectsTo(STUDENT)).containsExactlyInAnyOrder(
                 "Su cuenta en el sistema de trámites de titulación", "Apertura de trámite: " + formatted);
 
+        // The documents adopt the stored files of the attachments: one file on disk per attachment.
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM stored_file", Integer.class)).isEqualTo(4);
+        assertThat(jdbc.queryForList("""
+                SELECT d.stored_file_id FROM initial_document d
+                JOIN received_email_attachment a ON a.stored_file_id = d.stored_file_id
+                """)).hasSize(4);
+        UUID original = letter();
+
         command(SECRETARY, "tramites.reemplazarDocumento[" + formatted + "]", "carta_corregida.pdf");
         assertThat(filenames()).containsExactlyInAnyOrder("carta_corregida.pdf", "cv.pdf", "ci.pdf", "boleta.pdf");
-        assertThat(jdbc.queryForObject("SELECT content FROM initial_document WHERE document_type = 'LETTER'", byte[].class))
+        UUID corrected = letter();
+        assertThat(storedFiles.readContent(corrected))
                 .containsExactly("%PDF-1.7\ncarta_corregida.pdf".getBytes(StandardCharsets.US_ASCII));
+        assertThat(storedFiles.getHistory(corrected)).extracting(StoredFile::getId)
+                .containsExactly(original, corrected);
+        assertThat(storedFiles.readContent(original))
+                .containsExactly("%PDF-1.7\ncarta.pdf".getBytes(StandardCharsets.US_ASCII));
         assertThat(subjectsTo(SECRETARY)).contains("Documento inicial reemplazado: " + formatted);
 
         jdbc.update("UPDATE degree_procedure SET closed_at = now() WHERE reference = ?", reference);
         command(SECRETARY, "tramites.reemplazarDocumento[" + formatted + "]", "carta_tardia.pdf");
         assertThat(filenames()).contains("carta_corregida.pdf").doesNotContain("carta_tardia.pdf");
+        assertThat(storedFiles.getHistory(corrected)).extracting(StoredFile::getId)
+                .containsExactly(original, corrected);
+    }
+
+    private UUID letter() {
+        return jdbc.queryForObject("SELECT stored_file_id FROM initial_document WHERE document_type = 'LETTER'",
+                UUID.class);
     }
 
     @Test
@@ -182,7 +213,9 @@ class DegreeProcedureByEmailIntegrationTest {
     }
 
     private List<String> filenames() {
-        return jdbc.queryForList("SELECT filename FROM initial_document", String.class);
+        return jdbc.queryForList("""
+                SELECT original_name FROM initial_document JOIN stored_file ON stored_file.id = stored_file_id
+                """, String.class);
     }
 
     private List<String> subjectsTo(String address) throws Exception {

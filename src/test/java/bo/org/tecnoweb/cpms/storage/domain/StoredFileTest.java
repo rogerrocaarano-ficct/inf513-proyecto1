@@ -87,6 +87,22 @@ class StoredFileTest {
     }
 
     @Test
+    void onlyAStandaloneFileCanBecomeTheNextVersion() {
+        StoredFile chainStart = pdf().store();
+        StoredFile laterVersion = pdf().store();
+        chainStart.supersedeBy(laterVersion);
+        StoredFile current = pdf().store();
+
+        assertThatThrownBy(() -> current.supersedeBy(laterVersion))
+                .isInstanceOf(StoredFileAlreadyVersionedException.class);
+        assertThatThrownBy(() -> current.supersedeBy(chainStart))
+                .isInstanceOf(StoredFileAlreadyVersionedException.class);
+        assertThatThrownBy(() -> current.supersedeBy(current))
+                .isInstanceOf(StoredFileAlreadyVersionedException.class);
+        assertThat(current.isCurrent()).isTrue();
+    }
+
+    @Test
     void rehydrateRestoresEveryField() {
         UUID id = UUID.randomUUID();
         UUID first = UUID.randomUUID();

@@ -104,8 +104,33 @@ class MailAdaptersTest {
             assertThat(email.getBody()).isEqualToIgnoringNewLines("cuerpo");
             assertThat(email.getAttachments()).singleElement().satisfies(file -> {
                 assertThat(file.getName()).isEqualTo("perfil.pdf");
+                assertThat(file.getContentType()).isEqualTo("application/pdf");
                 assertThat(file.getData()).containsExactly(1, 2, 3);
             });
+        }
+
+        @Test
+        void attachmentTypeIsReducedToItsBaseType() throws Exception {
+            MimeMessage message = new MimeMessage(Session.getInstance(new Properties()));
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+            helper.setFrom("ana@uagrm.bo");
+            helper.setTo(SYSTEM);
+            helper.setSubject("cmd[]");
+            helper.setText("cuerpo");
+            helper.addAttachment("perfil.pdf", new ByteArrayResource(new byte[] {1}), "Application/PDF; name=perfil.pdf");
+            system.deliver(message);
+
+            ReceivedEmail email = inbox.poll(10).getFirst();
+
+            assertThat(email.getAttachments()).singleElement().extracting(File::getContentType)
+                    .isEqualTo("application/pdf");
+        }
+
+        @Test
+        void attachmentWithoutAValidTypeIsAnOctetStream() {
+            assertThat(Pop3EmailInbox.baseType(null)).isEqualTo("application/octet-stream");
+            assertThat(Pop3EmailInbox.baseType("  ")).isEqualTo("application/octet-stream");
+            assertThat(Pop3EmailInbox.baseType("pdf")).isEqualTo("application/octet-stream");
         }
 
         @Test

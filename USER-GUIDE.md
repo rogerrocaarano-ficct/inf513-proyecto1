@@ -29,6 +29,7 @@ Solo se atienden los comandos que llegan desde una dirección con una cuenta act
 | El asunto no tiene la forma `comando[…]` | Recuerda la forma correcta del asunto |
 | El comando no existe | Indica que no existe y lista los comandos disponibles |
 | Faltan o sobran argumentos o adjuntos | Indica cuántos se esperaban y cuántos llegaron |
+| Un adjunto está vacío (0 bytes) | «No se pudo procesar el correo: el adjunto "X" está vacío.»; el comando no se ejecuta |
 | La dirección no tiene cuenta | Indica que la dirección no está registrada en el sistema |
 | La cuenta está desactivada | «La cuenta X está desactivada. Comuníquese con la Dirección de Carrera.»; el comando no se ejecuta |
 | La cuenta no tiene permiso | Indica qué no tiene permiso para hacer |

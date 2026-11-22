@@ -65,11 +65,13 @@ class StoredFileEntity {
     }
 
     /**
-     * Copies the only field that changes after a file is stored: its next version.
+     * Copies the fields that change after a file is stored: its next version, and the chain it
+     * belongs to when a standalone file is appended to another one.
      *
      * @param file the domain file
      */
     void update(StoredFile file) {
+        this.firstVersionId = file.getFirstVersionId();
         this.nextVersionId = file.getNextVersionId();
     }
 

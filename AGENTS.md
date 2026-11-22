@@ -121,9 +121,10 @@ touch any of that: it plugs into the channel by implementing
    - A constant `public static final String ACTION` with the command name
      (`usuarios.crearCuenta`), returned by `actionKey()`.
    - `requiredArgs()` and `requiredFiles()` return the exact counts.
-   - `handle(email)` has no logic: it reads `email.parseArgs()` (and the
-     attachments), builds the contract and calls one method of the use case
-     with `email.getFrom()` as the requester.
+   - `handle(email)` has no logic: it reads `email.parseArgs()` (and
+     `email.getAttachmentIds()`, the stored files of the attachments), builds
+     the contract and calls one method of the use case with `email.getFrom()`
+     as the requester.
 3. **Contract.** As a rule, the arguments are grouped in a record
    `<Verb><Object>Command` or `<Verb><Object>Query` in `application`
    (`SignUpUserCommand`; `ListUsersQuery` is used even with one argument). The
@@ -182,24 +183,35 @@ commit, through the notifier.
 Files (attachments, documents and their versions) are kept on disk by the
 `storage` subsystem; the database keeps only their metadata (`stored_file`).
 
-- A use case stores, versions and reads files only through
+- Every subsystem stores, versions and reads files only through
   `storage.application.StoredFileService` (`store`, `storeNewVersion`,
-  `readContent`, `getHistory`). Never use `StoredFileRepository` or
-  `FileStorage` from another subsystem.
+  `appendVersion`, `get`, `readContent`, `getHistory`). Never use
+  `StoredFileRepository` or `FileStorage` from another subsystem.
+- The mail channel stores every attachment when it receives the email, and
+  the handler passes the identifiers of the stored files to the use case
+  (`email.getAttachmentIds()`), never their content. The attachments of every
+  email are kept, also when the email is discarded or its command fails.
+- A use case that receives a document checks it with `get` (name, type,
+  size) and `readContent`, and adopts it by keeping its `UUID`: the file is
+  not copied (`DegreeProcedureUseCase.open`). To replace a document, it links
+  the received file as the next version of the current one with
+  `appendVersion` (`DegreeProcedureUseCase.replace`). `storeNewVersion` is for
+  content the system produces itself.
 - The owner of a file (an aggregate of another subsystem) keeps the `UUID` of
-  the current version and replaces it with the one `storeNewVersion` returns.
-  The previous versions are kept; `getHistory` rebuilds the chain from any of
-  them.
+  the current version and replaces it with the new one. The previous versions
+  are kept; `getHistory` rebuilds the chain from any of them.
 - The service runs inside the caller's transaction, like a use case. A file
   written in a transaction that rolls back is deleted, so the use case does
   nothing to clean up.
 - No bytes in the database: no `byte[]` field in a JPA entity and no new
   `BYTEA` column.
 - Size and format limits of each document (NFR-005) are rules of the use case
-  that receives it, checked before calling the service.
-- Tests of a use case replace `StoredFileService` with a test double; its
-  integration test uses the throwaway folder that `TestcontainersConfiguration`
-  sets in `cpms.storage.root`.
+  that receives it, checked before it adopts the file
+  (`InitialDocument.requirePdf`).
+- Tests of a use case build a real `StoredFileService` over in-memory doubles
+  of its ports (`ProcedureFixtures.Storage`); its integration test uses the
+  throwaway folder that `TestcontainersConfiguration` sets in
+  `cpms.storage.root`.
 
 ### Documentation and tests
 

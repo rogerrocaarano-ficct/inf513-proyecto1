@@ -7,6 +7,9 @@ import bo.org.tecnoweb.cpms.procedures.domain.DegreeProject;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectProfileRegisteredEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectRepository;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectTutorAssignedEvent;
+import bo.org.tecnoweb.cpms.procedures.domain.InitialDocument;
+import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
+import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
 import bo.org.tecnoweb.cpms.users.domain.Role;
 import bo.org.tecnoweb.cpms.users.domain.RolePermission;
 import bo.org.tecnoweb.cpms.users.domain.User;
@@ -14,20 +17,25 @@ import bo.org.tecnoweb.cpms.users.domain.UserNotAuthorizedException;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import java.util.Map;
 
-/** Registers the initial profile and the tutor designation (UC-003). */
+/**
+ * Registers the initial profile and the tutor designation (UC-003). The profile PDF arrives as a
+ * file the mail channel already stored; the use case validates it and adopts it (issue #9).
+ */
 public class TutorAssignmentUseCase {
     private final UserRepository users;
     private final DegreeProcedureRepository procedures;
     private final DegreeProjectRepository projects;
     private final TutorAssignmentNotifier notifier;
+    private final StoredFileService storedFiles;
 
-    /** Receives the repositories and notification port for UC-003. */
+    /** Receives the repositories, notification port and file storage for UC-003. */
     public TutorAssignmentUseCase(UserRepository users, DegreeProcedureRepository procedures,
-            DegreeProjectRepository projects, TutorAssignmentNotifier notifier) {
+            DegreeProjectRepository projects, TutorAssignmentNotifier notifier, StoredFileService storedFiles) {
         this.users = users;
         this.procedures = procedures;
         this.projects = projects;
         this.notifier = notifier;
+        this.storedFiles = storedFiles;
     }
 
     /** Basic flow: designates the tutor after the workshop approval (FR-003, FR-020). */
@@ -62,8 +70,10 @@ public class TutorAssignmentUseCase {
         User workshop = users.getByRole(Role.CAPSTONE_PROJECT_PROFESSOR).stream().filter(User::isActive)
                 .findFirst().orElseThrow(() -> invalid("perfil",
                         "No hay un docente de Taller de Grado activo. Intente nuevamente más adelante."));
+        StoredFile file = storedFiles.get(command.attachmentId());
+        InitialDocument.requirePdf(file, storedFiles.readContent(file.getId()));
         DegreeProject project = DegreeProject.builder().withProcedureId(procedure.getId()).withTitle(command.title())
-                .registerInitialProfile(command.attachment(), student.getEmailAddress(), workshop.getEmailAddress(),
+                .registerInitialProfile(file, student.getEmailAddress(), workshop.getEmailAddress(),
                         DegreeProcedure.referenceLabel(procedure.getReference()));
         projects.insert(project);
         for (var event : project.pullEvents()) {

@@ -130,14 +130,16 @@ La sección "File storage" de `AGENTS.md` pasa a decir: el canal de correo guard
 
 **`Design/Mail`:**
 
-- `File`: atributos nuevos `contentType: String` y `storedFileId: UUID`, con `withContentType`, `getContentType`, `withStoredFileId` y `getStoredFileId`; `data` deja de persistirse.
+- `File`: atributos nuevos `contentType: String` y `storedFileId: UUID`, con `withContentType`, `getContentType`, `withStoredFileId` y `getStoredFileId`; operación nueva `isEmpty(): boolean` (contenido leído con 0 bytes; falso si no se cargó), que usa `ReceivedEmail.findEmptyAttachment`; `data` deja de persistirse.
 - `ReceivedEmail`: operaciones nuevas `findEmptyAttachment(): Optional<File>` y `getAttachmentIds(): List<UUID>`.
-- `InboxPollerService`: dependencia nueva hacia `Design/Storage/application/StoredFileService`; guarda los adjuntos y descarta los correos con un adjunto vacío (D1).
+- `InboxPollerService`: el atributo `files: FileStorage` se reemplaza por `storedFiles: StoredFileService` (`Design/Storage/application`), recibido en el constructor; operación privada nueva `storeNew(email)`, que guarda los adjuntos y descarta los correos con un adjunto vacío (D1). El atributo `transactions` ya existía en el código sin estar en el modelo.
 - `FileStorage` (`Design/Mail/application`) se elimina con su asociación a `InboxPollerService`: la reemplaza la dependencia anterior.
+
+Comparación de la tarea 4.4, sin efecto en el diseño: `appendVersion` actualiza en la base también `first_version_id` del archivo enlazado (`StoredFileEntity.update`, infraestructura no modelada), y `Pop3EmailInbox` (infraestructura) reduce el `Content-Type` del adjunto a su tipo base o `application/octet-stream`, y nombra `adjunto` a uno sin nombre o con nombre en blanco.
 
 **UC-002 y UC-003 sin diseño en EA; se sigue la arquitectura de referencia.** Clases, operaciones y relaciones que el change crea o cambia en `procedures`:
 
-- `InitialDocument.requirePdf(StoredFile, byte[])`, `InitialDocument.classify(StoredFile)`.
+- `InitialDocument.requirePdf(StoredFile, byte[])`, `InitialDocument.classify(StoredFile)`.- `ProcedureFixtures.Storage` (pruebas): `StoredFileService` real sobre puertos en memoria.
 - `DegreeProcedure.open(User, User, List<StoredFile>)`, `replaceInitialDocument(User, StoredFile)`, `documentOf(InitialDocument)`; `DegreeProcedure.Document(storedFileId, updatedBy, updatedAt)`.
 - `ProjectProfile(storedFileId, approved)`, `ProjectProfile.pending(StoredFile)`; `DegreeProject.registerInitialProfile(StoredFile, …)`.
 - `OpenDegreeProcedureCommand.attachmentIds`, `ReplaceInitialDocumentCommand.attachmentId`, `RegisterInitialProfileCommand.attachmentId` (`UUID`).
