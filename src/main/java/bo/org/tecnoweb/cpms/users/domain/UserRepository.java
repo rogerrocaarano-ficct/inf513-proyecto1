@@ -36,8 +36,15 @@ public interface UserRepository {
      */
     Optional<User> getByEmail(String email);
 
-    /** Finds and locks the account for use within the opening transaction of UC-002 (FR-056). */
-    Optional<User> getByEmailForUpdate(String email);
+    /**
+     * Finds an account by its code (the student registration number) and locks it until the
+     * transaction ends, so that two openings for the same student run one after the other (UC-002,
+     * FR-056).
+     *
+     * @param code the code, without surrounding spaces
+     * @return the account, or empty if no account has that code
+     */
+    Optional<User> getByUagrmCodeForUpdate(String code);
 
     /**
      * Finds an account by its identifier.

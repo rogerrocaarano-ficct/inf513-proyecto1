@@ -17,8 +17,8 @@ public enum RolePermission {
     /** Open a graduation procedure (UC-002, FR-001). */
     OPEN_DEGREE_PROCEDURE("abrir trámites de titulación", Role.ADMINISTRATIVE),
 
-    /** Replace an initial document (UC-002, FR-055). */
-    REPLACE_INITIAL_DOCUMENT("reemplazar documentos iniciales", Role.ADMINISTRATIVE),
+    /** Replace the document of an opening requirement (UC-002, FR-055). */
+    REPLACE_OPENING_REQUIREMENT("reemplazar requisitos de apertura", Role.ADMINISTRATIVE),
 
     /** Register the initial project profile (UC-003, FR-004). */
     REGISTER_INITIAL_PROFILE("registrar el perfil de proyecto", Role.STUDENT),

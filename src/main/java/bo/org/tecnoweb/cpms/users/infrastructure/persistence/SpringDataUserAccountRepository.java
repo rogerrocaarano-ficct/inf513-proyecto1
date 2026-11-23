@@ -22,9 +22,14 @@ interface SpringDataUserAccountRepository extends JpaRepository<UserAccountEntit
      */
     Optional<UserAccountEntity> findByEmailAddress(String emailAddress);
 
-    /** Finds and locks an account by its normalized email address (UC-002, FR-056). */
+    /**
+     * Finds and locks an account by its code (UC-002, FR-056).
+     *
+     * @param uagrmCode the code
+     * @return the entity, or empty
+     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<UserAccountEntity> findForUpdateByEmailAddress(String emailAddress);
+    Optional<UserAccountEntity> findForUpdateByUagrmCode(String uagrmCode);
 
     /**
      * Tells whether another account has an email address.

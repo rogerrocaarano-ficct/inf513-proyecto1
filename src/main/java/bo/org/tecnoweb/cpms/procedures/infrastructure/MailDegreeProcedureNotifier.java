@@ -2,7 +2,7 @@ package bo.org.tecnoweb.cpms.procedures.infrastructure;
 
 import bo.org.tecnoweb.cpms.mail.application.EmailSender;
 import bo.org.tecnoweb.cpms.procedures.application.DegreeProcedureNotifier;
-import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureDocumentReplacedEvent;
+import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRequirementReplacedEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureOpenedEvent;
 import java.util.List;
 import org.slf4j.Logger;
@@ -27,33 +27,32 @@ class MailDegreeProcedureNotifier implements DegreeProcedureNotifier {
 
     /** {@inheritDoc} */
     @Override
-    public void notifyOpened(DegreeProcedureOpenedEvent event, String reference) {
-        publisher.publishEvent(new OpeningNotice(event, reference));
+    public void notifyOpened(DegreeProcedureOpenedEvent event) {
+        publisher.publishEvent(event);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void notifyDocumentReplaced(DegreeProcedureDocumentReplacedEvent event) {
+    public void notifyRequirementReplaced(DegreeProcedureRequirementReplacedEvent event) {
         publisher.publishEvent(event);
     }
 
     /** Confirms to the requester and notifies the student after commit (FR-054). */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    void onOpened(OpeningNotice notice) {
-        var event = notice.event();
-        String reference = notice.reference();
+    void onOpened(DegreeProcedureOpenedEvent event) {
+        String reference = event.reference();
         send(event.requester(), "Trámite abierto: " + reference,
                 "Se abrió el trámite de titulación de " + event.studentName() + ".\n"
-                        + "Referencia: " + reference + "\nDocumentos iniciales registrados: 4.");
+                        + "Referencia: " + reference + "\nRequisitos de apertura registrados: 4.");
         send(event.student(), "Apertura de trámite: " + reference,
                 "Su trámite de titulación se abrió con la referencia " + reference + ".");
     }
 
     /** Confirms the replacement to the requester after commit (FR-055). */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    void onReplaced(DegreeProcedureDocumentReplacedEvent event) {
-        send(event.requester(), "Documento inicial reemplazado: " + event.reference(),
-                "Se reemplazó el documento " + event.documentLabel() + " en el expediente "
+    void onReplaced(DegreeProcedureRequirementReplacedEvent event) {
+        send(event.requester(), "Requisito de apertura reemplazado: " + event.reference(),
+                "Se reemplazó el requisito " + event.requirementLabel() + " en el expediente "
                         + event.reference() + ".");
     }
 
@@ -64,7 +63,4 @@ class MailDegreeProcedureNotifier implements DegreeProcedureNotifier {
             log.warn("Could not send procedure notification: {}", subject, exception);
         }
     }
-
-    /** Associates an opening event with the reference assigned by persistence. */
-    record OpeningNotice(DegreeProcedureOpenedEvent event, String reference) {}
 }

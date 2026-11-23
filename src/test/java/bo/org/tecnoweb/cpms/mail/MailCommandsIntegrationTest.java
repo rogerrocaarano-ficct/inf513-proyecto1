@@ -81,7 +81,7 @@ class MailCommandsIntegrationTest {
     void setUp() {
         jdbc.update("DELETE FROM received_email");
         jdbc.update("DELETE FROM degree_project");
-        jdbc.update("DELETE FROM initial_document");
+        jdbc.update("DELETE FROM degree_procedure_requirement");
         jdbc.update("DELETE FROM stored_file");
         handlers.calls.clear();
         handlers.attachmentCalls.clear();

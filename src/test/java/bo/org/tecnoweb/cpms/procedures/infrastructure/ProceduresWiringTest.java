@@ -5,14 +5,14 @@ import static org.mockito.Mockito.mock;
 
 import bo.org.tecnoweb.cpms.mail.application.EmailCommandHandler;
 import bo.org.tecnoweb.cpms.mail.application.EmailSender;
+import bo.org.tecnoweb.cpms.procedures.application.AcademicCalendar;
 import bo.org.tecnoweb.cpms.procedures.application.AssignTutorCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.OpenDegreeProcedureCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.RegisterInitialProfileCommandHandler;
-import bo.org.tecnoweb.cpms.procedures.application.ReplaceInitialDocumentCommandHandler;
+import bo.org.tecnoweb.cpms.procedures.application.ReplaceOpeningRequirementCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectRepository;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
-import bo.org.tecnoweb.cpms.users.application.UserManagementNotifier;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -24,7 +24,7 @@ class ProceduresWiringTest {
     void exposesProcedureEmailHandlers() {
         try (var context = new AnnotationConfigApplicationContext()) {
             context.registerBean(UserRepository.class, () -> mock(UserRepository.class));
-            context.registerBean(UserManagementNotifier.class, () -> mock(UserManagementNotifier.class));
+            context.registerBean(AcademicCalendar.class, () -> mock(AcademicCalendar.class));
             context.registerBean(DegreeProcedureRepository.class, () -> mock(DegreeProcedureRepository.class));
             context.registerBean(DegreeProjectRepository.class, () -> mock(DegreeProjectRepository.class));
             context.registerBean(EmailSender.class, () -> mock(EmailSender.class));
@@ -36,7 +36,7 @@ class ProceduresWiringTest {
             assertThat(context.getBeansOfType(EmailCommandHandler.class).values())
                     .extracting(EmailCommandHandler::actionKey)
                     .containsExactlyInAnyOrder(OpenDegreeProcedureCommandHandler.ACTION,
-                            ReplaceInitialDocumentCommandHandler.ACTION, RegisterInitialProfileCommandHandler.ACTION,
+                            ReplaceOpeningRequirementCommandHandler.ACTION, RegisterInitialProfileCommandHandler.ACTION,
                             AssignTutorCommandHandler.ACTION);
         }
     }

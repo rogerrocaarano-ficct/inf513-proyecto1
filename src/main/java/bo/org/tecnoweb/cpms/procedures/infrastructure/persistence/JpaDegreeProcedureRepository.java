@@ -20,8 +20,8 @@ class JpaDegreeProcedureRepository implements DegreeProcedureRepository {
 
     /** {@inheritDoc} */
     @Override
-    public DegreeProcedure insert(DegreeProcedure procedure) {
-        return procedures.save(new DegreeProcedureEntity(procedure)).toDomain();
+    public void insert(DegreeProcedure procedure) {
+        procedures.save(new DegreeProcedureEntity(procedure));
     }
 
     /** {@inheritDoc} */
@@ -32,7 +32,13 @@ class JpaDegreeProcedureRepository implements DegreeProcedureRepository {
 
     /** {@inheritDoc} */
     @Override
-    public Optional<DegreeProcedure> getOpenByReferenceForUpdate(long reference) {
+    public boolean existsByReference(String reference) {
+        return procedures.existsByReference(reference);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Optional<DegreeProcedure> getOpenByReferenceForUpdate(String reference) {
         return procedures.findForUpdateByReferenceAndClosedAtIsNull(reference).map(DegreeProcedureEntity::toDomain);
     }
 
@@ -45,6 +51,6 @@ class JpaDegreeProcedureRepository implements DegreeProcedureRepository {
     /** {@inheritDoc} */
     @Override
     public void update(DegreeProcedure procedure) {
-        procedures.findById(procedure.getReference()).orElseThrow().updateDocuments(procedure);
+        procedures.findById(procedure.getId()).orElseThrow().updateRequirements(procedure);
     }
 }

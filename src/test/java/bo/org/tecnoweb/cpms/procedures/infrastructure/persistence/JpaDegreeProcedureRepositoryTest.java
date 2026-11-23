@@ -6,7 +6,8 @@ import static org.assertj.core.api.Assertions.*;
 import bo.org.tecnoweb.cpms.TestcontainersConfiguration;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedure;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
-import bo.org.tecnoweb.cpms.procedures.domain.InitialDocument;
+import bo.org.tecnoweb.cpms.procedures.domain.OpeningRequirement;
+import bo.org.tecnoweb.cpms.procedures.domain.Semester;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import java.lang.reflect.Field;
@@ -30,46 +31,70 @@ class JpaDegreeProcedureRepositoryTest {
     @Autowired private JdbcTemplate jdbc;
     @Autowired private StoredFileService storedFiles;
 
-    /** The database generates the reference and guards concurrent openings (FR-056). */
+    /** Round-trips the reference and the documents, and guards a second ongoing procedure (FR-056). */
     @Test
     void persistsAndPreventsSecondOpenProcedure() {
         var requester = secretary();
         var student = student();
         users.insert(requester);
         users.insert(student);
-        var stored = procedures.insert(DegreeProcedure.builder().withStudent(student)
-                .open(student, requester, storedDocuments(storedFiles, transactions)));
+        var stored = DegreeProcedure.builder().open(student, requester, SEMESTER,
+                storedDocuments(storedFiles, transactions));
+        procedures.insert(stored);
 
-        assertThat(stored.getReference()).isPositive();
+        assertThat(stored.getReference()).isEqualTo(REFERENCE);
         assertThat(procedures.existsOpenForStudent(student.getId())).isTrue();
-        assertThatThrownBy(() -> procedures.insert(DegreeProcedure.builder().withStudent(student)
-                .open(student, requester, storedDocuments(storedFiles, transactions))))
-                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThat(procedures.existsByReference(REFERENCE)).isTrue();
+        assertThat(procedures.existsByReference("2026-1-123456")).isFalse();
+        var otherSemester = DegreeProcedure.builder().open(student, requester, new Semester(2027, 1),
+                storedDocuments(storedFiles, transactions));
+        assertThatThrownBy(() -> procedures.insert(otherSemester)).isInstanceOf(DataIntegrityViolationException.class);
 
         var corrected = storedPdf(storedFiles, transactions, "ci_corregida.pdf");
         transactions.executeWithoutResult(status -> {
             var read = procedures.getOpenByReferenceForUpdate(stored.getReference()).orElseThrow();
             assertThat(read.getId()).isEqualTo(stored.getId());
-            assertThat(read.getDocuments()).hasSize(4);
+            assertThat(read.getRequirements()).hasSize(4);
             assertThat(read.pullEvents()).isEmpty();
-            read.replaceInitialDocument(requester, corrected);
+            read.replaceRequirement(requester, corrected);
             procedures.update(read);
         });
         assertThat(procedures.getOpenByReferenceForUpdate(stored.getReference()).orElseThrow()
-                .getDocuments().get(InitialDocument.IDENTITY).storedFileId()).isEqualTo(corrected.getId());
+                .getRequirements().get(OpeningRequirement.IDENTITY)).isEqualTo(corrected.getId());
 
-        jdbc.update("UPDATE degree_procedure SET closed_at = now() WHERE reference = ?", stored.getReference());
+        jdbc.update("UPDATE degree_procedure SET closed_at = now() WHERE id = ?", stored.getId());
         assertThat(procedures.existsOpenForStudent(student.getId())).isFalse();
         assertThat(procedures.getOpenByReferenceForUpdate(stored.getReference())).isEmpty();
+        assertThat(procedures.existsByReference(REFERENCE)).isTrue();
+
+        var sameSemester = DegreeProcedure.builder().open(student, requester, SEMESTER,
+                storedDocuments(storedFiles, transactions));
+        assertThatThrownBy(() -> procedures.insert(sameSemester)).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     /** No procedures entity keeps file bytes: only the references to stored files (issue #9). */
     @Test
     void entitiesKeepNoFileContent() {
-        for (Class<?> entity : List.of(DegreeProcedureEntity.class, InitialDocumentEntity.class,
-                DegreeProjectEntity.class)) {
+        for (Class<?> entity : List.of(DegreeProcedureEntity.class, DegreeProjectEntity.class)) {
             assertThat(Arrays.stream(entity.getDeclaredFields()).<Class<?>>map(Field::getType)).as(entity.getSimpleName())
                     .doesNotContain(byte[].class);
         }
+    }
+
+    /** The opening requirements are values of the procedure, keyed by procedure and requirement (V11). */
+    @Test
+    void requirementsAreValuesWithoutTheirOwnIdentity() {
+        assertThat(jdbc.queryForList("""
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'degree_procedure_requirement' ORDER BY column_name
+                """, String.class)).containsExactly("procedure_id", "requirement", "stored_file_id");
+        assertThat(jdbc.queryForList("""
+                SELECT k.column_name FROM information_schema.table_constraints c
+                JOIN information_schema.key_column_usage k ON k.constraint_name = c.constraint_name
+                WHERE c.table_name = 'degree_procedure_requirement' AND c.constraint_type = 'PRIMARY KEY'
+                ORDER BY k.ordinal_position
+                """, String.class)).containsExactly("procedure_id", "requirement");
+        assertThat(jdbc.queryForList(
+                "SELECT table_name FROM information_schema.tables WHERE table_name = 'initial_document'")).isEmpty();
     }
 }

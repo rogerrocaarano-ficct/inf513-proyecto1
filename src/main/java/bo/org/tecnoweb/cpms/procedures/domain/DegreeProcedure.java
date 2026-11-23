@@ -4,25 +4,35 @@ import bo.org.tecnoweb.cpms.common.AggregateRoot;
 import bo.org.tecnoweb.cpms.common.DomainEvent;
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
 import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
-import bo.org.tecnoweb.cpms.users.domain.Role;
 import bo.org.tecnoweb.cpms.users.domain.User;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
-/** Graduation procedure and its initial documents (UC-002, FR-001, FR-002, FR-055). */
+/**
+ * Graduation procedure and the documents of its opening requirements (UC-002, FR-001, FR-002, FR-055). It is identified
+ * by its {@code UUID}; its reference, {@code <semester>-<registration number>}, is the business
+ * identifier used in replies and commands.
+ */
 public final class DegreeProcedure implements AggregateRoot {
+    /** Field of the errors about the student's registration number. */
+    public static final String CODE_FIELD = "registro";
+    /** Field of the errors about the procedure reference. */
+    public static final String REFERENCE_FIELD = "referencia";
+
+    private static final Pattern REFERENCE = Pattern.compile("\\d{4}-[12]-\\d{1,10}");
+
     private UUID id;
-    private Long reference;
+    private String reference;
     private UUID studentId;
     private UUID openedBy;
     private Instant openedAt;
     private Instant closedAt;
-    private final Map<InitialDocument, Document> documents = new EnumMap<>(InitialDocument.class);
+    private final Map<OpeningRequirement, UUID> requirements = new EnumMap<>(OpeningRequirement.class);
     private final List<DomainEvent> events = new ArrayList<>();
 
     private DegreeProcedure() {}
@@ -34,9 +44,13 @@ public final class DegreeProcedure implements AggregateRoot {
         return procedure;
     }
 
-    /** Restores a persisted procedure without raising events. */
-    public static DegreeProcedure rehydrate(UUID id, long reference, UUID studentId, UUID openedBy,
-            Instant openedAt, Instant closedAt, Map<InitialDocument, Document> documents) {
+    /**
+     * Restores a persisted procedure without raising events.
+     *
+     * @param requirements the stored file of the current version of each opening requirement
+     */
+    public static DegreeProcedure rehydrate(UUID id, String reference, UUID studentId, UUID openedBy,
+            Instant openedAt, Instant closedAt, Map<OpeningRequirement, UUID> requirements) {
         var procedure = new DegreeProcedure();
         procedure.id = id;
         procedure.reference = reference;
@@ -44,101 +58,106 @@ public final class DegreeProcedure implements AggregateRoot {
         procedure.openedBy = openedBy;
         procedure.openedAt = openedAt;
         procedure.closedAt = closedAt;
-        procedure.documents.putAll(documents);
+        procedure.requirements.putAll(requirements);
         return procedure;
     }
 
-    /** Assigns the student associated with the procedure. */
-    public DegreeProcedure withStudent(User student) {
-        this.studentId = student.getId();
-        return this;
-    }
-
     /**
-     * Opens a procedure with one valid PDF per document type (FR-002, FR-056). Each document adopts
-     * a stored file already validated with {@link InitialDocument#requirePdf} (issue #9).
+     * Opens the procedure of a student account with one valid PDF per opening requirement (FR-002,
+     * FR-056). The reference is built from the semester and the student's registration number. Each
+     * requirement adopts a stored file already validated with {@link PdfDocument#require} (issue #9).
+     *
+     * @param student     the account of the student, found by its registration number
+     * @param requester   the account that opens the procedure
+     * @param semester    the current semester
+     * @param attachments one PDF per opening requirement
+     * @return this procedure
+     * @throws DomainValidationException if the account is not an active student account, or a
+     *                                   requirement is missing or repeated
      */
-    public DegreeProcedure open(User student, User requester, List<StoredFile> attachments) {
+    public DegreeProcedure open(User student, User requester, Semester semester, List<StoredFile> attachments) {
         if (openedAt != null) {
             throw new IllegalStateException("Procedure already opened");
         }
-        if (student.getRole() != Role.STUDENT || !student.isActive() || !student.getId().equals(studentId)) {
-            throw new DomainValidationException(Map.of("cuenta", "La cuenta del estudiante no está habilitada."));
+        if (!student.isStudent()) {
+            throw new DomainValidationException(Map.of(CODE_FIELD,
+                    "La cuenta del registro " + student.getUagrmCode() + " no es de estudiante."));
         }
-        Map<InitialDocument, Document> validated = new EnumMap<>(InitialDocument.class);
-        Instant now = Instant.now();
+        if (!student.isActive()) {
+            throw new DomainValidationException(Map.of("cuenta", "La cuenta del estudiante está desactivada."));
+        }
+        Map<OpeningRequirement, UUID> fulfilled = new EnumMap<>(OpeningRequirement.class);
         for (StoredFile file : attachments) {
-            InitialDocument type = InitialDocument.classify(file);
-            if (validated.putIfAbsent(type, new Document(file.getId(), requester.getId(), now)) != null) {
-                throw InitialDocument.invalid("Se recibió más de un documento de tipo " + type.label() + ".");
+            OpeningRequirement requirement = OpeningRequirement.classify(file);
+            if (fulfilled.putIfAbsent(requirement, file.getId()) != null) {
+                throw OpeningRequirement.invalid(
+                        "Se recibió más de un documento para el requisito " + requirement.label() + ".");
             }
         }
-        for (InitialDocument type : InitialDocument.values()) {
-            if (!validated.containsKey(type)) {
-                throw InitialDocument.invalid("Falta el documento " + type.label() + ".");
+        for (OpeningRequirement requirement : OpeningRequirement.values()) {
+            if (!fulfilled.containsKey(requirement)) {
+                throw OpeningRequirement.invalid("Falta el requisito " + requirement.label() + ".");
             }
         }
-        documents.putAll(validated);
+        Instant now = Instant.now();
+        requirements.putAll(fulfilled);
+        studentId = student.getId();
+        reference = referenceOf(semester, student);
         openedAt = now;
         openedBy = requester.getId();
         events.add(new DegreeProcedureOpenedEvent(requester.getEmailAddress(), student.getEmailAddress(),
-                student.getFullName(), now));
+                student.getFullName(), reference, now));
         return this;
     }
 
     /**
-     * Replaces one initial document while the procedure is open (FR-055). The document adopts the
-     * stored file, already validated with {@link InitialDocument#requirePdf}; the use case links it
-     * as the next version of the replaced one, which is kept (issue #9).
+     * Replaces the document of one opening requirement while the procedure is open (FR-055). The
+     * requirement adopts the stored file, already validated with {@link PdfDocument#require}; the use
+     * case links it as the next version of the replaced one, which is kept (issue #9).
+     *
+     * @param requester the account that replaces it
+     * @param file      the received PDF, whose name tells the requirement
      */
-    public void replaceInitialDocument(User requester, StoredFile file) {
+    public void replaceRequirement(User requester, StoredFile file) {
         if (openedAt == null || closedAt != null) {
             throw unavailable();
         }
-        InitialDocument type = InitialDocument.classify(file);
-        Instant now = Instant.now();
-        documents.put(type, new Document(file.getId(), requester.getId(), now));
-        events.add(new DegreeProcedureDocumentReplacedEvent(requester.getEmailAddress(),
-                referenceLabel(reference), type.label(), now));
+        OpeningRequirement requirement = OpeningRequirement.classify(file);
+        requirements.put(requirement, file.getId());
+        events.add(new DegreeProcedureRequirementReplacedEvent(requester.getEmailAddress(), reference,
+                requirement.label(), Instant.now()));
     }
 
     /** Reports that the given reference has no ongoing procedure. */
     public static DomainValidationException unavailable() {
-        return new DomainValidationException(Map.of("referencia", "No existe un trámite en curso con esa referencia."));
+        return new DomainValidationException(Map.of(REFERENCE_FIELD, "No existe un trámite en curso con esa referencia."));
     }
 
-    /** Validates that an existing account can be reused for the opening (FR-056). */
-    public static User requireMatchingStudent(User existing, User candidate) {
-        if (existing.getRole() != Role.STUDENT || !candidate.getUagrmCode().equals(existing.getUagrmCode())) {
-            throw incompatibleAccount();
+    /**
+     * Builds the reference of the procedure a student opens in a semester (UC-002).
+     *
+     * @param semester the semester of the opening
+     * @param student  the student account
+     * @return the reference, for example {@code 2026-2-218001234}
+     */
+    public static String referenceOf(Semester semester, User student) {
+        return semester + "-" + student.getUagrmCode();
+    }
+
+    /**
+     * Checks a procedure reference written in an email command (UC-002, UC-003).
+     *
+     * @param reference the reference, {@code <year>-<period>-<registration number>}
+     * @return the reference without surrounding spaces
+     * @throws DomainValidationException if it does not have that form
+     */
+    public static String parseReference(String reference) {
+        String value = reference == null ? "" : reference.strip();
+        if (!REFERENCE.matcher(value).matches()) {
+            throw new DomainValidationException(Map.of(REFERENCE_FIELD,
+                    "Ingrese la referencia del trámite, por ejemplo 2026-2-218001234."));
         }
-        if (!existing.isActive()) {
-            throw new DomainValidationException(Map.of("cuenta", "La cuenta del estudiante está desactivada."));
-        }
-        return existing;
-    }
-
-    /** Reports that the supplied account identifiers cannot be used together (FR-033, FR-056). */
-    public static DomainValidationException incompatibleAccount() {
-        return new DomainValidationException(Map.of("cuenta",
-                "No se pudo abrir el trámite. Verifique el correo y el registro del estudiante."));
-    }
-
-    /** Formats a persisted reference for use in email commands. */
-    public static String referenceLabel(long reference) {
-        return "TR-" + String.format(Locale.ROOT, "%03d", reference);
-    }
-
-    /** Parses the public procedure reference used by the email commands (UC-002, UC-003). */
-    public static long parseReference(String reference) {
-        if (reference != null && reference.matches("TR-[0-9]+")) {
-            try {
-                return Long.parseLong(reference.substring(3));
-            } catch (NumberFormatException ignored) {
-                // Out-of-range references receive the same validation error.
-            }
-        }
-        throw new DomainValidationException(Map.of("referencia", "Ingrese la referencia del trámite, por ejemplo TR-001."));
+        return value;
     }
 
     /** Returns the aggregate UUID. */
@@ -147,8 +166,8 @@ public final class DegreeProcedure implements AggregateRoot {
         return id;
     }
 
-    /** Returns the generated public reference, if persisted. */
-    public Long getReference() {
+    /** Returns the reference, {@code <semester>-<registration number>}, once opened. */
+    public String getReference() {
         return reference;
     }
 
@@ -172,9 +191,13 @@ public final class DegreeProcedure implements AggregateRoot {
         return closedAt;
     }
 
-    /** Returns the current document by type. */
-    public Map<InitialDocument, Document> getDocuments() {
-        return Map.copyOf(documents);
+    /**
+     * Returns the stored file of the current version of each opening requirement.
+     *
+     * @return the stored files, by requirement
+     */
+    public Map<OpeningRequirement, UUID> getRequirements() {
+        return Map.copyOf(requirements);
     }
 
     /** Returns and clears pending domain events. */
@@ -186,27 +209,17 @@ public final class DegreeProcedure implements AggregateRoot {
     }
 
     /**
-     * Returns the current document of a type.
+     * Returns the stored file of the current version of an opening requirement.
      *
-     * @param type the document type
-     * @return the document, whose stored file is the current version
-     * @throws IllegalStateException if the procedure has no document of that type
+     * @param requirement the requirement
+     * @return the stored file
+     * @throws IllegalStateException if the procedure has no document for that requirement
      */
-    public Document documentOf(InitialDocument type) {
-        Document document = documents.get(type);
-        if (document == null) {
-            throw new IllegalStateException("Procedure " + id + " has no document " + type);
+    public UUID requirementOf(OpeningRequirement requirement) {
+        UUID storedFileId = requirements.get(requirement);
+        if (storedFileId == null) {
+            throw new IllegalStateException("Procedure " + id + " has no document for " + requirement);
         }
-        return document;
+        return storedFileId;
     }
-
-    /**
-     * Stored file and audit metadata of an initial document (FR-002, FR-055). The name, type and
-     * content of the PDF are kept by the file storage (issue #9).
-     *
-     * @param storedFileId the stored file of the current version
-     * @param updatedBy    the account that registered or replaced it
-     * @param updatedAt    when it was registered or replaced
-     */
-    public record Document(UUID storedFileId, UUID updatedBy, Instant updatedAt) {}
 }

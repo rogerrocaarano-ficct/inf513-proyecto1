@@ -88,6 +88,17 @@ class JpaUserRepositoryTest {
     }
 
     @Test
+    void getByUagrmCodeForUpdateFindsTheAccountOfThatCode() {
+        User ana = account("ana@uagrm.bo", "218001234");
+        repository.insert(ana);
+        repository.insert(account("luis@uagrm.bo", "218005678"));
+
+        assertThat(repository.getByUagrmCodeForUpdate(" 218001234 ")).map(User::getId).contains(ana.getId());
+        assertThat(repository.getByUagrmCodeForUpdate("219999999")).isEmpty();
+        assertThat(repository.getByUagrmCodeForUpdate("")).isEmpty();
+    }
+
+    @Test
     void repeatedEmailAndCodeAreRejectedWithOneErrorEach() {
         repository.insert(account("ana@uagrm.bo", "218001234"));
 

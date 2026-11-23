@@ -47,7 +47,7 @@ Con el sistema, cada etapa del trámite queda registrada en un expediente digita
 | ID | Caso de uso | ¿Qué soluciona? | Prioridad |
 | --- | --- | --- | --- |
 | UC-001 | Gestión de usuarios | Todos los participantes del trámite necesitan una cuenta con sus roles para usar el sistema | Must |
-| UC-002 | Habilitación académica de solicitudes | La solicitud y los documentos iniciales del estudiante se reciben en papel y no se sabe si el trámite fue habilitado | Must |
+| UC-002 | Habilitación académica de solicitudes | La solicitud y los requisitos de apertura del estudiante se reciben en papel y no se sabe si el trámite fue habilitado | Must |
 | UC-003 | Asignación de tutor y registro del perfil de proyecto | La designación del tutor y la entrega del perfil de proyecto no quedan registradas en ningún lugar consultable | Must |
 | UC-004 | Evaluación de viabilidad y conformación del tribunal | La evaluación del perfil y la designación de los miembros del tribunal se comunican por papel o en persona | Must |
 | UC-005 | Revisión, versionado y control de plazos del tribunal | Las observaciones del tribunal, las correcciones del estudiante y sus plazos quedan dispersos en cartas y versiones impresas | Must |
@@ -145,6 +145,8 @@ Este comando levanta los contenedores de `compose.yaml` y arranca la aplicación
 | Roundcube | <http://localhost:8025> | Webmail para enviar comandos y leer las respuestas |
 
 Los archivos que guarda la aplicación (documentos adjuntos y sus versiones) van a la carpeta `data/storage` de la raíz del repositorio, que git ignora. La base de datos guarda solo sus datos descriptivos, así que la carpeta y la base van juntas: si se borra una, conviene borrar también la otra.
+
+El semestre vigente, que forma parte de la referencia de cada trámite (por ejemplo `2026-2-218001234`), se toma de la variable de entorno `CPMS_CURRENT_SEMESTER` con la forma `<año>-<periodo>`; sin ella vale `2026-2`. Hay que cambiarla al empezar cada semestre, hasta que exista la gestión del calendario académico. Con un valor inválido la aplicación no arranca.
 
 La aplicación está lista cuando la consola muestra `Started CpmsApplication`.
 

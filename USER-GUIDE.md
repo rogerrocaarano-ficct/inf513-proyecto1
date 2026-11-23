@@ -178,29 +178,29 @@ No se pudo ejecutar el comando "usuarios.desactivar":
 
 ### `tramites.abrirTramite`
 
-Secretaría abre el trámite de titulación desde una cuenta administrativa activa (UC-002).
+Secretaría abre el trámite de titulación desde una cuenta administrativa activa (UC-002). El trámite se abre sobre la cuenta de estudiante: si el estudiante todavía no tiene cuenta, créala antes con `usuarios.crearCuenta` y el rol `estudiante`.
 
 ```text
-tramites.abrirTramite[Ana María; Pérez; ; 1234567; 218001234; ana@cpms.local; 71234567]
+tramites.abrirTramite[218001234]
 ```
 
-Los siete argumentos son nombres, primer apellido, segundo apellido opcional, CI, registro universitario, correo y teléfono. Los datos siguen las reglas de `usuarios.crearCuenta` para estudiantes.
+El único argumento es el registro universitario del estudiante.
 
-Adjunta la carta de solicitud, la hoja de vida, la copia de la cédula y la boleta de inscripción con Modalidad de Graduación. Envía un PDF de hasta 25 MB por documento. Usa las palabras `carta`, `cv`, `ci` y `boleta` en los nombres, por ejemplo `carta_solicitud.pdf`, `cv.pdf`, `ci.pdf` y `boleta.pdf`. El escaneo de la carta física es suficiente.
+Adjunta un PDF por cada requisito de apertura: la carta de solicitud, la hoja de vida, la copia de la cédula y la boleta de inscripción con Modalidad de Graduación. Cada PDF puede pesar hasta 25 MB. Usa las palabras `carta`, `cv`, `ci` y `boleta` en los nombres, por ejemplo `carta_solicitud.pdf`, `cv.pdf`, `ci.pdf` y `boleta.pdf`. El escaneo de la carta física es suficiente.
 
-Si correo y registro están libres, el sistema crea la cuenta de estudiante. Si ambos identifican la misma cuenta activa de estudiante, la reutiliza. Si los datos son incompatibles, la cuenta está desactivada o ya tiene un trámite en curso, el sistema rechaza la apertura.
+El sistema rechaza la apertura si ninguna cuenta tiene ese registro, si la cuenta no es de estudiante o está desactivada, si el estudiante ya tiene un trámite en curso o si ya tuvo un trámite en el semestre vigente, aunque esté cerrado.
 
-Secretaría recibe la referencia del trámite, por ejemplo `TR-001`. El estudiante recibe el aviso de apertura y, si se creó su cuenta, el aviso de alta.
+Secretaría recibe la referencia del trámite, formada por el semestre vigente y el registro, por ejemplo `2026-2-218001234`. El estudiante recibe el aviso de apertura con la misma referencia.
 
 ### `tramites.reemplazarDocumento`
 
-Secretaría puede sustituir un documento inicial mientras el trámite esté en curso. Usa la referencia recibida al abrirlo y adjunta un PDF con la palabra que identifica el tipo de documento.
+Secretaría puede sustituir el documento de un requisito de apertura mientras el trámite esté en curso. Usa la referencia recibida al abrirlo y adjunta un PDF con la palabra que identifica el requisito.
 
 ```text
-tramites.reemplazarDocumento[TR-001]
+tramites.reemplazarDocumento[2026-2-218001234]
 ```
 
-Por ejemplo, adjunta `carta_corregida.pdf` para sustituir la carta. Secretaría recibe una confirmación que identifica el trámite y el documento sustituido.
+Por ejemplo, adjunta `carta_corregida.pdf` para sustituir la carta. Secretaría recibe una confirmación que identifica el trámite y el requisito sustituido. El documento anterior se conserva como versión anterior.
 
 ### `proyectos.registrarPerfil`
 
@@ -217,7 +217,7 @@ Necesitas un trámite en curso y esta debe ser tu primera entrega. El sistema re
 Desde la cuenta activa de Dirección, indica la referencia del trámite y el correo del docente activo. Envía el correo sin adjuntos.
 
 ```text
-proyectos.asignarTutor[TR-001; docente@cpms.local]
+proyectos.asignarTutor[2026-2-218001234; docente@cpms.local]
 ```
 
 El perfil requiere el visto bueno de Taller de Grado y el proyecto debe estar sin tutor. El estudiante recibe por correo la designación. El visto bueno se registra mediante UC-004.
