@@ -22,6 +22,7 @@ services:
       # the system mailbox is sistema@cpms.local / secret.
       GREENMAIL_OPTS: >-
         -Dgreenmail.setup.test.all
+        -Dgreenmail.startup.timeout=20000
         -Dgreenmail.hostname=0.0.0.0
         -Dgreenmail.auth.disabled
         -Dgreenmail.users=sistema:secret@cpms.local
