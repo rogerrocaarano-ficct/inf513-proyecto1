@@ -9,7 +9,7 @@ import java.util.Map;
 
 /**
  * Format and size rules of the PDFs that the procedures receive (NFR-005): the opening requirements
- * of UC-002 and the project profile of UC-003. The PDF arrives as a stored file of the file storage
+ * of UC-002 and the project profile of UC-004. The PDF arrives as a stored file of the file storage
  * (issue #9); the use case reads its content only to check the header.
  */
 public final class PdfDocument {

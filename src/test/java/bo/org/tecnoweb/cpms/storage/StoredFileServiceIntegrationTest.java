@@ -55,6 +55,7 @@ class StoredFileServiceIntegrationTest {
     void clean() {
         // Other tests sharing this context may leave owners of stored files behind (issue #9).
         jdbc.update("DELETE FROM received_email_attachment");
+        jdbc.update("DELETE FROM degree_project_profile_version");
         jdbc.update("DELETE FROM degree_project");
         jdbc.update("DELETE FROM degree_procedure_requirement");
         jdbc.update("DELETE FROM stored_file");

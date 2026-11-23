@@ -80,6 +80,7 @@ class MailCommandsIntegrationTest {
     @BeforeEach
     void setUp() {
         jdbc.update("DELETE FROM received_email");
+        jdbc.update("DELETE FROM degree_project_profile_version");
         jdbc.update("DELETE FROM degree_project");
         jdbc.update("DELETE FROM degree_procedure_requirement");
         jdbc.update("DELETE FROM stored_file");

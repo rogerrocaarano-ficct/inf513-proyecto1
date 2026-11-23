@@ -18,7 +18,7 @@ El sistema SHALL admitir por correo el título y un PDF del estudiante activo co
 #### Scenario: Versión nueva tras una observación o un rechazo
 
 - **WHEN** el último perfil del estudiante está observado o rechazado y presenta un título y un PDF válidos
-- **THEN** se registra una versión nueva pendiente, enlazada en el almacenamiento como siguiente versión del PDF anterior; el título del proyecto pasa a ser el indicado, la versión anterior y su evaluación se conservan, y se envía el perfil al docente de Taller después del commit.
+- **THEN** se registra una versión nueva pendiente con el número siguiente; el título del proyecto pasa a ser el indicado, la versión anterior y su evaluación se conservan, y se envía el perfil al docente de Taller después del commit, indicando el número de versión.
 
 #### Scenario: Presentación rechazada
 
@@ -74,9 +74,9 @@ El sistema SHALL permitir que el docente de Taller de Grado rechace por correo e
 
 ### Requirement: Historial del perfil
 
-El sistema SHALL conservar cada versión del perfil de proyecto con su título, su PDF, su estado y, si fue evaluada, sus observaciones y la fecha de la evaluación (FR-023, FR-059).
+El sistema SHALL conservar en el proyecto de grado cada versión del perfil de proyecto, numerada en orden desde 1, con su título, su PDF, su estado y, si fue evaluada, sus observaciones y la fecha de la evaluación (FR-023, FR-059).
 
 #### Scenario: Varias versiones
 
 - **WHEN** un perfil observado o rechazado es seguido de una versión nueva
-- **THEN** la versión anterior conserva su estado, sus observaciones y su PDF, y el historial del almacenamiento reconstruye la cadena de PDF desde cualquiera de ellos.
+- **THEN** la versión anterior conserva su número, su estado, sus observaciones y su PDF, y la nueva toma el número siguiente; el historial se lee del proyecto, sin depender del historial de archivos del almacenamiento.

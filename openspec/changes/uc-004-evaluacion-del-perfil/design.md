@@ -8,7 +8,7 @@ El motivo está en `proposal.md`, y los flujos de negocio en `use-cases/UC-004.m
 - `TutorAssignmentUseCase` reúne `registerInitialProfile` (presentación del perfil) y `assignTutor`, con un solo notifier, `TutorAssignmentNotifier`.
 - La tabla `degree_project` (V5, V8) guarda `profile_stored_file_id`, `profile_approved` y `CHECK (tutor_id IS NULL OR profile_approved)`.
 - `ReceivedEmail` ya guarda el cuerpo del correo (`getBody()`, la primera parte de texto plano), pero ningún comando lo usa.
-- `StoredFileService.appendVersion` y `getHistory` ya versionan archivos, como en `DegreeProcedureUseCase.replaceRequirement`.
+- `StoredFileService.appendVersion` y `getHistory` versionan archivos en el almacenamiento. Solo los usa `DegreeProcedureUseCase.replaceRequirement` (UC-002), y ningún código de producción llama a `getHistory`.
 
 ## Objetivos y no objetivos
 
@@ -25,7 +25,8 @@ El motivo está en `proposal.md`, y los flujos de negocio en `use-cases/UC-004.m
 
 ### Dominio (`procedures.domain`)
 
-- **`ProjectProfile` es una versión del perfil.** Es un record con `storedFileId`, `title`, `status`, `observations` (nulo si no hay) y `evaluatedOn` (nulo mientras está pendiente). Es un valor del agregado, sin identidad propia, como los requisitos de apertura de UC-002.
+- **`ProjectProfile` es una versión del perfil.** Es un record con `version` (número secuencial desde 1), `storedFileId`, `title`, `status`, `observations` (nulo si no hay) y `evaluatedOn` (nulo mientras está pendiente). Es un valor del agregado, sin identidad propia, identificado por su número dentro del proyecto.
+- **El versionado es del negocio, no del almacenamiento.** Cada versión guarda su propio archivo almacenado y su número; `DegreeProject` asigna el número siguiente al registrar una versión y comprueba al rehidratar que los números van de 1 en adelante sin huecos. El caso de uso no llama a `appendVersion`: el historial de archivos del almacenamiento queda en desuso (ver `AGENTS.md`, "File storage"). Alternativa descartada: encadenar los PDF en el almacenamiento además de la tabla, porque duplica el historial en dos lugares que pueden desincronizarse, y un perfil nuevo tras un rechazo es otro tema, no una corrección del archivo anterior.
 - **`ProjectProfileStatus`**, un enum nuevo con `PENDING`, `APPROVED`, `OBSERVED` y `REJECTED`. Reemplaza el booleano `approved`.
 - **`DegreeProject` guarda la lista ordenada de versiones.** `getProfile()` devuelve la vigente (la última) y `getProfiles()` todas. `title` sigue siendo el título vigente.
 - **Operaciones de `DegreeProject`:**
@@ -45,7 +46,7 @@ El motivo está en `proposal.md`, y los flujos de negocio en `use-cases/UC-004.m
 - **Contratos:**
   - `RegisterProfileCommand(title, attachmentId)` reemplaza a `RegisterInitialProfileCommand`.
   - `ObserveProfileCommand(reference, observations)` y `RejectProfileCommand(reference, observations)`.
-- **Versión nueva del perfil:** el caso de uso valida el PDF (`PdfDocument.require`) y, si hay una versión anterior, enlaza el archivo recibido con `storedFiles.appendVersion(anterior, nuevo)`, como en `replaceRequirement`.
+- **Versión nueva del perfil:** el caso de uso valida el PDF (`PdfDocument.require`) y lo adopta por su `UUID`; si hay proyecto, lo actualiza, y si no, lo inserta. No enlaza archivos en el almacenamiento.
 - **Trámite:**
   - En la presentación, se bloquea con `getOpenByStudentForUpdate`, como hoy.
   - En la evaluación, se bloquea con `getOpenByReferenceForUpdate`, como en `assignTutor`.
@@ -71,11 +72,11 @@ El motivo está en `proposal.md`, y los flujos de negocio en `use-cases/UC-004.m
   - Al director: el aviso del perfil aprobado.
 - **`MailTutorAssignmentNotifier`** se queda solo con el aviso del tutor.
 - **Persistencia:**
-  - `DegreeProjectEntity` mapea las versiones con `@ElementCollection` sobre una tabla nueva `project_profile_version`, como `degree_procedure_requirement` en `DegreeProcedureEntity`.
+  - `DegreeProjectEntity` mapea las versiones con `@ElementCollection` sobre una tabla nueva `degree_project_profile_version`, con un `@Embeddable` `DegreeProjectProfileVersion` por fila. El orden de la lista es la columna `version` (`@OrderColumn` con `@ListIndexBase(1)` de Hibernate), así que la versión 1 es la primera fila y la base guarda el mismo número que el dominio. El embeddable no mapea la columna otra vez: al leer, el número sale del orden y se comprueba en `DegreeProject.rehydrate`.
   - `JpaDegreeProjectRepository.update` actualiza el título, las versiones y el tutor.
-- **Migración `V12__project_profile_version.sql`:**
-  - Crea `project_profile_version`, con las columnas `project_id`, `version`, `stored_file_id` (única), `title`, `status` (con un CHECK de los cuatro valores), `observations` y `evaluated_on`, y la clave primaria `(project_id, version)`.
-  - Copia cada proyecto como versión 1, con `APPROVED` o `PENDING` según `profile_approved`.
+- **Migración `V12__degree_project_profile_version.sql`:**
+  - Crea `degree_project_profile_version`, con las columnas `project_id`, `version` (CHECK `version >= 1`), `stored_file_id` (única), `title`, `status` (con un CHECK de los cuatro valores), `observations` y `evaluated_on`, y la clave primaria `(project_id, version)`. Dos CHECK más reflejan las invariantes de `ProjectProfile`: la fecha de evaluación solo en una versión evaluada, y observaciones en una observada o rechazada.
+  - Copia cada proyecto como versión 1, con `APPROVED` o `PENDING` según `profile_approved`. Una aprobación anterior no tiene fecha propia y toma la de la migración.
   - Elimina `profile_stored_file_id` y `profile_approved`. El CHECK de V5 cae junto con su columna. La regla "tutor solo con perfil aprobado" queda en el dominio, porque cruza tablas.
 
 ### Documentos
@@ -114,4 +115,5 @@ UC-004 sin diseño en EA; se sigue la arquitectura de referencia.
   - `DegreeProject.registerProfile`, `approveProfile`, `observeProfile`, `rejectProfile` y `getProfiles`.
 - Aplicación: `ProjectProfileEvaluationUseCase`, `ProjectProfileEvaluationNotifier`, `RegisterProfileCommand`, `ObserveProfileCommand`, `RejectProfileCommand` y los cuatro handlers.
 - Permisos: `REGISTER_PROJECT_PROFILE` y `EVALUATE_PROJECT_PROFILE`.
-- Infraestructura: `MailProjectProfileEvaluationNotifier` y la tabla `project_profile_version`.
+- Infraestructura: `MailProjectProfileEvaluationNotifier`, `DegreeProjectProfileVersion` y la tabla `degree_project_profile_version`.
+- Almacenamiento: el perfil no usa el historial de archivos (`appendVersion`, `getHistory`), que queda en desuso; UC-002 lo sigue usando hasta que se migre.

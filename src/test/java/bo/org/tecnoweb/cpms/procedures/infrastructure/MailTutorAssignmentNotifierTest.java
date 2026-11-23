@@ -4,61 +4,36 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.*;
 
 import bo.org.tecnoweb.cpms.mail.application.EmailSender;
-import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectProfileRegisteredEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectTutorAssignedEvent;
-import bo.org.tecnoweb.cpms.procedures.domain.ProjectProfile;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 
-/** Checks event publication and routing of both UC-003 notices. */
+/** Checks event publication and routing of the UC-003 notice. */
 class MailTutorAssignmentNotifierTest {
     private final EmailSender outbox = mock(EmailSender.class);
     private final ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
     private final MailTutorAssignmentNotifier notifier = new MailTutorAssignmentNotifier(publisher, outbox);
+    private final DegreeProjectTutorAssignedEvent event =
+            new DegreeProjectTutorAssignedEvent("student@test", "2026-2-123456", "Luis Pérez", Instant.now());
 
-    private static DegreeProjectProfileRegisteredEvent profileRegistered(UUID storedFileId) {
-        return new DegreeProjectProfileRegisteredEvent("student@test", "workshop@test", "2026-2-123456", "Redes",
-                new ProjectProfile(storedFileId, false), Instant.now());
-    }
-
-    /** Publication defers SMTP; Taller receives the stored profile by its id (FR-057, issue #9). */
-    @Test
-    void sendsProfileToWorkshop() {
-        UUID profileId = UUID.randomUUID();
-        var event = profileRegistered(profileId);
-
-        notifier.notifyProfileRegistered(event);
-        verify(publisher).publishEvent(event);
-        verifyNoInteractions(outbox);
-
-        notifier.onProfileRegistered(event);
-        verify(outbox).send(eq("workshop@test"), eq("Perfil de proyecto: 2026-2-123456"), contains("Redes"),
-                eq(List.of(profileId)));
-    }
-
-    /** A profile that cannot be read or sent is logged and not propagated (issue #9). */
-    @Test
-    void failedSendIsNotPropagated() {
-        doThrow(new IllegalStateException("not found")).when(outbox).send(anyString(), anyString(), anyString(),
-                anyList());
-
-        assertThatCode(() -> notifier.onProfileRegistered(profileRegistered(UUID.randomUUID())))
-                .doesNotThrowAnyException();
-    }
-
-    /** The designation goes to the student (FR-020). */
+    /** The designation goes to the student after commit (FR-020). */
     @Test
     void sendsTutorDesignationToStudent() {
-        var event = new DegreeProjectTutorAssignedEvent("student@test", "2026-2-123456", "Luis Pérez", Instant.now());
-
         notifier.notifyTutorAssigned(event);
         verify(publisher).publishEvent(event);
         verifyNoInteractions(outbox);
 
         notifier.onTutorAssigned(event);
         verify(outbox).send(eq("student@test"), eq("Tutor asignado: 2026-2-123456"), contains("Luis Pérez"), eq(List.of()));
+    }
+
+    /** A failed send is logged and not propagated. */
+    @Test
+    void failedSendIsNotPropagated() {
+        doThrow(new IllegalStateException("down")).when(outbox).send(anyString(), anyString(), anyString(), anyList());
+
+        assertThatCode(() -> notifier.onTutorAssigned(event)).doesNotThrowAnyException();
     }
 }

@@ -30,7 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/** Exercises UC-002 and UC-003 through the real email channel. */
+/** Exercises UC-002, UC-003 and UC-004 through the real email channel. */
 @SpringBootTest(properties = {
         "cpms.users.admin-email=admin@procedures.test",
         "cpms.academic.current-semester=2026-2",
@@ -71,6 +71,7 @@ class DegreeProcedureByEmailIntegrationTest {
 
     @BeforeEach
     void setup() throws Exception {
+        jdbc.update("DELETE FROM degree_project_profile_version");
         jdbc.update("DELETE FROM degree_project");
         jdbc.update("DELETE FROM degree_procedure_requirement");
         jdbc.update("DELETE FROM degree_procedure");
@@ -82,7 +83,10 @@ class DegreeProcedureByEmailIntegrationTest {
         greenMail.purgeEmailFromAllMailboxes();
     }
 
-    /** Registers one profile, then assigns a tutor only after FR-005 is satisfied. */
+    /**
+     * Registers a profile, has it observed, submits a new version, approves it (UC-004) and only then
+     * assigns the tutor (UC-003).
+     */
     @Test
     void registersProfileAndAssignsTutorAfterApproval() throws Exception {
         command(ADMIN, "usuarios.crearCuenta[Carla; Rojas; ; ; ; " + DIRECTOR + "; ; director]");
@@ -102,6 +106,8 @@ class DegreeProcedureByEmailIntegrationTest {
         command(STUDENT, PROFILE, "perfil.pdf");
         command(STUDENT, PROFILE, "perfil.pdf");
         assertThat(jdbc.queryForObject("SELECT count(*) FROM degree_project", Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM degree_project_profile_version", Integer.class))
+                .isEqualTo(1);
         assertThat(subjectsTo(WORKSHOP)).containsExactly("Perfil de proyecto: " + REFERENCE);
         var notice = java.util.Arrays.stream(greenMail.getReceivedMessages())
                 .filter(message -> hasSubject(message, "Perfil de proyecto: " + REFERENCE)).findFirst().orElseThrow();
@@ -115,7 +121,35 @@ class DegreeProcedureByEmailIntegrationTest {
 
         command(DIRECTOR, assign);
         assertThat(jdbc.queryForList("SELECT tutor_id FROM degree_project WHERE tutor_id IS NOT NULL")).isEmpty();
-        jdbc.update("UPDATE degree_project SET profile_approved = true");
+
+        // UC-004: Taller observes the profile and the student submits a new version.
+        greenMail.purgeEmailFromAllMailboxes();
+        commandWithBody(WORKSHOP, "proyectos.observarPerfil[" + REFERENCE + "]", "", new String[0]);
+        assertThat(subjectsTo(WORKSHOP)).hasSize(1);
+        commandWithBody(WORKSHOP, "proyectos.observarPerfil[" + REFERENCE + "]", "Corregir la bibliografía.",
+                new String[0]);
+        assertThat(subjectsTo(STUDENT)).containsExactly("Perfil observado: " + REFERENCE);
+        assertThat(bodiesTo(STUDENT)).singleElement().asString().contains("Corregir la bibliografía.");
+        command(STUDENT, "proyectos.registrarPerfil[Redes rurales]", "perfil-v2.pdf");
+        assertThat(subjectsTo(WORKSHOP)).contains("Perfil de proyecto (versión 2): " + REFERENCE);
+        assertThat(jdbc.queryForObject("SELECT title FROM degree_project", String.class)).isEqualTo("Redes rurales");
+        assertThat(jdbc.queryForList("""
+                SELECT version || ' ' || status || ' ' || original_name
+                  FROM degree_project_profile_version JOIN stored_file ON stored_file.id = stored_file_id
+                 ORDER BY version
+                """, String.class)).containsExactly("1 OBSERVED perfil.pdf", "2 PENDING perfil-v2.pdf");
+        // The versions live in the project: the file storage does not chain the PDFs.
+        assertThat(jdbc.queryForObject("""
+                SELECT count(*) FROM degree_project_profile_version
+                  JOIN stored_file ON stored_file.id = stored_file_id
+                 WHERE next_version_id IS NOT NULL OR first_version_id <> stored_file.id
+                """, Integer.class)).isZero();
+
+        // UC-004: Taller approves; the student and the director are told.
+        greenMail.purgeEmailFromAllMailboxes();
+        command(WORKSHOP, "proyectos.aprobarPerfil[" + REFERENCE + "]");
+        assertThat(subjectsTo(STUDENT)).containsExactly("Perfil aprobado: " + REFERENCE);
+        assertThat(subjectsTo(DIRECTOR)).containsExactly("Perfil aprobado: " + REFERENCE);
         command(DIRECTOR, assign);
         command(DIRECTOR, assign);
         assertThat(jdbc.queryForObject("""
@@ -269,13 +303,17 @@ class DegreeProcedureByEmailIntegrationTest {
     }
 
     private void command(String from, String subject, String... filenames) throws Exception {
+        commandWithBody(from, subject, "Prueba UC-002", filenames);
+    }
+
+    private void commandWithBody(String from, String subject, String text, String[] filenames) throws Exception {
         MimeMessage message = new MimeMessage(Session.getInstance(new Properties()));
         message.setFrom(new InternetAddress(from));
         message.setRecipient(Message.RecipientType.TO, new InternetAddress(SYSTEM));
         message.setSubject(subject, StandardCharsets.UTF_8.name());
         MimeMultipart parts = new MimeMultipart();
         MimeBodyPart body = new MimeBodyPart();
-        body.setText("Prueba UC-002");
+        body.setText(text, StandardCharsets.UTF_8.name());
         parts.addBodyPart(body);
         for (String filename : filenames) {
             MimeBodyPart attachment = new MimeBodyPart();

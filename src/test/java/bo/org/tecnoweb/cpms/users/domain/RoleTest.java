@@ -116,11 +116,14 @@ class RoleTest {
         assertThat(Role.ADMINISTRATIVE.getPermissions())
                 .containsExactly(RolePermission.OPEN_DEGREE_PROCEDURE, RolePermission.REPLACE_OPENING_REQUIREMENT,
                         RolePermission.SIGNUP_STUDENT, RolePermission.LIST_STUDENTS);
-        assertThat(Role.STUDENT.getPermissions()).containsExactly(RolePermission.REGISTER_INITIAL_PROFILE);
+        assertThat(Role.STUDENT.getPermissions()).containsExactly(RolePermission.REGISTER_PROJECT_PROFILE);
+        assertThat(Role.CAPSTONE_PROJECT_PROFESSOR.getPermissions())
+                .containsExactly(RolePermission.EVALUATE_PROJECT_PROFILE, RolePermission.BE_PROJECT_TUTOR);
+        assertThat(Role.DIRECTOR.getPermissions()).doesNotContain(RolePermission.EVALUATE_PROJECT_PROFILE);
         assertThat(Role.SYSTEM_ADMIN.getPermissions())
                 .doesNotContain(RolePermission.OPEN_DEGREE_PROCEDURE, RolePermission.REPLACE_OPENING_REQUIREMENT,
-                        RolePermission.REGISTER_INITIAL_PROFILE, RolePermission.ASSIGN_TUTOR,
-                        RolePermission.BE_PROJECT_TUTOR)
-                .hasSize(RolePermission.values().length - 5);
+                        RolePermission.REGISTER_PROJECT_PROFILE, RolePermission.EVALUATE_PROJECT_PROFILE,
+                        RolePermission.ASSIGN_TUTOR, RolePermission.BE_PROJECT_TUTOR)
+                .hasSize(RolePermission.values().length - 6);
     }
 }

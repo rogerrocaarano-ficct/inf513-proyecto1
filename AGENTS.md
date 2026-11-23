@@ -181,26 +181,29 @@ commit, through the notifier.
 
 ### File storage
 
-Files (attachments, documents and their versions) are kept on disk by the
-`storage` subsystem; the database keeps only their metadata (`stored_file`).
+Files (attachments and documents) are kept on disk by the `storage`
+subsystem; the database keeps only their metadata (`stored_file`).
 
-- Every subsystem stores, versions and reads files only through
-  `storage.application.StoredFileService` (`store`, `storeNewVersion`,
-  `appendVersion`, `get`, `readContent`, `getHistory`). Never use
-  `StoredFileRepository` or `FileStorage` from another subsystem.
+- Every subsystem stores and reads files only through
+  `storage.application.StoredFileService` (`store`, `get`, `readContent`).
+  Never use `StoredFileRepository` or `FileStorage` from another subsystem.
 - The mail channel stores every attachment when it receives the email, and
   the handler passes the identifiers of the stored files to the use case
   (`email.getAttachmentIds()`), never their content. The attachments of every
   email are kept, also when the email is discarded or its command fails.
 - A use case that receives a document checks it with `get` (name, type,
   size) and `readContent`, and adopts it by keeping its `UUID`: the file is
-  not copied (`DegreeProcedureUseCase.open`). To replace a document, it links
-  the received file as the next version of the current one with
-  `appendVersion` (`DegreeProcedureUseCase.replace`). `storeNewVersion` is for
-  content the system produces itself.
-- The owner of a file (an aggregate of another subsystem) keeps the `UUID` of
-  the current version and replaces it with the new one. The previous versions
-  are kept; `getHistory` rebuilds the chain from any of them.
+  not copied (`DegreeProcedureUseCase.open`).
+- **Versions are business data.** An aggregate that keeps versions of a
+  document stores each one in its own table, numbered from 1, with the
+  `UUID` of the stored file of that version and the data of the business
+  (state, observations, dates): `DegreeProject` and
+  `degree_project_profile_version` (UC-004). Every version is an ordinary
+  stored file; the storage does not chain them.
+- **Deprecated:** the version history of the storage (`appendVersion`,
+  `storeNewVersion`, `getHistory`). New code does not use it. Only the
+  replacement of opening requirements (`DegreeProcedureUseCase.replaceRequirement`,
+  UC-002) still does, until it moves to versions in its own table.
 - The service runs inside the caller's transaction, like a use case. A file
   written in a transaction that rolls back is deleted, so the use case does
   nothing to clean up.

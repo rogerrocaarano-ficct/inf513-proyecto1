@@ -9,7 +9,7 @@ El caso de uso no tiene diseño en EA (el modelo está en pausa); se sigue la ar
 ## Cambios
 
 - El docente de Taller de Grado evalúa el perfil pendiente de un trámite: lo **aprueba**, lo **observa** (cambios de forma) o lo **rechaza** (cambio de tema). Las observaciones se toman del cuerpo del correo y no pueden estar vacías (FR-005, FR-022).
-- El estudiante presenta con el mismo comando el primer perfil o una versión nueva, cuando el último perfil fue observado o rechazado. La versión nueva se enlaza en el almacenamiento como siguiente versión de la anterior, y el título del proyecto puede cambiar (FR-023, FR-058).
+- El estudiante presenta con el mismo comando el primer perfil o una versión nueva, cuando el último perfil fue observado o rechazado. Cada versión se numera en orden desde 1 y se guarda en el proyecto, no en el historial de archivos del almacenamiento, que pasa a estar en desuso. El título del proyecto puede cambiar (FR-023, FR-058).
 - Se conservan todas las versiones del perfil con su estado, sus observaciones y la fecha de su evaluación.
 - El estudiante recibe cada evaluación con las observaciones, y el director de carrera recibe el aviso del perfil aprobado (requisitos nuevos).
 - La presentación del perfil pasa de UC-003 a UC-004. La asignación del tutor exige ahora el perfil vigente **aprobado**.
