@@ -8,6 +8,8 @@ import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -21,6 +23,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 class SmtpEmailSender implements EmailSender {
+
+    private static final Logger log = LoggerFactory.getLogger(SmtpEmailSender.class);
 
     private final JavaMailSender mailSender;
     private final MailProperties properties;
@@ -44,6 +48,10 @@ class SmtpEmailSender implements EmailSender {
      *
      * <p>Every attachment is read before the message is built, so nothing is sent if one cannot be
      * read.
+     *
+     * <p>Once the server accepts the email, logs the recipient and the number of attachments. The
+     * subject is not logged: a reply repeats the command and its arguments, which may hold personal
+     * data.
      *
      * @throws bo.org.tecnoweb.cpms.storage.domain.StoredFileNotFoundException if an attachment does
      *                                                                         not exist
@@ -71,6 +79,7 @@ class SmtpEmailSender implements EmailSender {
             throw new IllegalStateException("Could not build the email to " + to, e);
         }
         mailSender.send(message);
+        log.info("Sent email to {} ({} attachments)", to, files.size());
     }
 
     /**

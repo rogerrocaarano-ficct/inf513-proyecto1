@@ -176,6 +176,19 @@ El sistema solo atiende comandos de direcciones que tienen cuenta; a cualquier o
 
 La sintaxis de los comandos, cada comando con sus argumentos y las respuestas del sistema están en la [guía de comandos](USER-GUIDE.md).
 
+La consola muestra el tráfico del canal de correo:
+
+| Línea | Cuándo |
+| --- | --- |
+| `Connecting to POP3 server …` | En cada ciclo, al conectarse al buzón (solo en el perfil `local`) |
+| `POP3 inbox has N messages; read M` | Al terminar de leer el buzón (con el buzón vacío, solo en el perfil `local`) |
+| `Received email <uid> from <remitente>: action <comando> (N attachments)` | Por cada correo que entra; `no valid action` si el asunto no es un comando |
+| `Ignoring automatic email <uid> from <remitente>` | Por cada rebote o respuesta automática que se descarta |
+| `Deleted message <uid> from the POP3 server` | Al borrar del servidor un correo ya atendido |
+| `Sent email to <destino> (N attachments)` | Por cada correo que sale por SMTP |
+
+Los logs nunca muestran el asunto ni los argumentos del comando, porque contienen datos personales.
+
 ### Detener y reiniciar
 
 - `Ctrl+C` detiene la aplicación. Los contenedores siguen en ejecución, así que el siguiente `./gradlew bootRun` arranca más rápido y conserva los correos.

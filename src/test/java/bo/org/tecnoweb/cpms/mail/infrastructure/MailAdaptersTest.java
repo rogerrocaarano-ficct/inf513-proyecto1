@@ -6,6 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import bo.org.tecnoweb.cpms.mail.domain.Attachment;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
@@ -25,10 +27,15 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -275,6 +282,121 @@ class MailAdaptersTest {
             assertThatThrownBy(() -> sender.send("taller@uagrm.bo", "Perfil", "Perfil adjunto.", List.of(id)))
                     .isInstanceOf(StoredFileNotFoundException.class);
             assertThat(greenMail.getReceivedMessages()).isEmpty();
+        }
+    }
+
+    /**
+     * Console trace of the POP3 and SMTP traffic, without command arguments or subjects.
+     */
+    @Nested
+    @ExtendWith(OutputCaptureExtension.class)
+    class Logging {
+
+        private static final String PERSONAL_DATA_SUBJECT =
+                "usuarios.crearCuenta[Ana; Pérez; ana@uagrm.bo; ESTUDIANTE; 218000001; 7654321; 70000000]";
+
+        private final Logger inboxLogger = (Logger) LoggerFactory.getLogger(Pop3EmailInbox.class);
+        private Level previousLevel;
+
+        @BeforeEach
+        void rememberLevel() {
+            previousLevel = inboxLogger.getLevel();
+            inboxLogger.setLevel(Level.INFO);
+        }
+
+        @AfterEach
+        void restoreLevel() {
+            inboxLogger.setLevel(previousLevel);
+        }
+
+        @Test
+        void connectionIsLoggedAtDebugWithoutThePassword(CapturedOutput output) {
+            inboxLogger.setLevel(Level.DEBUG);
+
+            inbox.poll(10);
+
+            assertThat(output.getOut())
+                    .contains("Connecting to POP3 server localhost:" + ServerSetupTest.POP3.getPort() + " as sistema")
+                    .contains("POP3 inbox has 0 messages; read 0")
+                    .doesNotContain("secret");
+        }
+
+        @Test
+        void emptyInboxWritesNothingAtInfo(CapturedOutput output) {
+            inbox.poll(10);
+
+            assertThat(output.getOut())
+                    .doesNotContain("Connecting to POP3 server")
+                    .doesNotContain("POP3 inbox has");
+        }
+
+        @Test
+        void receivedEmailIsLoggedWithItsActionButNotItsArguments(CapturedOutput output) throws Exception {
+            system.deliver(message("ana@uagrm.bo", PERSONAL_DATA_SUBJECT, ""));
+
+            String uid = inbox.poll(10).getFirst().getMailboxId();
+
+            assertThat(output.getOut())
+                    .contains("Received email " + uid
+                            + " from ana@uagrm.bo: action usuarios.crearcuenta (0 attachments)")
+                    .contains("POP3 inbox has 1 messages; read 1")
+                    .doesNotContain("Pérez")
+                    .doesNotContain("218000001")
+                    .doesNotContain("7654321")
+                    .doesNotContain("70000000");
+        }
+
+        @Test
+        void subjectWithoutCommandIsLoggedAsNoValidAction(CapturedOutput output) throws Exception {
+            system.deliver(message("ana@uagrm.bo", "hola", ""));
+
+            String uid = inbox.poll(10).getFirst().getMailboxId();
+
+            assertThat(output.getOut())
+                    .contains("Received email " + uid + " from ana@uagrm.bo: no valid action (0 attachments)");
+        }
+
+        @Test
+        void ignoredAutomaticEmailIsLoggedWithItsSender(CapturedOutput output) throws Exception {
+            system.deliver(message("MAILER-DAEMON@mail.tecnoweb.org.bo", "Undelivered Mail", ""));
+
+            inbox.poll(10);
+
+            assertThat(output.getOut())
+                    .containsPattern("Ignoring automatic email \\S+ from MAILER-DAEMON@mail.tecnoweb.org.bo");
+        }
+
+        @Test
+        void deletedMessageIsLogged(CapturedOutput output) throws Exception {
+            system.deliver(message("ana@uagrm.bo", "cmd[]", ""));
+            String uid = inbox.poll(10).getFirst().getMailboxId();
+
+            inbox.delete(uid);
+
+            assertThat(output.getOut()).contains("Deleted message " + uid + " from the POP3 server");
+        }
+
+        @Test
+        void deletingAMissingMessageLogsNothing(CapturedOutput output) {
+            inbox.delete("missing-uid");
+
+            assertThat(output.getOut()).doesNotContain("Deleted message");
+        }
+
+        @Test
+        void sentEmailIsLoggedWithoutItsSubject(CapturedOutput output) {
+            JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
+            javaMailSender.setHost("localhost");
+            javaMailSender.setPort(ServerSetupTest.SMTP.getPort());
+            SmtpEmailSender sender = new SmtpEmailSender(javaMailSender, PROPERTIES, mock(StoredFileService.class));
+
+            sender.send("ana@uagrm.bo", "Re: " + PERSONAL_DATA_SUBJECT, "No se pudo ejecutar el comando.", List.of());
+
+            assertThat(output.getOut())
+                    .contains("Sent email to ana@uagrm.bo (0 attachments)")
+                    .doesNotContain("usuarios.crearCuenta")
+                    .doesNotContain("218000001")
+                    .doesNotContain("7654321");
         }
     }
 }
