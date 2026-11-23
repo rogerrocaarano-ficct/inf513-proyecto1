@@ -27,7 +27,6 @@
 | FR-021 | El sistema debe notificar al estudiante la designación de cada miembro de su tribunal evaluador | |
 | FR-022 | El sistema debe registrar el rechazo o las observaciones del docente de Taller de Grado al perfil de proyecto | |
 | FR-023 | El sistema debe registrar un nuevo perfil de proyecto cuando el anterior fue rechazado u observado | |
-| FR-024 | El sistema debe controlar el plazo de revisión del tutor y de cada miembro del tribunal sobre cada versión del documento del proyecto | |
 | FR-025 | El sistema debe registrar la entrega del documento del proyecto para la defensa final | |
 | FR-026 | El sistema debe crear cuentas de usuario con nombre completo, dirección de correo y un rol, y para un estudiante además registro universitario, cédula de identidad y teléfono | |
 | FR-027 | El sistema debe mostrar el calendario académico con las predefensas y defensas finales programadas | |
@@ -44,11 +43,10 @@
 | FR-038 | El sistema debe rechazar que se desactive, o que pierda el rol de administrador, la única cuenta de administrador activa | |
 | FR-040 | El sistema debe admitir una versión nueva del documento del proyecto solo cuando el tutor observó la versión vigente, o cuando todos los miembros del tribunal la revisaron y al menos uno registró observaciones | |
 | FR-041 | El sistema debe notificar al tutor cada versión entregada del documento del proyecto | |
-| FR-042 | El sistema debe notificar a los miembros del tribunal recién designados cuando hay una versión vigente del documento del proyecto aprobada por el tutor para revisar | |
 | FR-043 | El sistema debe registrar la revisión y aprobación de la versión para la defensa final por el tutor y por los miembros del tribunal evaluador | |
 | FR-044 | El sistema debe pasar una versión del documento del proyecto a los miembros del tribunal y notificarlos solo cuando el tutor la aprueba | |
 | FR-045 | El sistema debe admitir una sola revisión por revisor sobre cada versión del documento del proyecto | |
-| FR-046 | El sistema debe notificar al estudiante las observaciones del tutor cuando este observa una versión | |
+| FR-046 | El sistema debe notificar al estudiante la revisión del tutor sobre cada versión: aprobada, cuando pasa al tribunal, u observada, con sus observaciones | |
 | FR-047 | El sistema debe notificar al estudiante el resultado y las observaciones de cada miembro del tribunal cuando los tres revisaron una versión | |
 | FR-048 | El sistema debe notificar al estudiante, al secretario(a) de dirección de carrera y al director de carrera cuando el documento del proyecto queda aprobado | |
 | FR-049 | El sistema debe permitir que cada usuario modifique la dirección de correo y el teléfono de su propia cuenta de usuario | |
@@ -69,7 +67,7 @@
 ### Notes
 
 - Priority: la escala es MoSCoW. **Must**: sin esto la prueba de concepto por correo no lleva un trámite de titulación de la apertura al cierre; incluye las notificaciones que hacen actuar al siguiente actor, porque en la versión por correo son la interfaz. **Should**: importante, pero el flujo funciona sin ello. **Could**: lo primero que se recorta; además tiene reglas sin definir. La prioridad no recorta el alcance de la primera entrega (los diez casos de uso, SRC-011): ordena el trabajo de E2 y C1 y define qué se recorta primero, con acuerdo del docente, si se cumple RSK-005 (2026-11-07).
-- FR-008, FR-040: el estudiante puede entregar la primera versión desde que su perfil de proyecto está aprobado y tiene tutor asignado (SRC-010). Si el tribunal se designa después, revisa la versión vigente que el tutor ya aprobó (FR-042).
+- FR-008, FR-040: el estudiante puede entregar la primera versión desde que su perfil de proyecto está aprobado y su trámite tiene tutor asignado y los tres miembros del tribunal designados; la revisión no empieza con el tribunal incompleto (acordado el 2026-11-23, reemplaza lo acordado en SRC-010).
 - FR-040, FR-044: cada versión se revisa en dos etapas. Primero la revisa el tutor, como filtro previo; si la observa, el estudiante entrega otra sin que el tribunal la vea. Si la aprueba, pasa a los miembros del tribunal evaluador.
 - FR-004, FR-023, FR-058: el estudiante puede presentar el perfil de proyecto desde que el secretario(a) abre su trámite de titulación. El primer perfil crea el proyecto de grado. Si el docente de Taller de Grado lo rechaza u observa, el estudiante presenta un perfil nuevo, que puede cambiar el título del proyecto; los anteriores se conservan (SRC-010).
 - FR-025, FR-043: la versión para la defensa final se entrega después de aprobar la predefensa y se revisa en las mismas dos etapas.
