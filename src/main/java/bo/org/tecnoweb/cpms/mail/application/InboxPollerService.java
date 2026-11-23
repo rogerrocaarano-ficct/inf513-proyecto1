@@ -2,7 +2,7 @@ package bo.org.tecnoweb.cpms.mail.application;
 
 import bo.org.tecnoweb.cpms.common.DomainException;
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
-import bo.org.tecnoweb.cpms.mail.domain.File;
+import bo.org.tecnoweb.cpms.mail.domain.Attachment;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
@@ -140,22 +140,20 @@ public class InboxPollerService {
      * attachments. If storing fails, the transaction rolls back (file storage deletes what it
      * wrote), the error is logged and the message stays on the server for the next cycle.
      *
-     * @param email an email just read from the mailbox, with the content of its attachments
+     * @param email an email just read from the mailbox, {@link ReceivedEmailState#FETCHED} with the
+     *              content of its attachments
      */
     private void storeNew(ReceivedEmail email) {
-        Optional<File> empty = email.findEmptyAttachment();
+        Optional<Attachment.Content> empty = email.findEmptyAttachment();
         if (empty.isPresent()) {
-            email.withAttachments(List.of());
-            discard(email, "No se pudo procesar el correo: el adjunto \"" + empty.get().getName() + "\" está vacío.");
+            discard(email, "No se pudo procesar el correo: el adjunto \"" + empty.get().name() + "\" está vacío.");
             deleteFromServer(email.getMailboxId());
             return;
         }
         try {
             transactions.executeWithoutResult(status -> {
-                for (File file : email.getAttachments()) {
-                    file.withStoredFileId(storedFiles.store(file.getName(), file.getContentType(), file.getData())
-                            .getId());
-                }
+                email.storeAttachments(content ->
+                        storedFiles.store(content.name(), content.contentType(), content.data()).getId());
                 receivedEmails.store(email);
             });
         } catch (RuntimeException e) {

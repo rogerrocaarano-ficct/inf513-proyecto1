@@ -1,7 +1,7 @@
 package bo.org.tecnoweb.cpms.mail.application;
 
-import bo.org.tecnoweb.cpms.mail.domain.File;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Port to send email (SMTP). Every email is sent from the system address.
@@ -9,13 +9,14 @@ import java.util.List;
 public interface EmailSender {
 
     /**
-     * Sends an email.
+     * Sends an email. The attachments are files already kept in file storage (issue #9): the
+     * adapter reads their name, media type and content from it.
      *
-     * @param to          recipient address
-     * @param subject     subject
-     * @param body        plain text body
-     * @param attachments files to attach; may be empty
-     * @throws RuntimeException if the email cannot be built or sent
+     * @param to            recipient address
+     * @param subject       subject
+     * @param body          plain text body
+     * @param attachmentIds identifiers of the stored files to attach, in order; may be empty
+     * @throws RuntimeException if the email cannot be built or sent, or an attachment cannot be read
      */
-    void send(String to, String subject, String body, List<File> attachments);
+    void send(String to, String subject, String body, List<UUID> attachmentIds);
 }

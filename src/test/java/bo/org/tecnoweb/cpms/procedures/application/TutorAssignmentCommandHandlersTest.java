@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
+import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +17,7 @@ class TutorAssignmentCommandHandlersTest {
         var useCase = mock(TutorAssignmentUseCase.class);
         var handler = new RegisterInitialProfileCommandHandler(useCase);
         var id = java.util.UUID.randomUUID();
-        handler.handle(ReceivedEmail.builder().fromSender("student@test")
+        handler.handle(ReceivedEmail.builder().withState(ReceivedEmailState.VALIDATED).fromSender("student@test")
                 .withSubject("proyectos.registrarPerfil[Redes]").withAttachments(List.of(stored(id))));
 
         assertThat(handler.actionKey()).isEqualTo("proyectos.registrarPerfil");
@@ -30,7 +31,7 @@ class TutorAssignmentCommandHandlersTest {
     void delegatesTutorAssignment() {
         var useCase = mock(TutorAssignmentUseCase.class);
         var handler = new AssignTutorCommandHandler(useCase);
-        handler.handle(ReceivedEmail.builder().fromSender("director@test")
+        handler.handle(ReceivedEmail.builder().withState(ReceivedEmailState.VALIDATED).fromSender("director@test")
                 .withSubject("proyectos.asignarTutor[TR-001; docente@test]"));
 
         assertThat(handler.actionKey()).isEqualTo("proyectos.asignarTutor");

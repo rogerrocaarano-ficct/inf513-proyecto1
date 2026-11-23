@@ -16,7 +16,8 @@ public interface EmailInbox {
      *
      * @param maxMessages maximum number of messages to return
      * @return up to {@code maxMessages} new emails in state
-     *         {@link bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState#RECEIVED}, oldest first
+     *         {@link bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState#FETCHED}, with the content of
+     *         their attachments, oldest first
      * @throws IllegalStateException if the mailbox cannot be read
      */
     List<ReceivedEmail> poll(int maxMessages);

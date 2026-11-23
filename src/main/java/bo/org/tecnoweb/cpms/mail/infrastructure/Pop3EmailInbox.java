@@ -1,7 +1,7 @@
 package bo.org.tecnoweb.cpms.mail.infrastructure;
 
 import bo.org.tecnoweb.cpms.mail.application.EmailInbox;
-import bo.org.tecnoweb.cpms.mail.domain.File;
+import bo.org.tecnoweb.cpms.mail.domain.Attachment;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import jakarta.mail.Address;
 import jakarta.mail.FetchProfile;
@@ -215,7 +215,7 @@ class Pop3EmailInbox implements EmailInbox {
      *
      * @param message the message read from the server
      * @param uid     its UIDL
-     * @return a new email in state {@link bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState#RECEIVED}
+     * @return a new email in state {@link bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState#FETCHED}
      */
     private static ReceivedEmail toEmail(Message message, String uid) {
         ReceivedEmail email = ReceivedEmail.builder().withMailboxId(uid);
@@ -236,7 +236,7 @@ class Pop3EmailInbox implements EmailInbox {
      */
     private static final class Content {
         String body;
-        final List<File> attachments = new ArrayList<>();
+        final List<Attachment> attachments = new ArrayList<>();
     }
 
     /**
@@ -260,8 +260,7 @@ class Pop3EmailInbox implements EmailInbox {
         if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition()) || fileName != null) {
             String name = fileName == null || fileName.isBlank() ? "adjunto" : MimeUtility.decodeText(fileName);
             byte[] data = part.getInputStream().readAllBytes();
-            content.attachments.add(File.builder().withName(name).withContentType(baseType(part.getContentType()))
-                    .withData(data));
+            content.attachments.add(new Attachment.Content(name, baseType(part.getContentType()), data));
             return;
         }
         if (content.body == null && part.isMimeType("text/plain")) {

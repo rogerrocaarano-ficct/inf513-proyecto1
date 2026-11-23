@@ -1,7 +1,7 @@
 package bo.org.tecnoweb.cpms.mail.infrastructure.persistence;
 
 import bo.org.tecnoweb.cpms.mail.application.ReceivedEmailRepository;
-import bo.org.tecnoweb.cpms.mail.domain.File;
+import bo.org.tecnoweb.cpms.mail.domain.Attachment;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
 import java.util.EnumSet;
@@ -40,11 +40,16 @@ class JpaReceivedEmailRepository implements ReceivedEmailRepository {
      * is inserted, since they never change, and only as references to their stored files: their
      * content is never written to the database (issue #9).
      *
-     * @throws IllegalStateException if a new email has an attachment that was not stored first
+     * @throws IllegalStateException if the email is still {@link ReceivedEmailState#FETCHED}: its
+     *                               attachments must be stored first
      */
     @Override
     @Transactional
     public void store(ReceivedEmail email) {
+        if (email.getState() == ReceivedEmailState.FETCHED) {
+            throw new IllegalStateException("Email " + email.getId() + " must store its attachments before it is "
+                    + "stored");
+        }
         Optional<ReceivedEmailEntity> existing = emails.findById(email.getId());
         if (existing.isPresent()) {
             ReceivedEmailEntity entity = existing.get();
@@ -56,13 +61,7 @@ class JpaReceivedEmailRepository implements ReceivedEmailRepository {
         }
         ReceivedEmailEntity entity = new ReceivedEmailEntity(email.getId());
         copyFields(email, entity);
-        for (File file : email.getAttachments()) {
-            if (file.getStoredFileId() == null) {
-                throw new IllegalStateException("Attachment " + file.getId() + " of email " + email.getId()
-                        + " must be stored before the email");
-            }
-            entity.getAttachments().add(new ReceivedEmailAttachmentEntity(file.getId(), file.getStoredFileId()));
-        }
+        entity.getAttachmentIds().addAll(email.getAttachmentIds());
         emails.save(entity);
     }
 
@@ -108,8 +107,8 @@ class JpaReceivedEmailRepository implements ReceivedEmailRepository {
      * @return the email with its state and attachments
      */
     private static ReceivedEmail toDomain(ReceivedEmailEntity entity) {
-        List<File> attachments = entity.getAttachments().stream()
-                .map(a -> File.rehydrate().withId(a.getId()).withStoredFileId(a.getStoredFileId()))
+        List<Attachment> attachments = entity.getAttachmentIds().stream()
+                .<Attachment>map(Attachment.Stored::new)
                 .toList();
         return ReceivedEmail.rehydrate()
                 .withId(entity.getId())

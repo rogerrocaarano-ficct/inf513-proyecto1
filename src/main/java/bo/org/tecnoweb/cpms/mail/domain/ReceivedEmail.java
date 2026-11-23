@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,21 +43,21 @@ public class ReceivedEmail implements AggregateRoot {
     private String mailboxId;
     private String body;
     private ReceivedEmailState state;
-    private List<File> attachments = List.of();
+    private List<Attachment> attachments = List.of();
     private final List<DomainEvent> events = new ArrayList<>();
 
     private ReceivedEmail() {
     }
 
     /**
-     * Starts a newly received email.
+     * Starts an email just read from the mailbox.
      *
-     * @return a new email with a random identifier, in state {@link ReceivedEmailState#RECEIVED}
+     * @return a new email with a random identifier, in state {@link ReceivedEmailState#FETCHED}
      */
     public static ReceivedEmail builder() {
         ReceivedEmail email = new ReceivedEmail();
         email.id = UUID.randomUUID();
-        email.state = ReceivedEmailState.RECEIVED;
+        email.state = ReceivedEmailState.FETCHED;
         return email;
     }
 
@@ -129,10 +130,12 @@ public class ReceivedEmail implements AggregateRoot {
     /**
      * Sets the attachments.
      *
-     * @param attachments the attachments in message order; {@code null} means none
+     * @param attachments the attachments in message order: {@link Attachment.Content} for an email
+     *                    just read, {@link Attachment.Stored} for one read from storage; {@code null}
+     *                    means none
      * @return this email
      */
-    public ReceivedEmail withAttachments(List<File> attachments) {
+    public ReceivedEmail withAttachments(List<Attachment> attachments) {
         this.attachments = attachments == null ? List.of() : List.copyOf(attachments);
         return this;
     }
@@ -204,13 +207,37 @@ public class ReceivedEmail implements AggregateRoot {
     }
 
     /**
-     * Records that the use case will never be called.
+     * Keeps the content of every attachment in file storage and records only the reference to each
+     * stored file, in message order (issue #9). The email becomes {@link ReceivedEmailState#RECEIVED}.
+     *
+     * @param storer keeps the content of one attachment and returns the identifier of its stored file
+     * @throws IllegalStateException if the email is not {@link ReceivedEmailState#FETCHED}
+     */
+    public void storeAttachments(Function<Attachment.Content, UUID> storer) {
+        if (state != ReceivedEmailState.FETCHED) {
+            throw new IllegalStateException("Cannot store the attachments of an email in state " + state);
+        }
+        attachments = attachments.stream()
+                .<Attachment>map(attachment -> switch (attachment) {
+                    case Attachment.Content content -> new Attachment.Stored(storer.apply(content));
+                    case Attachment.Stored stored -> stored;
+                })
+                .toList();
+        state = ReceivedEmailState.RECEIVED;
+    }
+
+    /**
+     * Records that the use case will never be called. An email still
+     * {@link ReceivedEmailState#FETCHED} drops its attachments, which were never stored.
      *
      * @throws IllegalStateException if the email is already in a final state
      */
     public void markAsDiscarded() {
         if (state == null || state.isFinal()) {
             throw new IllegalStateException("Cannot discard an email in state " + state);
+        }
+        if (state == ReceivedEmailState.FETCHED) {
+            attachments = List.of();
         }
         state = ReceivedEmailState.DISCARDED;
     }
@@ -274,7 +301,7 @@ public class ReceivedEmail implements AggregateRoot {
      *
      * @return an unmodifiable list of the attachments in message order; empty if there are none
      */
-    public List<File> getAttachments() {
+    public List<Attachment> getAttachments() {
         return attachments;
     }
 
@@ -283,10 +310,14 @@ public class ReceivedEmail implements AggregateRoot {
      * keeping anything (issue #9).
      *
      * @return the first empty attachment in message order, or empty if every attachment has content
-     *         or the email was read back from the database
+     *         or is already stored
      */
-    public Optional<File> findEmptyAttachment() {
-        return attachments.stream().filter(File::isEmpty).findFirst();
+    public Optional<Attachment.Content> findEmptyAttachment() {
+        return attachments.stream()
+                .filter(Attachment.Content.class::isInstance)
+                .map(Attachment.Content.class::cast)
+                .filter(Attachment.Content::isEmpty)
+                .findFirst();
     }
 
     /**
@@ -294,14 +325,17 @@ public class ReceivedEmail implements AggregateRoot {
      * instead of the content (issue #9).
      *
      * @return the identifiers of the stored files, in message order
-     * @throws IllegalStateException if an attachment has not been stored yet
+     * @throws IllegalStateException if the email is still {@link ReceivedEmailState#FETCHED} or an
+     *                               attachment has not been stored
      */
     public List<UUID> getAttachmentIds() {
-        return attachments.stream().map(file -> {
-            if (file.getStoredFileId() == null) {
-                throw new IllegalStateException("Attachment " + file.getId() + " of email " + id + " is not stored");
-            }
-            return file.getStoredFileId();
+        if (state == ReceivedEmailState.FETCHED) {
+            throw new IllegalStateException("The attachments of email " + id + " are not stored yet");
+        }
+        return attachments.stream().map(attachment -> switch (attachment) {
+            case Attachment.Stored stored -> stored.storedFileId();
+            case Attachment.Content content -> throw new IllegalStateException(
+                    "Attachment " + content.name() + " of email " + id + " is not stored");
         }).toList();
     }
 

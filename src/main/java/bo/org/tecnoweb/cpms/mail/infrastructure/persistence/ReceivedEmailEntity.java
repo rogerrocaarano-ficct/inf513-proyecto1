@@ -1,14 +1,14 @@
 package bo.org.tecnoweb.cpms.mail.infrastructure.persistence;
 
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
-import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -46,10 +46,15 @@ class ReceivedEmailEntity {
     @Column(name = "received_at", insertable = false, updatable = false)
     private Instant receivedAt;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "received_email_id", nullable = false)
+    /**
+     * Stored files of the attachments, in message order, in table {@code received_email_attachment}.
+     * An attachment is a value of its email: it has no identity of its own (issue #9).
+     */
+    @ElementCollection
+    @CollectionTable(name = "received_email_attachment", joinColumns = @JoinColumn(name = "received_email_id"))
     @OrderColumn(name = "position")
-    private List<ReceivedEmailAttachmentEntity> attachments = new ArrayList<>();
+    @Column(name = "stored_file_id", nullable = false)
+    private List<UUID> attachmentIds = new ArrayList<>();
 
     /**
      * Constructor required by JPA.
@@ -110,7 +115,7 @@ class ReceivedEmailEntity {
         this.state = state;
     }
 
-    List<ReceivedEmailAttachmentEntity> getAttachments() {
-        return attachments;
+    List<UUID> getAttachmentIds() {
+        return attachmentIds;
     }
 }
