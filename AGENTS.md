@@ -71,10 +71,13 @@ starts `compose.yaml` (PostgreSQL, GreenMail, Roundcube) with the `local`
 profile, and the webmail is at <http://localhost:8025>.
 
 The deployed test environment (`compose.staging.yaml`, profile `staging`) runs
-the same services on the team's Dokploy server, publishes only the webmail, and
-is disposable: `StagingDatabaseReset` cleans the database at every startup and
-the stored files live in a `tmpfs`. See `README.md`, "Entorno de pruebas
-desplegado".
+the same services on the team's Dokploy server and publishes only the webmail.
+Both environments are disposable: with the `local` and `staging` profiles,
+`DisposableDatabaseReset` cleans the database and
+`storage.infrastructure.DisposableStorageReset` empties the files folder at
+every startup, including DevTools restarts. See `README.md`, "Entorno de
+pruebas desplegado". Production (`compose.production.yaml`, default profile)
+never does either.
 
 ## Reference Architecture
 

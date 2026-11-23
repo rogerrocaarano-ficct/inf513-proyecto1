@@ -15,7 +15,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cpms}
       CPMS_CURRENT_SEMESTER: ${CPMS_CURRENT_SEMESTER:-2026-2}
     # Disposable environment: the stored files live in memory and the staging profile cleans the database
-    # at every startup (StagingDatabaseReset), so each build or restart starts empty.
+    # at every startup (DisposableDatabaseReset, DisposableStorageReset), so each build or restart starts empty.
     tmpfs:
       - /var/lib/cpms/storage:mode=1777
     depends_on:
