@@ -1,11 +1,9 @@
 package bo.org.tecnoweb.cpms.procedures.infrastructure;
 
 import bo.org.tecnoweb.cpms.mail.application.EmailSender;
-import bo.org.tecnoweb.cpms.mail.domain.File;
 import bo.org.tecnoweb.cpms.procedures.application.TutorAssignmentNotifier;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectProfileRegisteredEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectTutorAssignedEvent;
-import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -21,14 +19,11 @@ class MailTutorAssignmentNotifier implements TutorAssignmentNotifier {
     private static final Logger log = LoggerFactory.getLogger(MailTutorAssignmentNotifier.class);
     private final ApplicationEventPublisher publisher;
     private final EmailSender outbox;
-    private final StoredFileService storedFiles;
 
-    /** Receives the event publisher, the mail port and the file storage that keeps the profiles. */
-    MailTutorAssignmentNotifier(ApplicationEventPublisher publisher, EmailSender outbox,
-            StoredFileService storedFiles) {
+    /** Receives the event publisher and the mail port. */
+    MailTutorAssignmentNotifier(ApplicationEventPublisher publisher, EmailSender outbox) {
         this.publisher = publisher;
         this.outbox = outbox;
-        this.storedFiles = storedFiles;
     }
 
     /** {@inheritDoc} */
@@ -44,23 +39,14 @@ class MailTutorAssignmentNotifier implements TutorAssignmentNotifier {
     }
 
     /**
-     * Sends the profile and project title to Taller (FR-057). The PDF is read from the file storage;
-     * if it cannot be read, the error is logged and nothing is sent (issue #9).
+     * Sends the profile and project title to Taller (FR-057), attaching the stored PDF of the
+     * profile. If it cannot be read or sent, the error is logged and nothing is sent (issue #9).
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void onProfileRegistered(DegreeProjectProfileRegisteredEvent event) {
-        File attachment;
-        try {
-            UUID id = event.profile().storedFileId();
-            attachment = File.builder().withName(storedFiles.get(id).getOriginalName())
-                    .withData(storedFiles.readContent(id));
-        } catch (RuntimeException exception) {
-            log.warn("Could not read the profile of {} to send it to Taller", event.reference(), exception);
-            return;
-        }
         send(event.workshop(), "Perfil de proyecto: " + event.reference(),
                 "El estudiante " + event.student() + " presentó el perfil del proyecto «" + event.title() + "».",
-                List.of(attachment));
+                List.of(event.profile().storedFileId()));
     }
 
     /** Informs the student of the designation (FR-020). */
@@ -70,9 +56,9 @@ class MailTutorAssignmentNotifier implements TutorAssignmentNotifier {
                 "Se designó a " + event.tutorName() + " como tutor de su proyecto de grado.", List.of());
     }
 
-    private void send(String to, String subject, String body, List<File> files) {
+    private void send(String to, String subject, String body, List<UUID> attachmentIds) {
         try {
-            outbox.send(to, subject, body, files);
+            outbox.send(to, subject, body, attachmentIds);
         } catch (RuntimeException exception) {
             log.warn("Could not send project notification: {}", subject, exception);
         }

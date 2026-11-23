@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import bo.org.tecnoweb.cpms.common.DomainException;
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
-import bo.org.tecnoweb.cpms.mail.domain.File;
+import bo.org.tecnoweb.cpms.mail.domain.Attachment;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
 import bo.org.tecnoweb.cpms.storage.application.FileStorage;
@@ -44,8 +44,8 @@ class InboxPollerServiceTest {
                 storedFiles);
     }
 
-    private static File attachment(String name, byte... data) {
-        return File.builder().withName(name).withContentType("application/pdf").withData(data);
+    private static Attachment.Content attachment(String name, byte... data) {
+        return new Attachment.Content(name, "application/pdf", data);
     }
 
     private InboxPollerService service(EmailCommandHandler... handlers) {
@@ -341,6 +341,8 @@ class InboxPollerServiceTest {
             assertThat(storedFiles.readContent(seen.get(1))).containsExactly(2, 3);
             assertThat(repository.findByMailboxId("uid-1").orElseThrow().getAttachmentIds())
                     .containsExactlyElementsOf(seen);
+            // tx1 stores the attachments and the email, which leaves FETCHED with only references.
+            assertThat(transactions.committedStates).contains(ReceivedEmailState.RECEIVED.name() + "@tx1");
         }
 
         @Test
@@ -348,7 +350,7 @@ class InboxPollerServiceTest {
             TestHandler handler = new TestHandler("cmd", 0, 1);
             UUID storedId = UUID.randomUUID();
             repository.put(stored("uid-1", "cmd[]", ReceivedEmailState.VALIDATED).withAttachments(List.of(
-                    File.rehydrate().withId(UUID.randomUUID()).withStoredFileId(storedId))));
+                    new Attachment.Stored(storedId))));
             inbox.add("uid-1", "ana@uagrm.bo", "cmd[]", attachment("carta.pdf", (byte) 1));
 
             service(handler).pollAndProcess();
@@ -521,9 +523,9 @@ class InboxPollerServiceTest {
         final List<String> deleted = new ArrayList<>();
         boolean failOnPoll;
 
-        void add(String mailboxId, String from, String subject, File... files) {
+        void add(String mailboxId, String from, String subject, Attachment.Content... files) {
             messages.put(mailboxId, ReceivedEmail.builder().withMailboxId(mailboxId).fromSender(from)
-                    .withSubject(subject).withAttachments(List.of(files)));
+                    .withSubject(subject).withAttachments(List.<Attachment>of(files)));
         }
 
         int size() {
@@ -578,6 +580,9 @@ class InboxPollerServiceTest {
 
         @Override
         public void store(ReceivedEmail email) {
+            if (email.getState() == ReceivedEmailState.FETCHED) {
+                throw new IllegalStateException("A fetched email cannot be stored");
+            }
             if (failNextStoreOf != null && email.getState() == failNextStoreOf) {
                 failNextStoreOf = null;
                 throw new IllegalStateException("database failure");
@@ -649,7 +654,7 @@ class InboxPollerServiceTest {
         }
 
         @Override
-        public void send(String to, String subject, String body, List<File> attachments) {
+        public void send(String to, String subject, String body, List<UUID> attachmentIds) {
             if (fail) {
                 throw new IllegalStateException("SMTP down");
             }

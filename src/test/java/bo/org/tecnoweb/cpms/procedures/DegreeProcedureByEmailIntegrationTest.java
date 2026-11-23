@@ -104,7 +104,8 @@ class DegreeProcedureByEmailIntegrationTest {
                 .filter(message -> hasSubject(message, "Perfil de proyecto: " + label)).findFirst().orElseThrow();
         var parts = (MimeMultipart) notice.getContent();
         assertThat(parts.getBodyPart(1).getFileName()).isEqualTo("perfil.pdf");
-        // The test PDF is plain ASCII, so SMTP sends it as 7bit text and turns "\n" into "\r\n".
+        assertThat(parts.getBodyPart(1).getContentType()).startsWith("application/pdf");
+        // The test PDF is plain ASCII, so SMTP may send it as 7bit text and turn "\n" into "\r\n".
         assertThat(new String(parts.getBodyPart(1).getInputStream().readAllBytes(), StandardCharsets.US_ASCII))
                 .isEqualToIgnoringNewLines(new String(ProcedureFixtures.pdfContent("perfil.pdf"),
                         StandardCharsets.US_ASCII));

@@ -4,11 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class ReceivedEmailTest {
@@ -80,8 +83,8 @@ class ReceivedEmailTest {
     class States {
 
         @Test
-        void newEmailIsReceived() {
-            assertThat(ReceivedEmail.builder().getState()).isEqualTo(ReceivedEmailState.RECEIVED);
+        void newEmailIsFetched() {
+            assertThat(ReceivedEmail.builder().getState()).isEqualTo(ReceivedEmailState.FETCHED);
         }
 
         @Test
@@ -125,7 +128,7 @@ class ReceivedEmailTest {
 
         @Test
         void receivedOrValidatedEmailCanBeDiscarded() {
-            ReceivedEmail received = ReceivedEmail.builder();
+            ReceivedEmail received = ReceivedEmail.builder().withState(ReceivedEmailState.RECEIVED);
             ReceivedEmail validated = ReceivedEmail.builder().withState(ReceivedEmailState.VALIDATED);
 
             received.markAsDiscarded();
@@ -136,49 +139,99 @@ class ReceivedEmailTest {
         }
     }
 
+
     @Nested
     class Attachments {
 
-        private File read(String name, byte[] data) {
-            return File.builder().withName(name).withContentType("application/pdf").withData(data);
+        private Attachment.Content read(String name, byte... data) {
+            return new Attachment.Content(name, "application/pdf", data);
         }
 
         @Test
         void emptyAttachmentIsFoundInMessageOrder() {
-            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(read("carta.pdf", new byte[]{1}),
-                    read("boleta.pdf", new byte[0]), read("cv.pdf", new byte[0])));
+            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(read("carta.pdf", (byte) 1),
+                    read("boleta.pdf"), read("cv.pdf")));
 
-            assertThat(email.findEmptyAttachment()).map(File::getName).contains("boleta.pdf");
+            assertThat(email.findEmptyAttachment()).map(Attachment.Content::name).contains("boleta.pdf");
         }
 
         @Test
-        void attachmentsWithContentOrNotLoadedAreNotEmpty() {
-            File rehydrated = File.rehydrate().withId(UUID.randomUUID()).withStoredFileId(UUID.randomUUID());
-            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(read("carta.pdf", new byte[]{1}),
-                    rehydrated));
+        void storedAttachmentsAreNotEmpty() {
+            ReceivedEmail email = ReceivedEmail.rehydrate().withId(UUID.randomUUID())
+                    .withState(ReceivedEmailState.RECEIVED)
+                    .withAttachments(List.of(new Attachment.Stored(UUID.randomUUID())));
 
-            assertThat(rehydrated.isEmpty()).isFalse();
-            assertThat(rehydrated.getData()).isNull();
             assertThat(email.findEmptyAttachment()).isEmpty();
         }
 
         @Test
-        void attachmentIdsAreTheStoredFilesInMessageOrder() {
+        void storingTheAttachmentsKeepsTheirReferencesInOrderAndReceivesTheEmail() {
             UUID first = UUID.randomUUID();
             UUID second = UUID.randomUUID();
-            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(
-                    read("a.pdf", new byte[]{1}).withStoredFileId(first),
-                    File.rehydrate().withId(UUID.randomUUID()).withStoredFileId(second)));
+            Map<String, UUID> ids = Map.of("carta.pdf", first, "cv.pdf", second);
+            List<Attachment.Content> stored = new ArrayList<>();
+            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(read("carta.pdf", (byte) 1),
+                    read("cv.pdf", (byte) 2)));
 
+            email.storeAttachments(content -> {
+                stored.add(content);
+                return ids.get(content.name());
+            });
+
+            assertThat(stored).extracting(Attachment.Content::name).containsExactly("carta.pdf", "cv.pdf");
+            assertThat(email.getState()).isEqualTo(ReceivedEmailState.RECEIVED);
+            assertThat(email.getAttachments()).containsExactly(new Attachment.Stored(first),
+                    new Attachment.Stored(second));
             assertThat(email.getAttachmentIds()).containsExactly(first, second);
-            assertThat(ReceivedEmail.builder().getAttachmentIds()).isEmpty();
         }
 
         @Test
-        void attachmentIdsRequireStoredFiles() {
-            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(read("a.pdf", new byte[]{1})));
+        void anEmailWithoutAttachmentsIsReceivedWithNoReferences() {
+            ReceivedEmail email = ReceivedEmail.builder();
+
+            email.storeAttachments(content -> UUID.randomUUID());
+
+            assertThat(email.getState()).isEqualTo(ReceivedEmailState.RECEIVED);
+            assertThat(email.getAttachmentIds()).isEmpty();
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = ReceivedEmailState.class, names = "FETCHED", mode = EnumSource.Mode.EXCLUDE)
+        void attachmentsCanOnlyBeStoredOnce(ReceivedEmailState state) {
+            ReceivedEmail email = ReceivedEmail.builder().withState(state);
+
+            assertThatThrownBy(() -> email.storeAttachments(content -> UUID.randomUUID()))
+                    .isInstanceOf(IllegalStateException.class);
+        }
+
+        @Test
+        void discardingAFetchedEmailDropsItsAttachments() {
+            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(read("boleta.pdf")));
+
+            email.markAsDiscarded();
+
+            assertThat(email.getState()).isEqualTo(ReceivedEmailState.DISCARDED);
+            assertThat(email.getAttachments()).isEmpty();
+            assertThat(email.getAttachmentIds()).isEmpty();
+        }
+
+        @Test
+        void discardingAStoredEmailKeepsItsReferences() {
+            UUID id = UUID.randomUUID();
+            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(read("carta.pdf", (byte) 1)));
+            email.storeAttachments(content -> id);
+
+            email.markAsDiscarded();
+
+            assertThat(email.getAttachmentIds()).containsExactly(id);
+        }
+
+        @Test
+        void attachmentIdsRequireTheAttachmentsToBeStored() {
+            ReceivedEmail email = ReceivedEmail.builder().withAttachments(List.of(read("a.pdf", (byte) 1)));
 
             assertThatThrownBy(email::getAttachmentIds).isInstanceOf(IllegalStateException.class);
+            assertThatThrownBy(ReceivedEmail.builder()::getAttachmentIds).isInstanceOf(IllegalStateException.class);
         }
     }
 }

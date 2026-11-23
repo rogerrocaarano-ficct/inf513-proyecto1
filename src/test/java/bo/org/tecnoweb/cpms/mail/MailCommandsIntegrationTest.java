@@ -7,7 +7,7 @@ import bo.org.tecnoweb.cpms.common.DomainException;
 import bo.org.tecnoweb.cpms.mail.application.EmailCommandHandler;
 import bo.org.tecnoweb.cpms.mail.application.InboxPollerService;
 import bo.org.tecnoweb.cpms.mail.application.ReceivedEmailRepository;
-import bo.org.tecnoweb.cpms.mail.domain.File;
+import bo.org.tecnoweb.cpms.mail.domain.Attachment;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
@@ -295,8 +295,8 @@ class MailCommandsIntegrationTest {
         UUID second = transaction.execute(status -> storedFiles.store("b.pdf", "application/pdf", pdf)).getId();
         repository.store(ReceivedEmail.builder().withMailboxId("uid-restart").fromSender(ANA)
                 .withSubject("prueba.adjuntos[]").withState(ReceivedEmailState.VALIDATED)
-                .withAttachments(List.of(File.builder().withStoredFileId(first),
-                        File.builder().withStoredFileId(second))));
+                .withAttachments(List.of(new Attachment.Stored(first),
+                        new Attachment.Stored(second))));
 
         service.pollAndProcess();
         service.pollAndProcess();

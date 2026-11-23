@@ -3,6 +3,7 @@
 | Término | Definición | Término adoptado en el código |
 | --- | --- | --- |
 | Acta de graduación | Documento oficial que registra la calificación final de la defensa final y la conclusión de la titulación de un estudiante | |
+| Adjunto | Archivo que llega con un correo recibido o que se envía con una respuesta o notificación. Se guarda como archivo almacenado y el correo conserva solo su referencia, en su orden; no tiene identidad propia | `Attachment` |
 | Administrador | Rol técnico que crea y mantiene las cuentas de usuario y sus roles | `Role.SYSTEM_ADMIN` (etiqueta `administrador`) |
 | Archivo almacenado | Archivo que el sistema guarda en su carpeta de almacenamiento, con su nombre original, tipo, tamaño y fecha; cada versión de un archivo es un archivo almacenado distinto, enlazado a la anterior. No confundir con la versión del documento, que es la entrega del estudiante con sus revisiones | `StoredFile` |
 | Biblioteca | Biblioteca de la universidad que recibe uno de los dos ejemplares físicos del proyecto | |

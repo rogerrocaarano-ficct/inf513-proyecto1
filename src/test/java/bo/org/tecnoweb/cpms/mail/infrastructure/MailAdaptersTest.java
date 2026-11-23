@@ -1,13 +1,22 @@
 package bo.org.tecnoweb.cpms.mail.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import bo.org.tecnoweb.cpms.mail.domain.File;
+import bo.org.tecnoweb.cpms.mail.domain.Attachment;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
+import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
+import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
+import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
+import bo.org.tecnoweb.cpms.storage.domain.StoredFileNotFoundException;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.user.GreenMailUser;
 import com.icegreen.greenmail.util.ServerSetupTest;
+import jakarta.mail.BodyPart;
 import jakarta.mail.Message;
+import jakarta.mail.Multipart;
 import jakarta.mail.Session;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -15,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -102,11 +112,32 @@ class MailAdaptersTest {
             ReceivedEmail email = inbox.poll(10).getFirst();
 
             assertThat(email.getBody()).isEqualToIgnoringNewLines("cuerpo");
-            assertThat(email.getAttachments()).singleElement().satisfies(file -> {
-                assertThat(file.getName()).isEqualTo("perfil.pdf");
-                assertThat(file.getContentType()).isEqualTo("application/pdf");
-                assertThat(file.getData()).containsExactly(1, 2, 3);
-            });
+            assertThat(email.getState()).isEqualTo(ReceivedEmailState.FETCHED);
+            assertThat(email.getAttachments()).singleElement().isInstanceOfSatisfying(Attachment.Content.class,
+                    file -> {
+                        assertThat(file.name()).isEqualTo("perfil.pdf");
+                        assertThat(file.contentType()).isEqualTo("application/pdf");
+                        assertThat(file.data()).containsExactly(1, 2, 3);
+                    });
+        }
+
+        @Test
+        void attachmentsAreReadInMessageOrder() throws Exception {
+            MimeMessage message = new MimeMessage(Session.getInstance(new Properties()));
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+            helper.setFrom("ana@uagrm.bo");
+            helper.setTo(SYSTEM);
+            helper.setSubject("cmd[]");
+            helper.setText("cuerpo");
+            helper.addAttachment("carta.pdf", new ByteArrayResource(new byte[] {1}));
+            helper.addAttachment("cv.pdf", new ByteArrayResource(new byte[] {2}));
+            system.deliver(message);
+
+            ReceivedEmail email = inbox.poll(10).getFirst();
+
+            assertThat(email.getAttachments()).containsExactly(
+                    new Attachment.Content("carta.pdf", "application/pdf", new byte[] {1}),
+                    new Attachment.Content("cv.pdf", "application/pdf", new byte[] {2}));
         }
 
         @Test
@@ -122,7 +153,8 @@ class MailAdaptersTest {
 
             ReceivedEmail email = inbox.poll(10).getFirst();
 
-            assertThat(email.getAttachments()).singleElement().extracting(File::getContentType)
+            assertThat(email.getAttachments()).singleElement()
+                    .extracting(attachment -> ((Attachment.Content) attachment).contentType())
                     .isEqualTo("application/pdf");
         }
 
@@ -194,15 +226,20 @@ class MailAdaptersTest {
     @Nested
     class Sending {
 
-        @Test
-        void sendsFromTheSystemAddress() throws Exception {
+        private final StoredFileService storedFiles = mock(StoredFileService.class);
+        private SmtpEmailSender sender;
+
+        @BeforeEach
+        void setUpSender() {
             JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
             javaMailSender.setHost("localhost");
             javaMailSender.setPort(ServerSetupTest.SMTP.getPort());
-            SmtpEmailSender sender = new SmtpEmailSender(javaMailSender, PROPERTIES);
+            sender = new SmtpEmailSender(javaMailSender, PROPERTIES, storedFiles);
+        }
 
-            sender.send("ana@uagrm.bo", "Re: cmd[]", "El comando \"cmd\" no existe.",
-                    List.of(File.builder().withName("detalle.txt").withData("x".getBytes(StandardCharsets.UTF_8))));
+        @Test
+        void sendsFromTheSystemAddress() throws Exception {
+            sender.send("ana@uagrm.bo", "Re: cmd[]", "El comando \"cmd\" no existe.", List.of());
 
             MimeMessage[] received = greenMail.getReceivedMessagesForDomain("uagrm.bo");
             assertThat(received).hasSize(1);
@@ -210,6 +247,34 @@ class MailAdaptersTest {
             assertThat(((InternetAddress) reply.getFrom()[0]).getAddress()).isEqualTo(SYSTEM);
             assertThat(reply.getSubject()).isEqualTo("Re: cmd[]");
             assertThat(com.icegreen.greenmail.util.GreenMailUtil.getBody(reply)).contains("no existe");
+        }
+
+        @Test
+        void attachesTheStoredFileWithItsNameTypeAndContent() throws Exception {
+            UUID id = UUID.randomUUID();
+            StoredFile metadata = mock(StoredFile.class);
+            when(metadata.getOriginalName()).thenReturn("perfil.pdf");
+            when(metadata.getContentType()).thenReturn("application/pdf");
+            when(storedFiles.get(id)).thenReturn(metadata);
+            when(storedFiles.readContent(id)).thenReturn(new byte[] {1, 2, 3});
+
+            sender.send("taller@uagrm.bo", "Perfil de proyecto: TR-001", "Perfil adjunto.", List.of(id));
+
+            MimeMessage sent = greenMail.getReceivedMessagesForDomain("uagrm.bo")[0];
+            BodyPart attachment = ((Multipart) sent.getContent()).getBodyPart(1);
+            assertThat(attachment.getFileName()).isEqualTo("perfil.pdf");
+            assertThat(attachment.getContentType()).startsWith("application/pdf");
+            assertThat(attachment.getInputStream().readAllBytes()).containsExactly(1, 2, 3);
+        }
+
+        @Test
+        void missingStoredFileIsNotSent() {
+            UUID id = UUID.randomUUID();
+            when(storedFiles.get(id)).thenThrow(new StoredFileNotFoundException(id));
+
+            assertThatThrownBy(() -> sender.send("taller@uagrm.bo", "Perfil", "Perfil adjunto.", List.of(id)))
+                    .isInstanceOf(StoredFileNotFoundException.class);
+            assertThat(greenMail.getReceivedMessages()).isEmpty();
         }
     }
 }
