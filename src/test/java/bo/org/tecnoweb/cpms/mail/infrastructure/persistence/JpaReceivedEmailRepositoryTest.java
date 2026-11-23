@@ -1,19 +1,25 @@
 package bo.org.tecnoweb.cpms.mail.infrastructure.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import bo.org.tecnoweb.cpms.TestcontainersConfiguration;
 import bo.org.tecnoweb.cpms.mail.application.ReceivedEmailRepository;
 import bo.org.tecnoweb.cpms.mail.domain.File;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
+import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -24,6 +30,15 @@ class JpaReceivedEmailRepositoryTest {
 
     @Autowired
     private SpringDataReceivedEmailRepository springData;
+
+    @Autowired
+    private StoredFileService storedFiles;
+
+    @Autowired
+    private TransactionTemplate transaction;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @BeforeEach
     void clean() {
@@ -38,10 +53,18 @@ class JpaReceivedEmailRepositoryTest {
                 .withBody("cuerpo");
     }
 
+    private File storedAttachment(String name, String content) {
+        byte[] data = content.getBytes(StandardCharsets.UTF_8);
+        File file = File.builder().withName(name).withContentType("application/pdf").withData(data);
+        return file.withStoredFileId(transaction.execute(status -> storedFiles.store(name, "application/pdf", data))
+                .getId());
+    }
+
     @Test
-    void storesAndReadsAnEmailWithItsAttachments() {
-        File file = File.builder().withName("perfil.pdf").withData("pdf".getBytes(StandardCharsets.UTF_8));
-        ReceivedEmail email = email("uid-1").withAttachments(List.of(file));
+    void storesAndReadsAnEmailWithTheReferencesOfItsAttachmentsInOrder() {
+        File first = storedAttachment("carta.pdf", "pdf1");
+        File second = storedAttachment("cv.pdf", "pdf2");
+        ReceivedEmail email = email("uid-1").withAttachments(List.of(first, second));
 
         repository.store(email);
 
@@ -51,11 +74,28 @@ class JpaReceivedEmailRepositoryTest {
         assertThat(read.getSubject()).isEqualTo("cmd[a; b]");
         assertThat(read.getBody()).isEqualTo("cuerpo");
         assertThat(read.getState()).isEqualTo(ReceivedEmailState.RECEIVED);
-        assertThat(read.getAttachments()).singleElement().satisfies(a -> {
-            assertThat(a.getId()).isEqualTo(file.getId());
-            assertThat(a.getName()).isEqualTo("perfil.pdf");
-            assertThat(a.getData()).isEqualTo("pdf".getBytes(StandardCharsets.UTF_8));
-        });
+        assertThat(read.getAttachments()).extracting(File::getId).containsExactly(first.getId(), second.getId());
+        assertThat(read.getAttachmentIds()).containsExactly(first.getStoredFileId(), second.getStoredFileId());
+        assertThat(read.getAttachments()).allSatisfy(a -> assertThat(a.getData()).isNull());
+    }
+
+    @Test
+    void attachmentTableKeepsNoContent() {
+        assertThat(jdbc.queryForList("SELECT column_name FROM information_schema.columns "
+                + "WHERE table_name = 'received_email_attachment'", String.class))
+                .containsExactlyInAnyOrder("id", "received_email_id", "position", "stored_file_id");
+        assertThat(Arrays.stream(ReceivedEmailAttachmentEntity.class.getDeclaredFields()).map(Field::getType))
+                .doesNotContain(byte[].class);
+    }
+
+    @Test
+    void anAttachmentMustBeStoredBeforeTheEmail() {
+        File notStored = File.builder().withName("a.pdf").withData(new byte[] {1});
+
+        // Spring's repository translation wraps the IllegalStateException.
+        assertThatThrownBy(() -> repository.store(email("uid-1").withAttachments(List.of(notStored))))
+                .hasMessageContaining("must be stored before the email");
+        assertThat(springData.count()).isZero();
     }
 
     @Test

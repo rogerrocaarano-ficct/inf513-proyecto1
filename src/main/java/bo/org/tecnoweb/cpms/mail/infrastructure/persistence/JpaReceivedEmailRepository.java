@@ -37,7 +37,10 @@ class JpaReceivedEmailRepository implements ReceivedEmailRepository {
      * {@inheritDoc}
      *
      * <p>Joins the caller's transaction if there is one. Attachments are written only when the email
-     * is inserted, since they never change.
+     * is inserted, since they never change, and only as references to their stored files: their
+     * content is never written to the database (issue #9).
+     *
+     * @throws IllegalStateException if a new email has an attachment that was not stored first
      */
     @Override
     @Transactional
@@ -54,7 +57,11 @@ class JpaReceivedEmailRepository implements ReceivedEmailRepository {
         ReceivedEmailEntity entity = new ReceivedEmailEntity(email.getId());
         copyFields(email, entity);
         for (File file : email.getAttachments()) {
-            entity.getAttachments().add(new ReceivedEmailAttachmentEntity(file.getId(), file.getName(), file.getData()));
+            if (file.getStoredFileId() == null) {
+                throw new IllegalStateException("Attachment " + file.getId() + " of email " + email.getId()
+                        + " must be stored before the email");
+            }
+            entity.getAttachments().add(new ReceivedEmailAttachmentEntity(file.getId(), file.getStoredFileId()));
         }
         emails.save(entity);
     }
@@ -102,7 +109,7 @@ class JpaReceivedEmailRepository implements ReceivedEmailRepository {
      */
     private static ReceivedEmail toDomain(ReceivedEmailEntity entity) {
         List<File> attachments = entity.getAttachments().stream()
-                .map(a -> File.rehydrate().withId(a.getId()).withName(a.getName()).withData(a.getData()))
+                .map(a -> File.rehydrate().withId(a.getId()).withStoredFileId(a.getStoredFileId()))
                 .toList();
         return ReceivedEmail.rehydrate()
                 .withId(entity.getId())

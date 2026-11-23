@@ -37,6 +37,6 @@ public class OpenDegreeProcedureCommandHandler implements EmailCommandHandler {
     public void handle(ReceivedEmail email) {
         var args = email.parseArgs();
         useCase.open(email.getFrom(), new OpenDegreeProcedureCommand(args.get(0), args.get(1), args.get(2),
-                args.get(3), args.get(4), args.get(5), args.get(6), email.getAttachments()));
+                args.get(3), args.get(4), args.get(5), args.get(6), email.getAttachmentIds()));
     }
 }

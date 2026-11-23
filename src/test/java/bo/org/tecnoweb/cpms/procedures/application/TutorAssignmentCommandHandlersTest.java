@@ -1,6 +1,6 @@
 package bo.org.tecnoweb.cpms.procedures.application;
 
-import static bo.org.tecnoweb.cpms.procedures.ProcedureFixtures.pdf;
+import static bo.org.tecnoweb.cpms.procedures.application.DegreeProcedureCommandHandlersTest.stored;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -10,19 +10,19 @@ import org.junit.jupiter.api.Test;
 
 /** Checks UC-003 email contracts. */
 class TutorAssignmentCommandHandlersTest {
-    /** Passes the title and PDF to A1 (FR-004). */
+    /** Passes the title and the stored file of the PDF to A1 (FR-004, issue #9). */
     @Test
     void delegatesProfileSubmission() {
         var useCase = mock(TutorAssignmentUseCase.class);
         var handler = new RegisterInitialProfileCommandHandler(useCase);
-        var file = pdf("perfil.pdf");
+        var id = java.util.UUID.randomUUID();
         handler.handle(ReceivedEmail.builder().fromSender("student@test")
-                .withSubject("proyectos.registrarPerfil[Redes]").withAttachments(List.of(file)));
+                .withSubject("proyectos.registrarPerfil[Redes]").withAttachments(List.of(stored(id))));
 
         assertThat(handler.actionKey()).isEqualTo("proyectos.registrarPerfil");
         assertThat(handler.requiredArgs()).isEqualTo(1);
         assertThat(handler.requiredFiles()).isEqualTo(1);
-        verify(useCase).registerInitialProfile("student@test", new RegisterInitialProfileCommand("Redes", file));
+        verify(useCase).registerInitialProfile("student@test", new RegisterInitialProfileCommand("Redes", id));
     }
 
     /** Passes the reference and teacher account to the basic flow (FR-003). */

@@ -1,6 +1,11 @@
 package bo.org.tecnoweb.cpms.procedures.application;
 
-import bo.org.tecnoweb.cpms.mail.domain.File;
+import java.util.UUID;
 
-/** Input of the UC-002 replacement flow (FR-055). */
-public record ReplaceInitialDocumentCommand(String reference, File attachment) {}
+/**
+ * Input of the UC-002 replacement flow (FR-055).
+ *
+ * @param reference    the procedure reference, such as {@code TR-001}
+ * @param attachmentId the stored file of the new PDF (issue #9)
+ */
+public record ReplaceInitialDocumentCommand(String reference, UUID attachmentId) {}

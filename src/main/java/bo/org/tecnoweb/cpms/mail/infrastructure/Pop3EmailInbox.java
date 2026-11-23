@@ -14,8 +14,10 @@ import jakarta.mail.Part;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
 import jakarta.mail.UIDFolder;
+import jakarta.mail.internet.ContentType;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeUtility;
+import jakarta.mail.internet.ParseException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,7 @@ class Pop3EmailInbox implements EmailInbox {
     private static final Logger log = LoggerFactory.getLogger(Pop3EmailInbox.class);
     private static final Set<String> BULK_PRECEDENCE = Set.of("bulk", "junk", "list");
     private static final String TIMEOUT_MS = "10000";
+    private static final String UNKNOWN_CONTENT_TYPE = "application/octet-stream";
 
     private final MailProperties properties;
     private final Session session;
@@ -255,13 +258,32 @@ class Pop3EmailInbox implements EmailInbox {
         }
         String fileName = part.getFileName();
         if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition()) || fileName != null) {
-            String name = fileName == null ? "adjunto" : MimeUtility.decodeText(fileName);
+            String name = fileName == null || fileName.isBlank() ? "adjunto" : MimeUtility.decodeText(fileName);
             byte[] data = part.getInputStream().readAllBytes();
-            content.attachments.add(File.builder().withName(name).withData(data));
+            content.attachments.add(File.builder().withName(name).withContentType(baseType(part.getContentType()))
+                    .withData(data));
             return;
         }
         if (content.body == null && part.isMimeType("text/plain")) {
             content.body = String.valueOf(part.getContent());
+        }
+    }
+
+    /**
+     * Reduces the content type of a part to its base type, which file storage keeps (issue #9).
+     *
+     * @param contentType the {@code Content-Type} header of the part
+     * @return the base type in lower case, without parameters, or {@code application/octet-stream}
+     *         when the header is missing or cannot be parsed
+     */
+    static String baseType(String contentType) {
+        if (contentType == null || contentType.isBlank()) {
+            return UNKNOWN_CONTENT_TYPE;
+        }
+        try {
+            return new ContentType(contentType).getBaseType().toLowerCase(Locale.ROOT);
+        } catch (ParseException e) {
+            return UNKNOWN_CONTENT_TYPE;
         }
     }
 

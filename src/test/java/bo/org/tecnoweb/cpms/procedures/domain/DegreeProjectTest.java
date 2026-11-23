@@ -23,13 +23,23 @@ class DegreeProjectTest {
         assertThat(project.pullEvents()).isEmpty();
     }
 
-    /** Invalid filenames are rejected even with PDF bytes (FR-004). */
+    /** The profile adopts the stored file (issue #9); the PDF rules are checked in InitialDocumentTest. */
     @Test
-    void rejectsInvalidPdfWithoutRegistering() {
-        var project = DegreeProject.builder().withProcedureId(UUID.randomUUID()).withTitle("Redes");
+    void profileKeepsTheStoredFile() {
+        var file = pdf("perfil.pdf");
+        var project = DegreeProject.builder().withProcedureId(UUID.randomUUID()).withTitle("Redes")
+                .registerInitialProfile(file, "student@test", "workshop@test", "TR-001");
+
+        assertThat(project.getProfile().storedFileId()).isEqualTo(file.getId());
+    }
+
+    /** A blank title is rejected without registering the profile (FR-004). */
+    @Test
+    void rejectsBlankTitleWithoutRegistering() {
+        var project = DegreeProject.builder().withProcedureId(UUID.randomUUID()).withTitle("  ");
 
         assertThatThrownBy(() -> project.registerInitialProfile(
-                pdf("perfil.txt"), "student@test", "workshop@test", "TR-001")).isInstanceOf(DomainValidationException.class);
+                pdf("perfil.pdf"), "student@test", "workshop@test", "TR-001")).isInstanceOf(DomainValidationException.class);
         assertThat(project.getProfile()).isNull();
         assertThat(project.pullEvents()).isEmpty();
     }
@@ -46,7 +56,7 @@ class DegreeProjectTest {
         assertThat(project.getTutorId()).isNull();
 
         var approved = DegreeProject.rehydrate(project.getId(), project.getProcedureId(), project.getTitle(),
-                new ProjectProfile("perfil.pdf", project.getProfile().content(), true), null);
+                new ProjectProfile(project.getProfile().storedFileId(), true), null);
         assertThat(approved.pullEvents()).isEmpty();
         approved.assignTutor(tutorId, "Luis", "student@test", "TR-001");
         assertThat(approved.getTutorId()).isEqualTo(tutorId);

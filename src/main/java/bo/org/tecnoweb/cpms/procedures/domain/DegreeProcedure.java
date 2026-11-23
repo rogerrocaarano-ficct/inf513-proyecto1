@@ -3,7 +3,7 @@ package bo.org.tecnoweb.cpms.procedures.domain;
 import bo.org.tecnoweb.cpms.common.AggregateRoot;
 import bo.org.tecnoweb.cpms.common.DomainEvent;
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
-import bo.org.tecnoweb.cpms.mail.domain.File;
+import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
 import bo.org.tecnoweb.cpms.users.domain.Role;
 import bo.org.tecnoweb.cpms.users.domain.User;
 import java.time.Instant;
@@ -54,8 +54,11 @@ public final class DegreeProcedure implements AggregateRoot {
         return this;
     }
 
-    /** Opens a procedure with one valid PDF per document type (FR-002, FR-056). */
-    public DegreeProcedure open(User student, User requester, List<File> attachments) {
+    /**
+     * Opens a procedure with one valid PDF per document type (FR-002, FR-056). Each document adopts
+     * a stored file already validated with {@link InitialDocument#requirePdf} (issue #9).
+     */
+    public DegreeProcedure open(User student, User requester, List<StoredFile> attachments) {
         if (openedAt != null) {
             throw new IllegalStateException("Procedure already opened");
         }
@@ -64,9 +67,9 @@ public final class DegreeProcedure implements AggregateRoot {
         }
         Map<InitialDocument, Document> validated = new EnumMap<>(InitialDocument.class);
         Instant now = Instant.now();
-        for (File file : attachments) {
+        for (StoredFile file : attachments) {
             InitialDocument type = InitialDocument.classify(file);
-            if (validated.putIfAbsent(type, new Document(file.getName(), file.getData(), requester.getId(), now)) != null) {
+            if (validated.putIfAbsent(type, new Document(file.getId(), requester.getId(), now)) != null) {
                 throw InitialDocument.invalid("Se recibió más de un documento de tipo " + type.label() + ".");
             }
         }
@@ -83,14 +86,18 @@ public final class DegreeProcedure implements AggregateRoot {
         return this;
     }
 
-    /** Replaces one initial document while the procedure is open (FR-055). */
-    public void replaceInitialDocument(User requester, File file) {
+    /**
+     * Replaces one initial document while the procedure is open (FR-055). The document adopts the
+     * stored file, already validated with {@link InitialDocument#requirePdf}; the use case links it
+     * as the next version of the replaced one, which is kept (issue #9).
+     */
+    public void replaceInitialDocument(User requester, StoredFile file) {
         if (openedAt == null || closedAt != null) {
             throw unavailable();
         }
         InitialDocument type = InitialDocument.classify(file);
         Instant now = Instant.now();
-        documents.put(type, new Document(file.getName(), file.getData(), requester.getId(), now));
+        documents.put(type, new Document(file.getId(), requester.getId(), now));
         events.add(new DegreeProcedureDocumentReplacedEvent(requester.getEmailAddress(),
                 referenceLabel(reference), type.label(), now));
     }
@@ -178,6 +185,28 @@ public final class DegreeProcedure implements AggregateRoot {
         return pending;
     }
 
-    /** Content and audit metadata of an initial document (FR-002, FR-055). */
-    public record Document(String filename, byte[] content, UUID updatedBy, Instant updatedAt) {}
+    /**
+     * Returns the current document of a type.
+     *
+     * @param type the document type
+     * @return the document, whose stored file is the current version
+     * @throws IllegalStateException if the procedure has no document of that type
+     */
+    public Document documentOf(InitialDocument type) {
+        Document document = documents.get(type);
+        if (document == null) {
+            throw new IllegalStateException("Procedure " + id + " has no document " + type);
+        }
+        return document;
+    }
+
+    /**
+     * Stored file and audit metadata of an initial document (FR-002, FR-055). The name, type and
+     * content of the PDF are kept by the file storage (issue #9).
+     *
+     * @param storedFileId the stored file of the current version
+     * @param updatedBy    the account that registered or replaced it
+     * @param updatedAt    when it was registered or replaced
+     */
+    public record Document(UUID storedFileId, UUID updatedBy, Instant updatedAt) {}
 }

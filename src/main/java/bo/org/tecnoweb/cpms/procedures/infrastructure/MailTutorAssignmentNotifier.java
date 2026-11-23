@@ -5,7 +5,9 @@ import bo.org.tecnoweb.cpms.mail.domain.File;
 import bo.org.tecnoweb.cpms.procedures.application.TutorAssignmentNotifier;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectProfileRegisteredEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectTutorAssignedEvent;
+import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -19,11 +21,14 @@ class MailTutorAssignmentNotifier implements TutorAssignmentNotifier {
     private static final Logger log = LoggerFactory.getLogger(MailTutorAssignmentNotifier.class);
     private final ApplicationEventPublisher publisher;
     private final EmailSender outbox;
+    private final StoredFileService storedFiles;
 
-    /** Receives the event publisher and mail port. */
-    MailTutorAssignmentNotifier(ApplicationEventPublisher publisher, EmailSender outbox) {
+    /** Receives the event publisher, the mail port and the file storage that keeps the profiles. */
+    MailTutorAssignmentNotifier(ApplicationEventPublisher publisher, EmailSender outbox,
+            StoredFileService storedFiles) {
         this.publisher = publisher;
         this.outbox = outbox;
+        this.storedFiles = storedFiles;
     }
 
     /** {@inheritDoc} */
@@ -38,10 +43,21 @@ class MailTutorAssignmentNotifier implements TutorAssignmentNotifier {
         publisher.publishEvent(event);
     }
 
-    /** Sends the profile and project title to Taller (FR-057). */
+    /**
+     * Sends the profile and project title to Taller (FR-057). The PDF is read from the file storage;
+     * if it cannot be read, the error is logged and nothing is sent (issue #9).
+     */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void onProfileRegistered(DegreeProjectProfileRegisteredEvent event) {
-        File attachment = File.builder().withName(event.profile().filename()).withData(event.profile().content());
+        File attachment;
+        try {
+            UUID id = event.profile().storedFileId();
+            attachment = File.builder().withName(storedFiles.get(id).getOriginalName())
+                    .withData(storedFiles.readContent(id));
+        } catch (RuntimeException exception) {
+            log.warn("Could not read the profile of {} to send it to Taller", event.reference(), exception);
+            return;
+        }
         send(event.workshop(), "Perfil de proyecto: " + event.reference(),
                 "El estudiante " + event.student() + " presentó el perfil del proyecto «" + event.title() + "».",
                 List.of(attachment));

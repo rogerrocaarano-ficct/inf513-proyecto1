@@ -27,11 +27,13 @@ class TutorAssignmentUseCaseTest {
     private final DegreeProcedureRepository procedures = mock(DegreeProcedureRepository.class);
     private final DegreeProjectRepository projects = mock(DegreeProjectRepository.class);
     private final TutorAssignmentNotifier notifier = mock(TutorAssignmentNotifier.class);
-    private final TutorAssignmentUseCase useCase = new TutorAssignmentUseCase(users, procedures, projects, notifier);
+    private final Storage storage = new Storage();
+    private final TutorAssignmentUseCase useCase = new TutorAssignmentUseCase(users, procedures, projects, notifier,
+            storage.service);
     private final User student = student();
     private final DegreeProcedure procedure = DegreeProcedure.rehydrate(UUID.randomUUID(), 1,
             student.getId(), UUID.randomUUID(), Instant.now(), null, Map.of());
-    private final RegisterInitialProfileCommand submission = new RegisterInitialProfileCommand("Redes", pdf("perfil.pdf"));
+    private final RegisterInitialProfileCommand submission = new RegisterInitialProfileCommand("Redes", storage.pdf("perfil.pdf"));
 
     /** A valid student delivery writes a pending profile and notifies Taller (FR-057). */
     @Test
@@ -44,6 +46,7 @@ class TutorAssignmentUseCaseTest {
 
         var sequence = inOrder(projects, notifier);
         sequence.verify(projects).insert(argThat(project -> project.getProcedureId().equals(procedure.getId())
+                && project.getProfile().storedFileId().equals(submission.attachmentId())
                 && !project.getProfile().approved()));
         sequence.verify(notifier).notifyProfileRegistered(argThat(event -> event.workshop().equals(workshop.getEmailAddress())));
     }
@@ -56,6 +59,20 @@ class TutorAssignmentUseCaseTest {
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getErrors().get("perfil")).contains("Taller de Grado"));
 
+        verify(projects, never()).insert(any());
+        verifyNoInteractions(notifier);
+    }
+
+    /** A file that is not a PDF is rejected without registering the profile (FR-004, NFR-005). */
+    @Test
+    void rejectsAnInvalidPdf() {
+        stubStudentProcedure();
+        when(users.getByRole(Role.CAPSTONE_PROJECT_PROFESSOR))
+                .thenReturn(List.of(secretary().withRole(Role.CAPSTONE_PROJECT_PROFESSOR)));
+        var text = storage.store("perfil.txt", "texto".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+
+        assertThatThrownBy(() -> useCase.registerInitialProfile(student.getEmailAddress(),
+                new RegisterInitialProfileCommand("Redes", text))).isInstanceOf(DomainValidationException.class);
         verify(projects, never()).insert(any());
         verifyNoInteractions(notifier);
     }
@@ -76,7 +93,7 @@ class TutorAssignmentUseCaseTest {
         var director = secretary().withRole(Role.DIRECTOR);
         var tutor = secretary().withRole(Role.PROFESSOR).withEmailAddress("doc@test.test");
         var project = DegreeProject.rehydrate(UUID.randomUUID(), procedure.getId(), "Redes",
-                new ProjectProfile("perfil.pdf", pdf("perfil.pdf").getData(), true), null);
+                new ProjectProfile(storage.pdf("perfil.pdf"), true), null);
         when(users.getByEmail(director.getEmailAddress())).thenReturn(Optional.of(director));
         when(users.getByEmail(tutor.getEmailAddress())).thenReturn(Optional.of(tutor));
         when(users.getById(student.getId())).thenReturn(Optional.of(student));

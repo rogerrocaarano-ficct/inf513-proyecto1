@@ -36,6 +36,6 @@ public class ReplaceInitialDocumentCommandHandler implements EmailCommandHandler
     @Override
     public void handle(ReceivedEmail email) {
         useCase.replace(email.getFrom(), new ReplaceInitialDocumentCommand(
-                email.parseArgs().getFirst(), email.getAttachments().getFirst()));
+                email.parseArgs().getFirst(), email.getAttachmentIds().getFirst()));
     }
 }

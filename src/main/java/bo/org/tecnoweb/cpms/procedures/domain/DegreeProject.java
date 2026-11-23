@@ -3,7 +3,7 @@ package bo.org.tecnoweb.cpms.procedures.domain;
 import bo.org.tecnoweb.cpms.common.AggregateRoot;
 import bo.org.tecnoweb.cpms.common.DomainEvent;
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
-import bo.org.tecnoweb.cpms.mail.domain.File;
+import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +51,11 @@ public class DegreeProject implements AggregateRoot {
         return this;
     }
 
-    /** Registers just the first profile (FR-004, FR-058). */
-    public DegreeProject registerInitialProfile(File file, String student, String workshop, String reference) {
+    /**
+     * Registers just the first profile (FR-004, FR-058), adopting the stored PDF the student sent,
+     * already validated with {@link InitialDocument#requirePdf} (issue #9).
+     */
+    public DegreeProject registerInitialProfile(StoredFile file, String student, String workshop, String reference) {
         if (profile != null) {
             throw alreadyRegistered();
         }

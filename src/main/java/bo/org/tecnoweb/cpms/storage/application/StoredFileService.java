@@ -84,6 +84,58 @@ public class StoredFileService {
     }
 
     /**
+     * Links a file that is already stored as the next version of the current version of another
+     * file, without copying its bytes. The linked file becomes the current version of that chain;
+     * the previous version is kept unchanged. Used when a use case adopts a file it received, for
+     * example a replaced initial document (UC-002, FR-055).
+     *
+     * <p>Both files are locked, always in the order of their identifiers so that two concurrent
+     * requests never wait for each other. A concurrent request on the same previous version then
+     * finds it is no longer the current one.
+     *
+     * @param previousId the identifier of the current version
+     * @param nextId     the identifier of a standalone stored file
+     * @return the linked file, now the current version
+     * @throws StoredFileNotFoundException                                   if either identifier does
+     *                                                                       not exist
+     * @throws bo.org.tecnoweb.cpms.storage.domain.StoredFileNotCurrentException       if
+     *                                                                       {@code previousId}
+     *                                                                       already has a next version
+     * @throws bo.org.tecnoweb.cpms.storage.domain.StoredFileAlreadyVersionedException if
+     *                                                                       {@code nextId} already
+     *                                                                       belongs to a chain or is
+     *                                                                       {@code previousId}
+     */
+    public StoredFile appendVersion(UUID previousId, UUID nextId) {
+        boolean previousFirst = previousId.compareTo(nextId) <= 0;
+        StoredFile previous;
+        StoredFile next;
+        if (previousFirst) {
+            previous = lock(previousId);
+            next = lock(nextId);
+        } else {
+            next = lock(nextId);
+            previous = lock(previousId);
+        }
+        previous.supersedeBy(next);
+        files.update(previous);
+        files.update(next);
+        return next;
+    }
+
+    /**
+     * Returns the data of a file without reading its bytes: name, media type, size, storage time and
+     * its place in the version chain.
+     *
+     * @param id the identifier of the file
+     * @return the stored file
+     * @throws StoredFileNotFoundException if {@code id} does not exist
+     */
+    public StoredFile get(UUID id) {
+        return files.getById(id).orElseThrow(() -> new StoredFileNotFoundException(id));
+    }
+
+    /**
      * Reads the bytes of a file.
      *
      * @param id the identifier of the file
@@ -113,6 +165,10 @@ public class StoredFileService {
             history.add(version);
         }
         return history;
+    }
+
+    private StoredFile lock(UUID id) {
+        return files.getByIdForUpdate(id).orElseThrow(() -> new StoredFileNotFoundException(id));
     }
 
     private static StoredFile newFile(String originalName, String contentType, byte[] content) {

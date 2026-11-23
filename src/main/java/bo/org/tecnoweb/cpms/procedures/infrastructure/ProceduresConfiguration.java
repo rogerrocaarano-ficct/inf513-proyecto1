@@ -10,6 +10,7 @@ import bo.org.tecnoweb.cpms.procedures.application.TutorAssignmentNotifier;
 import bo.org.tecnoweb.cpms.procedures.application.TutorAssignmentUseCase;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectRepository;
+import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import bo.org.tecnoweb.cpms.users.application.UserManagementNotifier;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import org.springframework.context.annotation.Bean;
@@ -21,8 +22,8 @@ class ProceduresConfiguration {
     /** Creates the UC-003 application service. */
     @Bean
     TutorAssignmentUseCase tutorAssignmentUseCase(UserRepository users, DegreeProcedureRepository procedures,
-            DegreeProjectRepository projects, TutorAssignmentNotifier notifier) {
-        return new TutorAssignmentUseCase(users, procedures, projects, notifier);
+            DegreeProjectRepository projects, TutorAssignmentNotifier notifier, StoredFileService storedFiles) {
+        return new TutorAssignmentUseCase(users, procedures, projects, notifier, storedFiles);
     }
 
     /** Registers the UC-003 basic flow (FR-003). */
@@ -40,8 +41,8 @@ class ProceduresConfiguration {
     /** Creates the UC-002 application service. */
     @Bean
     DegreeProcedureUseCase degreeProcedureUseCase(UserRepository users, DegreeProcedureRepository procedures,
-            UserManagementNotifier userNotifier, DegreeProcedureNotifier notifier) {
-        return new DegreeProcedureUseCase(users, procedures, userNotifier, notifier);
+            UserManagementNotifier userNotifier, DegreeProcedureNotifier notifier, StoredFileService storedFiles) {
+        return new DegreeProcedureUseCase(users, procedures, userNotifier, notifier, storedFiles);
     }
 
     /** Registers the FR-001 opening command with the mail channel. */

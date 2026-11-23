@@ -11,6 +11,7 @@ import bo.org.tecnoweb.cpms.procedures.application.RegisterInitialProfileCommand
 import bo.org.tecnoweb.cpms.procedures.application.ReplaceInitialDocumentCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectRepository;
+import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import bo.org.tecnoweb.cpms.users.application.UserManagementNotifier;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ class ProceduresWiringTest {
             context.registerBean(DegreeProcedureRepository.class, () -> mock(DegreeProcedureRepository.class));
             context.registerBean(DegreeProjectRepository.class, () -> mock(DegreeProjectRepository.class));
             context.registerBean(EmailSender.class, () -> mock(EmailSender.class));
+            context.registerBean(StoredFileService.class, () -> mock(StoredFileService.class));
             context.register(ProceduresConfiguration.class, MailDegreeProcedureNotifier.class,
                     MailTutorAssignmentNotifier.class);
             context.refresh();

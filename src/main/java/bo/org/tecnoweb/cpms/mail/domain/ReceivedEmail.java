@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -275,6 +276,33 @@ public class ReceivedEmail implements AggregateRoot {
      */
     public List<File> getAttachments() {
         return attachments;
+    }
+
+    /**
+     * Finds the first attachment that was read with no content, which the channel rejects before
+     * keeping anything (issue #9).
+     *
+     * @return the first empty attachment in message order, or empty if every attachment has content
+     *         or the email was read back from the database
+     */
+    public Optional<File> findEmptyAttachment() {
+        return attachments.stream().filter(File::isEmpty).findFirst();
+    }
+
+    /**
+     * Returns the stored files of the attachments, which the command handlers pass to the use cases
+     * instead of the content (issue #9).
+     *
+     * @return the identifiers of the stored files, in message order
+     * @throws IllegalStateException if an attachment has not been stored yet
+     */
+    public List<UUID> getAttachmentIds() {
+        return attachments.stream().map(file -> {
+            if (file.getStoredFileId() == null) {
+                throw new IllegalStateException("Attachment " + file.getId() + " of email " + id + " is not stored");
+            }
+            return file.getStoredFileId();
+        }).toList();
     }
 
     /**

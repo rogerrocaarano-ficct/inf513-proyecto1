@@ -36,6 +36,6 @@ public class RegisterInitialProfileCommandHandler implements EmailCommandHandler
     @Override
     public void handle(ReceivedEmail email) {
         useCase.registerInitialProfile(email.getFrom(), new RegisterInitialProfileCommand(
-                email.parseArgs().getFirst(), email.getAttachments().getFirst()));
+                email.parseArgs().getFirst(), email.getAttachmentIds().getFirst()));
     }
 }

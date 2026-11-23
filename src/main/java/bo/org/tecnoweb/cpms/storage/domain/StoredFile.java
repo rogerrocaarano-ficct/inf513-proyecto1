@@ -208,14 +208,22 @@ public class StoredFile implements AggregateRoot {
      * Links the next version to this one, which stops being the current version. The next version
      * joins the chain of this one.
      *
+     * <p>The next version must be a standalone file: the first version of its own chain, with no
+     * next version, and not this file. A file that already belongs to another chain would make two
+     * chains share it.
+     *
      * @param next the new version
-     * @throws StoredFileNotCurrentException if this version already has a next one
-     * @throws NullPointerException          if {@code next} is {@code null}
+     * @throws StoredFileNotCurrentException       if this version already has a next one
+     * @throws StoredFileAlreadyVersionedException if {@code next} is not a standalone file
+     * @throws NullPointerException                if {@code next} is {@code null}
      */
     public void supersedeBy(StoredFile next) {
         Objects.requireNonNull(next);
         if (nextVersionId != null) {
             throw new StoredFileNotCurrentException(id);
+        }
+        if (next.id.equals(id) || !next.id.equals(next.firstVersionId) || !next.isCurrent()) {
+            throw new StoredFileAlreadyVersionedException(next.id);
         }
         nextVersionId = next.id;
         next.firstVersionId = firstVersionId;

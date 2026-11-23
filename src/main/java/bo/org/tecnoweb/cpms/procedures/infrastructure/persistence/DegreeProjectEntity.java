@@ -2,12 +2,13 @@ package bo.org.tecnoweb.cpms.procedures.infrastructure.persistence;
 
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProject;
 import bo.org.tecnoweb.cpms.procedures.domain.ProjectProfile;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.UUID;
 
-/** Maps a degree project, its initial profile and tutor (UC-003). */
+/** Maps a degree project, the stored file of its initial profile and its tutor (UC-003, issue #9). */
 @Entity
 @Table(name = "degree_project")
 class DegreeProjectEntity {
@@ -15,8 +16,8 @@ class DegreeProjectEntity {
     private UUID id;
     private UUID procedureId;
     private String title;
-    private String profileFilename;
-    private byte[] profileContent;
+    @Column(name = "profile_stored_file_id", nullable = false, unique = true)
+    private UUID profileStoredFileId;
     private boolean profileApproved;
     private UUID tutorId;
 
@@ -28,8 +29,7 @@ class DegreeProjectEntity {
         id = project.getId();
         procedureId = project.getProcedureId();
         title = project.getTitle();
-        profileFilename = project.getProfile().filename();
-        profileContent = project.getProfile().content();
+        profileStoredFileId = project.getProfile().storedFileId();
         profileApproved = project.getProfile().approved();
         updateTutor(project);
     }
@@ -37,7 +37,7 @@ class DegreeProjectEntity {
     /** Maps the stored project without generating events. */
     DegreeProject toDomain() {
         return DegreeProject.rehydrate(id, procedureId, title,
-                new ProjectProfile(profileFilename, profileContent, profileApproved), tutorId);
+                new ProjectProfile(profileStoredFileId, profileApproved), tutorId);
     }
 
     /** Updates the tutor without changing the stored evaluation. */

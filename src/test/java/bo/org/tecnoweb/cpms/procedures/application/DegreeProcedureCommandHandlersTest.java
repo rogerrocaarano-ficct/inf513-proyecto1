@@ -1,23 +1,31 @@
 package bo.org.tecnoweb.cpms.procedures.application;
 
-import static bo.org.tecnoweb.cpms.procedures.ProcedureFixtures.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+import bo.org.tecnoweb.cpms.mail.domain.File;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /** Checks both UC-002 email command contracts and their delegation. */
 class DegreeProcedureCommandHandlersTest {
-    /** The opening handler passes all seven arguments and four attachments. */
+
+    /** An attachment the mail channel already stored (issue #9). */
+    static File stored(UUID storedFileId) {
+        return File.rehydrate().withId(UUID.randomUUID()).withStoredFileId(storedFileId);
+    }
+
+    /** The opening handler passes all seven arguments and the four stored files in order. */
     @Test
     void delegatesOpening() {
         var useCase = mock(DegreeProcedureUseCase.class);
         var handler = new OpenDegreeProcedureCommandHandler(useCase);
-        var files = documents();
+        var ids = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
         var email = ReceivedEmail.builder().fromSender("secretaria@cpms.test").withSubject(
-                "tramites.abrirTramite[Ana; Pérez; ; 1234; 123456; ana@cpms.test; 7123456]").withAttachments(files);
+                "tramites.abrirTramite[Ana; Pérez; ; 1234; 123456; ana@cpms.test; 7123456]")
+                .withAttachments(ids.stream().map(DegreeProcedureCommandHandlersTest::stored).toList());
 
         handler.handle(email);
 
@@ -25,24 +33,24 @@ class DegreeProcedureCommandHandlersTest {
         assertThat(handler.requiredArgs()).isEqualTo(7);
         assertThat(handler.requiredFiles()).isEqualTo(4);
         verify(useCase).open("secretaria@cpms.test",
-                new OpenDegreeProcedureCommand("Ana", "Pérez", "", "1234", "123456", "ana@cpms.test", "7123456", files));
+                new OpenDegreeProcedureCommand("Ana", "Pérez", "", "1234", "123456", "ana@cpms.test", "7123456", ids));
     }
 
-    /** The replacement handler passes its reference and PDF. */
+    /** The replacement handler passes its reference and the stored file of its PDF. */
     @Test
     void delegatesReplacement() {
         var useCase = mock(DegreeProcedureUseCase.class);
         var handler = new ReplaceInitialDocumentCommandHandler(useCase);
-        var file = pdf("ci.pdf");
+        var id = UUID.randomUUID();
         var email = ReceivedEmail.builder().fromSender("secretaria@cpms.test")
                 .withSubject("tramites.reemplazarDocumento[TR-001]")
-                .withAttachments(List.of(file));
+                .withAttachments(List.of(stored(id)));
 
         handler.handle(email);
 
         assertThat(handler.actionKey()).isEqualTo("tramites.reemplazarDocumento");
         assertThat(handler.requiredArgs()).isEqualTo(1);
         assertThat(handler.requiredFiles()).isEqualTo(1);
-        verify(useCase).replace("secretaria@cpms.test", new ReplaceInitialDocumentCommand("TR-001", file));
+        verify(useCase).replace("secretaria@cpms.test", new ReplaceInitialDocumentCommand("TR-001", id));
     }
 }
