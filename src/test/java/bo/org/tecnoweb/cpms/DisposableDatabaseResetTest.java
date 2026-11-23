@@ -12,12 +12,16 @@ import org.mockito.InOrder;
 import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-/** Reset of the database in the deployed test environment (requirement "Entorno limpio en cada arranque"). */
-class StagingDatabaseResetTest {
+/**
+ * Reset of the database in the disposable environments (requirements "Entorno local limpio en cada arranque",
+ * "Entorno limpio en cada arranque" and "Solo en entornos desechables").
+ */
+class DisposableDatabaseResetTest {
 
-    @Test
-    void theStagingProfileCleansTheSchemaBeforeMigrating() {
-        contextWithProfiles("staging").run(context -> {
+    @ParameterizedTest
+    @ValueSource(strings = {"local", "staging"})
+    void disposableProfilesCleanTheSchemaBeforeMigrating(String profile) {
+        contextWithProfiles(profile).run(context -> {
             Flyway flyway = mock(Flyway.class);
 
             context.getBean(FlywayMigrationStrategy.class).migrate(flyway);
@@ -28,16 +32,15 @@ class StagingDatabaseResetTest {
         });
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"local", "default"})
-    void otherProfilesDoNotCleanTheSchema(String profile) {
-        contextWithProfiles(profile)
+    @Test
+    void theDefaultProfileDoesNotCleanTheSchema() {
+        contextWithProfiles()
                 .run(context -> assertThat(context).doesNotHaveBean(FlywayMigrationStrategy.class));
     }
 
     private ApplicationContextRunner contextWithProfiles(String... profiles) {
         return new ApplicationContextRunner()
                 .withInitializer(context -> context.getEnvironment().setActiveProfiles(profiles))
-                .withUserConfiguration(StagingDatabaseReset.class);
+                .withUserConfiguration(DisposableDatabaseReset.class);
     }
 }
