@@ -140,11 +140,13 @@ Este comando levanta los contenedores de `compose.yaml` y arranca la aplicación
 
 | Servicio | Dirección | Uso |
 | --- | --- | --- |
-| PostgreSQL 17 | `localhost:15432`, base `cpms`, usuario `cpms`, contraseña `cpms` | Base de datos de la aplicación; los datos se conservan en el volumen `cpms_postgres-data` |
+| PostgreSQL 17 | `localhost:15432`, base `cpms`, usuario `cpms`, contraseña `cpms` | Base de datos de la aplicación; se vacía en cada arranque de la aplicación |
 | GreenMail | SMTP `localhost:2525`, POP3 `localhost:1110`, IMAP `localhost:1143` | Servidor de correo con un buzón por dirección; el buzón del sistema es `sistema@cpms.local` |
 | Roundcube | <http://localhost:8025> | Webmail para enviar comandos y leer las respuestas |
 
-Los archivos que guarda la aplicación (documentos adjuntos y sus versiones) van a la carpeta `data/storage` de la raíz del repositorio, que git ignora. La base de datos guarda solo sus datos descriptivos, así que la carpeta y la base van juntas: si se borra una, conviene borrar también la otra.
+Los archivos que guarda la aplicación (documentos adjuntos y sus versiones) van a la carpeta `data/storage` de la raíz del repositorio, que git ignora. La base de datos guarda solo sus datos descriptivos, así que la carpeta y la base van juntas.
+
+**El entorno local es desechable**, igual que el [entorno de pruebas desplegado](#entorno-de-pruebas-desplegado). Cada vez que arranca la aplicación se vacían la base y la carpeta `data/storage`, se aplican las migraciones desde cero y se vuelven a crear las cuentas de prueba. Los trámites, las cuentas creadas por correo y los documentos de una sesión no pasan a la siguiente. Esto incluye los reinicios automáticos de Spring Boot DevTools: cada vez que cambia el código compilado mientras `bootRun` está en ejecución, la aplicación se reinicia y arranca sin datos. El log lo muestra con `Successfully cleaned schema` y `Emptied the storage folder`.
 
 El semestre vigente, que forma parte de la referencia de cada trámite (por ejemplo `2026-2-218001234`), se toma de la variable de entorno `CPMS_CURRENT_SEMESTER` con la forma `<año>-<periodo>`; sin ella vale `2026-2`. Hay que cambiarla al empezar cada semestre, hasta que exista la gestión del calendario académico. Con un valor inválido la aplicación no arranca.
 
@@ -152,7 +154,7 @@ La aplicación está lista cuando la consola muestra `Started CpmsApplication`.
 
 ### Probar un comando
 
-Al arrancar, la aplicación crea las cuentas de prueba del entorno local, todas activas y en el dominio `test.local`. Si una ya existe, no la toca: una cuenta desactivada sigue desactivada. Al crearlas no se envía ningún aviso.
+Al arrancar, la aplicación crea las cuentas de prueba del entorno local, todas activas y en el dominio `test.local`. Como la base empieza vacía, en cada arranque vuelven a su estado inicial: una cuenta desactivada en la sesión anterior aparece activa de nuevo. Al crearlas no se envía ningún aviso.
 
 | Correo | Rol |
 | --- | --- |
@@ -193,11 +195,10 @@ Los logs nunca muestran el asunto ni los argumentos del comando, porque contiene
 
 ### Detener y reiniciar
 
-- `Ctrl+C` detiene la aplicación. Los contenedores siguen en ejecución, así que el siguiente `./gradlew bootRun` arranca más rápido y conserva los correos.
-- `docker compose down` detiene los contenedores y conserva la base de datos.
-- `docker compose down -v` detiene los contenedores y además **borra la base de datos**. Después, borrar también la carpeta `data/storage`, que guarda los archivos de esa base.
+- `Ctrl+C` detiene la aplicación. Los contenedores siguen en ejecución, así que el siguiente `./gradlew bootRun` arranca más rápido y conserva los correos de los buzones; la base y los archivos se vacían igual.
+- `docker compose down` detiene los contenedores. `docker compose down -v` además borra el volumen de la base; no hace falta para empezar de cero, porque cada arranque ya lo hace.
 
-GreenMail guarda los correos en memoria: se pierden cada vez que se reinicia su contenedor. Además, al recrearlo vuelve a numerar los mensajes desde 1, y la base todavía guarda correos con esos mismos números: los comandos nuevos se borrarían sin ejecutarse (el log de la aplicación lo avisa con un `WARN` "Deleting message … without executing it"). Por eso, **después de recrear GreenMail, borrar también la base con `docker compose down -v`**.
+GreenMail guarda los correos en memoria: se pierden cada vez que se reinicia su contenedor, y al recrearlo vuelve a numerar los mensajes desde 1. Como la base se vacía en cada arranque, basta con volver a ejecutar `./gradlew bootRun` después de recrear GreenMail.
 
 ### Problemas frecuentes
 
@@ -206,18 +207,62 @@ GreenMail guarda los correos en memoria: se pierden cada vez que se reinicia su 
 | `bootRun` falla con un error de Docker Compose | Docker no está en ejecución: iniciar Docker Desktop y volver a ejecutar |
 | Un contenedor no arranca porque un puerto está ocupado | Otro programa usa ese puerto: liberarlo, o cambiarlo en `compose.yaml` y en `application-local.properties` |
 | Un cliente de base de datos no conecta a `localhost:15432` | El contenedor de PostgreSQL se creó antes de fijar ese puerto: recrearlo con `docker compose up -d postgres` (los datos se conservan) |
-| Un comando no recibe respuesta y el log muestra `Deleting message … without executing it` | Se recreó GreenMail sin borrar la base: ejecutar `docker compose down -v` y volver a levantar |
+| Un comando no recibe respuesta y el log muestra `Deleting message … without executing it` | Se recreó GreenMail mientras la aplicación seguía en ejecución: detenerla con `Ctrl+C` y volver a ejecutar `./gradlew bootRun`, que vacía la base |
+| Los datos de la sesión anterior ya no están | Es lo esperado: el entorno local se vacía en cada arranque, también en los reinicios de DevTools |
 | El build pide Java 25 | Instalar un JDK 25 y comprobar con `java -version` |
+
+### Entorno de pruebas desplegado
+
+Para que los testers prueben los comandos sin instalar nada, el mismo stack corre en el servidor Dokploy del equipo con `compose.staging.yaml`: la aplicación (imagen del `Dockerfile`, perfil `staging`), PostgreSQL 17, GreenMail y Roundcube. Solo el webmail es accesible desde internet; el servidor de correo y la base no publican ningún puerto.
+
+**El entorno es desechable.** Cada vez que arranca la aplicación (en cada despliegue o reinicio) se vacían la base y los archivos, se aplican las migraciones desde cero y se vuelven a crear las cuentas de prueba. Los trámites, cuentas creadas y correos de una sesión de pruebas no se conservan. El webmail no pide contraseña real: no cargar datos personales reales.
+
+#### Configurar el despliegue en Dokploy
+
+1. Crear un servicio de tipo **Compose** con el repositorio de GitHub, rama `develop` y archivo `compose.staging.yaml`. Activar el despliegue automático para que cada merge a `develop` despliegue la versión nueva.
+2. En **Domains**, agregar un dominio para el servicio `roundcube`, puerto `80` (con HTTPS si el dominio lo permite).
+3. Opcional, en **Environment**:
+
+   | Variable | Valor por defecto | Para qué |
+   | --- | --- | --- |
+   | `POSTGRES_PASSWORD` | `cpms` | Contraseña de la base interna |
+   | `ROUNDCUBEMAIL_DES_KEY` | fija en el Compose | Clave de 24 caracteres de las sesiones del webmail |
+   | `CPMS_CURRENT_SEMESTER` | `2026-2` | Semestre vigente, como en el entorno local |
+
+4. Desplegar. El log del servicio `app` muestra `Successfully applied N migrations`, `Started CpmsApplication` y `Created 11 local test accounts`.
+
+#### Probar desde el entorno desplegado
+
+Los testers abren el dominio del webmail y siguen los pasos de [Probar un comando](#probar-un-comando): mismas cuentas de `test.local`, cualquier contraseña, y comandos dirigidos a `sistema@cpms.local`.
+
+Si un comando no recibe respuesta y el log de `app` muestra `Deleting message … without executing it`, GreenMail se reinició solo y la aplicación no: reiniciar el servicio `app` desde Dokploy, lo que también vacía el entorno.
 
 ### Ejecutar contra el servidor de producción
 
-El perfil `local` solo se usa con `bootRun`. Fuera de él, la aplicación toma la configuración del correo, de la base y de la carpeta de archivos de variables de entorno (NFR-007):
+En producción corre solo la aplicación, con el perfil por defecto: usa el servidor de correo (NFR-007) y la base de datos (NFR-008) de tecnoweb. Se despliega en el servidor Dokploy del equipo con `compose.production.yaml`, desde la rama `main`. La base y los archivos se conservan: nunca se limpian al arrancar.
 
-| Variable | Valor |
-| --- | --- |
-| `CPMS_MAIL_POP3_HOST`, `CPMS_MAIL_SMTP_HOST` | `mail.tecnoweb.org.bo` |
-| `CPMS_MAIL_USERNAME`, `CPMS_MAIL_PASSWORD` | Usuario y contraseña del buzón del sistema |
-| `CPMS_MAIL_ADDRESS` | Dirección del sistema, remitente de las respuestas |
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://db.tecnoweb.org.bo:5432/db_grupo03sc` (NFR-008) |
-| `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | Usuario y contraseña de la base que entrega el docente |
-| `CPMS_STORAGE_ROOT` | Carpeta persistente donde la aplicación guarda los archivos, con permiso de escritura. Es obligatoria: sin ella la aplicación no arranca. Se respalda junto con la base de datos |
+#### Requisitos previos
+
+- El SMTP de `mail.tecnoweb.org.bo` valida al remitente por su dirección IP (NFR-007): la IP del servidor de Dokploy tiene que estar aceptada, o las respuestas no salen (el log muestra el envío rechazado).
+- El servidor de Dokploy tiene que llegar a `mail.tecnoweb.org.bo` (puertos 110 y 25) y a `db.tecnoweb.org.bo` (puerto 5432). Sin la base, la aplicación no arranca.
+
+#### Configurar el despliegue en Dokploy
+
+1. Crear un servicio de tipo **Compose** con el repositorio de GitHub, rama `main` y archivo `compose.production.yaml`. No lleva dominio: la aplicación no tiene interfaz web.
+2. En **Environment**, cargar las variables. Las obligatorias detienen el despliegue si faltan:
+
+   | Variable | Obligatoria | Valor |
+   | --- | --- | --- |
+   | `CPMS_MAIL_ADDRESS` | sí | Dirección del sistema, remitente de las respuestas |
+   | `CPMS_MAIL_USERNAME`, `CPMS_MAIL_PASSWORD` | sí | Usuario y contraseña del buzón del sistema |
+   | `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | sí | Usuario y contraseña de la base que entrega el docente |
+   | `CPMS_MAIL_POP3_HOST`, `CPMS_MAIL_SMTP_HOST` | no | Por defecto `mail.tecnoweb.org.bo` |
+   | `SPRING_DATASOURCE_URL` | no | Por defecto `jdbc:postgresql://db.tecnoweb.org.bo:5432/db_grupo03sc` |
+   | `CPMS_ADMIN_EMAIL` | no | Primer administrador, creado al arrancar si no existe; vacío por defecto |
+   | `CPMS_CURRENT_SEMESTER` | no | Semestre vigente, por defecto `2026-2`; cambiarlo al empezar cada semestre |
+
+3. Desplegar. El log del servicio `app` muestra `No active profile set` y `Started CpmsApplication`, sin `Successfully cleaned schema` ni cuentas de prueba.
+
+Los archivos van en el volumen `cpms-storage` (carpeta `/var/lib/cpms/storage` dentro del contenedor), que se conserva entre despliegues. La base guarda solo sus datos descriptivos, así que **el volumen se respalda junto con la base** y no se borra al eliminar el proyecto en Dokploy.
+
+Para ejecutar el JAR fuera de Dokploy, las mismas variables se definen en el entorno, y además `CPMS_STORAGE_ROOT` con una carpeta persistente y con permiso de escritura: sin ella la aplicación no arranca.

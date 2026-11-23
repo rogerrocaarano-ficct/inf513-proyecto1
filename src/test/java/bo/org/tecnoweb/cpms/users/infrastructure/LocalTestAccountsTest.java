@@ -4,12 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import bo.org.tecnoweb.cpms.users.domain.Role;
 import bo.org.tecnoweb.cpms.users.domain.User;
+import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-/** Test accounts of the local development environment (requirement "Cuentas de prueba del entorno local"). */
+/**
+ * Test accounts of the local development environment and of the deployed test environment (requirement
+ * "Cuentas de prueba del entorno local"; capability {@code test-environment}).
+ */
 class LocalTestAccountsTest {
 
     private final InitialAdminAccountTest.Users users = new InitialAdminAccountTest.Users();
@@ -80,5 +87,23 @@ class LocalTestAccountsTest {
         assertThat(byEmail).hasSize(11);
         assertThat(byEmail.get("director@test.local")).isSameAs(existing);
         assertThat(existing.getRole()).isEqualTo(Role.PROFESSOR);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"local", "staging"})
+    void runsInTheLocalAndTheTestEnvironmentProfiles(String profile) {
+        contextWithProfiles(profile).run(context -> assertThat(context).hasSingleBean(LocalTestAccounts.class));
+    }
+
+    @Test
+    void doesNotRunWithoutThoseProfiles() {
+        contextWithProfiles().run(context -> assertThat(context).doesNotHaveBean(LocalTestAccounts.class));
+    }
+
+    private ApplicationContextRunner contextWithProfiles(String... profiles) {
+        return new ApplicationContextRunner()
+                .withInitializer(context -> context.getEnvironment().setActiveProfiles(profiles))
+                .withBean(UserRepository.class, () -> users)
+                .withUserConfiguration(LocalTestAccounts.class);
     }
 }
