@@ -2,8 +2,8 @@ package bo.org.tecnoweb.cpms.users.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import bo.org.tecnoweb.cpms.users.application.ListUsersQueryItem;
-import bo.org.tecnoweb.cpms.users.application.ListUsersQueryResult;
+import bo.org.tecnoweb.cpms.users.application.usermanagement.ListUsersQueryItem;
+import bo.org.tecnoweb.cpms.users.application.usermanagement.ListUsersQueryResult;
 import bo.org.tecnoweb.cpms.users.domain.UserDisabledEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserEnabledEvent;
 import bo.org.tecnoweb.cpms.users.infrastructure.MailUserManagementNotifier.OutgoingMail;

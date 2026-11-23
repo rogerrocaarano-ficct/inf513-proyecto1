@@ -1,7 +1,7 @@
 package bo.org.tecnoweb.cpms.procedures.infrastructure;
 
 import bo.org.tecnoweb.cpms.mail.application.EmailSender;
-import bo.org.tecnoweb.cpms.procedures.application.ProjectProfileEvaluationNotifier;
+import bo.org.tecnoweb.cpms.procedures.application.projectprofileevaluation.ProjectProfileEvaluationNotifier;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectProfileApprovedEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectProfileObservedEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectProfileRegisteredEvent;

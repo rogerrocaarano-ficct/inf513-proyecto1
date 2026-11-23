@@ -1,11 +1,11 @@
 package bo.org.tecnoweb.cpms.users.infrastructure;
 
-import bo.org.tecnoweb.cpms.users.application.DisableUserCommandHandler;
-import bo.org.tecnoweb.cpms.users.application.EnableUserCommandHandler;
-import bo.org.tecnoweb.cpms.users.application.ListUsersQueryHandler;
-import bo.org.tecnoweb.cpms.users.application.SignUpUserCommandHandler;
-import bo.org.tecnoweb.cpms.users.application.UserManagementNotifier;
-import bo.org.tecnoweb.cpms.users.application.UserManagementUseCase;
+import bo.org.tecnoweb.cpms.users.application.usermanagement.DisableUserCommandHandler;
+import bo.org.tecnoweb.cpms.users.application.usermanagement.EnableUserCommandHandler;
+import bo.org.tecnoweb.cpms.users.application.usermanagement.ListUsersQueryHandler;
+import bo.org.tecnoweb.cpms.users.application.usermanagement.SignUpUserCommandHandler;
+import bo.org.tecnoweb.cpms.users.application.usermanagement.UserManagementNotifier;
+import bo.org.tecnoweb.cpms.users.application.usermanagement.UserManagementUseCase;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
