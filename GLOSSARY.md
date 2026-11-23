@@ -35,7 +35,6 @@
 | Modalidad de Graduación | Forma por la que el estudiante obtiene el título; en este sistema, Proyecto de Grado | |
 | Observación | Corrección o cambio que un docente pide al estudiante sobre su perfil de proyecto o su documento del proyecto, y que el estudiante debe subsanar. Las del perfil se escriben en el cuerpo del correo | `ProjectProfile.observations` (perfil) |
 | Perfil de proyecto | Documento breve con la propuesta del proyecto que el estudiante presenta para que el docente de Taller de Grado evalúe su viabilidad. Si lo observan o lo rechazan, el estudiante presenta una versión nueva; cada versión se numera en orden desde 1 y las anteriores se conservan con su evaluación | `ProjectProfile` (cada versión, en `DegreeProject.profiles`; su número, `ProjectProfile.version`) |
-| Plazo de revisión | Tiempo del que disponen el tribunal evaluador y el tutor para revisar una versión del documento del proyecto | |
 | Predefensa | Defensa interna del proyecto de grado y revisión del prototipo ante el tribunal evaluador, que habilita la defensa final | |
 | Procedimientos | Subsistema que gestiona los flujos de la facultad referidos al trámite de titulación | paquete `procedures` |
 | Proyecto de Grado | Proyecto que el estudiante desarrolla y defiende para titularse en la Modalidad de Graduación del mismo nombre; nace con el perfil de proyecto y avanza con las versiones del documento del proyecto hasta la defensa final | `DegreeProject` |
