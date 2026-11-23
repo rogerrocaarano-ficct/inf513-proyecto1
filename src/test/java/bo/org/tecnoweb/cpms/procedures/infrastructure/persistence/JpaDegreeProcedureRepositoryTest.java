@@ -68,7 +68,7 @@ class JpaDegreeProcedureRepositoryTest {
     void entitiesKeepNoFileContent() {
         for (Class<?> entity : List.of(DegreeProcedureEntity.class, InitialDocumentEntity.class,
                 DegreeProjectEntity.class)) {
-            assertThat(Arrays.stream(entity.getDeclaredFields()).map(Field::getType)).as(entity.getSimpleName())
+            assertThat(Arrays.stream(entity.getDeclaredFields()).<Class<?>>map(Field::getType)).as(entity.getSimpleName())
                     .doesNotContain(byte[].class);
         }
     }

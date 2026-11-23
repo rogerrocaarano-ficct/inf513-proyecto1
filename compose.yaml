@@ -10,8 +10,10 @@ services:
       POSTGRES_USER: cpms
       POSTGRES_PASSWORD: cpms
     ports:
-      # Free host port chosen by Docker; Spring Boot reads it and configures the DataSource.
-      - "5432"
+      # Fixed host port, so database clients keep the same connection between runs. It differs
+      # from 5432 so a PostgreSQL installed on the machine does not block it. Spring Boot still
+      # reads it from Docker and configures the DataSource.
+      - "15432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
