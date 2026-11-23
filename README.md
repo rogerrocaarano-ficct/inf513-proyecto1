@@ -51,7 +51,7 @@ Con el sistema, cada etapa del trámite queda registrada en un expediente digita
 | [UC-003](use-cases/UC-003.md) | Asignación de tutor y designación de tribunal | La designación del tutor y de los miembros del tribunal se comunica por papel o en persona | Must |
 | [UC-004](use-cases/UC-004.md) | Evaluación del perfil de proyecto | La entrega del perfil de proyecto y su evaluación de viabilidad no quedan registradas en ningún lugar consultable | Must |
 | [UC-005](use-cases/UC-005.md) | Revisión y versionado del documento del proyecto | Las observaciones del tutor y del tribunal y las correcciones del estudiante quedan dispersas en cartas y versiones impresas | Must |
-| UC-006 | Programación y registro de evaluaciones | La programación de la predefensa y la defensa final, sus resultados, el acta de graduación, la entrega de ejemplares y el cierre del expediente se registran en papel | Could |
+| [UC-006](use-cases/UC-006.md) | Programación y registro de evaluaciones | La programación de la predefensa y la defensa final, sus resultados, la entrega de ejemplares y el cierre del expediente se registran en papel | Could |
 | UC-007 | Monitoreo, trazabilidad, dashboard y calendario académico | Nadie sabe en qué etapa está un trámite ni qué evaluaciones vienen sin preguntar en la secretaría | Should |
 | UC-008 | Reportes y estadísticas | La dirección no puede obtener estadísticas de titulación sin revisar las carpetas una por una | Could |
 
@@ -64,7 +64,7 @@ Con el sistema, cada etapa del trámite queda registrada en un expediente digita
 
 **Out of scope:**
 
-- Ninguno por ahora.
+- Emisión del acta de graduación: el sistema registra la calificación final (UC-006), pero no genera el acta.
 
 ## Plan del proyecto
 

@@ -16,10 +16,10 @@
 | FR-010 | El sistema debe registrar cada versión corregida del documento del proyecto con un comentario general del estudiante y conservar el historial de versiones | |
 | FR-011 | El sistema debe registrar la aprobación del documento del proyecto por cada miembro del tribunal y por el tutor | |
 | FR-012 | El sistema debe registrar la fecha, hora y lugar de la predefensa y revisión de prototipo que fija el director de carrera | |
-| FR-013 | El sistema debe notificar al estudiante y al tribunal evaluador la programación de la predefensa | |
+| FR-013 | El sistema debe notificar al estudiante, al tutor y al tribunal evaluador la programación de la predefensa | |
 | FR-014 | El sistema debe registrar el resultado de la predefensa y las observaciones finales que el estudiante debe subsanar antes de la defensa final | |
-| FR-015 | El sistema debe registrar la fecha, hora y aula de la defensa final que fija el director de carrera, una vez aprobada la predefensa | |
-| FR-016 | El sistema debe registrar la calificación final asignada por el tribunal evaluador y emitir los datos para el acta de graduación | |
+| FR-015 | El sistema debe registrar la fecha, hora y aula de la defensa final que fija el director de carrera, una vez aprobadas la predefensa y la versión para la defensa final | |
+| FR-016 | El sistema debe registrar la calificación final asignada por el tribunal evaluador | |
 | FR-017 | El sistema debe registrar la recepción de los dos ejemplares físicos del proyecto, uno para la biblioteca y otro para la Dirección de Carrera | |
 | FR-018 | El sistema debe cerrar y archivar el expediente de titulación del graduado | |
 | FR-019 | El sistema debe mostrar la etapa en la que se encuentra un trámite de titulación al estudiante, a los docentes que participan en él, al secretario(a) y al director de carrera | |
@@ -63,6 +63,9 @@
 | FR-060 | El sistema debe notificar al estudiante cada evaluación de su perfil de proyecto: aprobado, observado o rechazado, con las observaciones del docente de Taller de Grado | |
 | FR-061 | El sistema debe notificar al director de carrera cada perfil de proyecto aprobado | |
 | FR-062 | El sistema debe rechazar la apertura de un trámite de titulación cuando el estudiante ya tuvo otro trámite de titulación en el mismo semestre, aunque esté cerrado | |
+| FR-063 | El sistema debe notificar al estudiante, al tutor y al tribunal evaluador la programación de la defensa final | |
+| FR-064 | El sistema debe notificar al estudiante el resultado de la predefensa, con las observaciones del tribunal, y la calificación final | |
+| FR-065 | El sistema debe permitir que el director de carrera reprograme una predefensa o defensa final que todavía no tiene resultado, y notificar el cambio al estudiante, al tutor y al tribunal evaluador | |
 
 ### Notes
 
@@ -83,7 +86,8 @@
 - FR-002, FR-055: el secretario(a) digitaliza los requisitos de apertura y los adjunta al abrir el trámite; el sistema los guarda en el expediente de titulación y solo admite reemplazarlos mientras el trámite está en curso (SRC-009).
 - FR-051, FR-056: los datos del estudiante que registra el secretario(a) son los de su cuenta de usuario (FR-026); el trámite no agrega datos propios. La cuenta del estudiante se crea con la gestión de usuarios (UC-001), con sus reglas y su aviso por correo (FR-033, FR-035), y el trámite se abre después sobre esa cuenta, identificada por su registro universitario. Si ninguna cuenta tiene ese registro, la apertura se rechaza (SRC-009; acordado el 2026-11-23).
 - FR-001, FR-056, FR-062: un estudiante abre como máximo un trámite de titulación por semestre, aunque el anterior del mismo semestre esté cerrado. El trámite se identifica por su referencia, formada por el semestre en que se abre y el registro universitario del estudiante (acordado el 2026-11-23).
-- FR-017, FR-018: la recepción de los dos ejemplares físicos se registra en una sola solicitud, solo después de la calificación final (FR-016), y en el mismo paso el sistema cierra el trámite y archiva el expediente de titulación. La cuenta de usuario del estudiante sigue activa, para que pueda consultar su trámite archivado (UC-008) (SRC-009).
+- FR-017, FR-018: la recepción de los dos ejemplares físicos se registra en una sola solicitud, solo después de aprobar la defensa final (FR-016), y en el mismo paso el sistema cierra el trámite y archiva el expediente de titulación. La cuenta de usuario del estudiante sigue activa, para que pueda consultar su trámite archivado (UC-007) (SRC-009).
+- FR-012 a FR-016, FR-063 a FR-065: el director de carrera programa la predefensa y la defensa final y registra sus resultados, que decide el tribunal evaluador. Una evaluación se programa en una fecha y hora futuras, sin que ningún miembro del tribunal tenga otra evaluación a la misma fecha y hora. El resultado de la predefensa siempre lleva observaciones; si es reprobada, el trámite se cierra (FR-054) y el estudiante vuelve a inscribir la Modalidad de Graduación en un semestre siguiente y abre un trámite nuevo (FR-062). La calificación final va de 0 a 100 y la defensa final se aprueba con 51 o más; si es reprobada, el trámite se cierra igual que con la predefensa reprobada. La emisión del acta de graduación está fuera del alcance (acordado el 2026-11-23).
 - FR-003, FR-006: el tutor y los miembros del tribunal se designan después de la aprobación del perfil (FR-005), por separado y en cualquier orden; cada miembro del tribunal se designa en su propia solicitud hasta completar tres docentes distintos. En un mismo trámite el tutor no puede ser miembro del tribunal; el docente de Taller de Grado sí puede ser tutor o miembro del tribunal. Una designación no se cambia: la reasignación no está contemplada (acordado el 2026-11-23).
 - FR-022, FR-060: el docente de Taller de Grado observa el perfil cuando pide cambios sobre el mismo tema, por ejemplo de forma, y lo rechaza cuando el tema debe cambiar. En ambos casos el estudiante presenta una versión nueva, cuyo título puede cambiar; si el tema cambió lo juzga el docente, no el sistema (acordado el 2026-11-23).
 - FR-061: el aviso al director de carrera no condiciona la aprobación: si no hay un director activo, el perfil queda aprobado igual (acordado el 2026-11-23).
