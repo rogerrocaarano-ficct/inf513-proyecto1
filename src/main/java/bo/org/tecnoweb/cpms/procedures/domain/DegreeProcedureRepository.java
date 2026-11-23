@@ -26,14 +26,14 @@ public interface DegreeProcedureRepository {
     boolean existsByReference(String reference);
 
     /**
-     * Finds and locks the ongoing procedure identified by its reference (FR-055, UC-003).
+     * Finds and locks the ongoing procedure identified by its reference (FR-055, UC-003, UC-004).
      *
      * @param reference the reference, for example {@code 2026-2-218001234}
      * @return the procedure, or empty if no ongoing procedure has it
      */
     Optional<DegreeProcedure> getOpenByReferenceForUpdate(String reference);
 
-    /** Finds and locks the student's ongoing procedure (UC-003, FR-004). */
+    /** Finds and locks the student's ongoing procedure (UC-004, FR-004). */
     Optional<DegreeProcedure> getOpenByStudentForUpdate(UUID studentId);
 
     /** Saves document changes made to an existing aggregate (FR-055). */

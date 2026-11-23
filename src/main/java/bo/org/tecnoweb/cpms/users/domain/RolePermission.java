@@ -20,8 +20,11 @@ public enum RolePermission {
     /** Replace the document of an opening requirement (UC-002, FR-055). */
     REPLACE_OPENING_REQUIREMENT("reemplazar requisitos de apertura", Role.ADMINISTRATIVE),
 
-    /** Register the initial project profile (UC-003, FR-004). */
-    REGISTER_INITIAL_PROFILE("registrar el perfil de proyecto", Role.STUDENT),
+    /** Submit the project profile or a new version of it (UC-004, FR-004, FR-023). */
+    REGISTER_PROJECT_PROFILE("presentar el perfil de proyecto", Role.STUDENT),
+
+    /** Approve, observe or reject a project profile (UC-004, FR-005, FR-022, FR-039). */
+    EVALUATE_PROJECT_PROFILE("evaluar perfiles de proyecto", Role.CAPSTONE_PROJECT_PROFESSOR),
 
     /** Assign the project tutor (UC-003, FR-003). */
     ASSIGN_TUTOR("asignar un tutor", Role.DIRECTOR),

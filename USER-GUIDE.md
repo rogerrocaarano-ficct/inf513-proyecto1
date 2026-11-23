@@ -10,7 +10,7 @@ comando[argumento1; argumento2; …]
 
 - El **destinatario** es la dirección del sistema (en el entorno local, `sistema@cpms.local`).
 - El **asunto** lleva el comando: su nombre y, entre corchetes, los argumentos separados por punto y coma.
-- El **cuerpo** del correo no se lee: puede ir vacío o con cualquier texto.
+- El **cuerpo** del correo solo se lee en los comandos que piden texto libre, como las observaciones de `proyectos.observarPerfil` y `proyectos.rechazarPerfil`. En los demás puede ir vacío o con cualquier texto.
 - El nombre del comando **no distingue mayúsculas**: `usuarios.crearCuenta` y `USUARIOS.CREARCUENTA` son el mismo comando.
 - Los argumentos **sí distinguen mayúsculas**. Los espacios al inicio y al final de cada argumento se ignoran; los de adentro se conservan (`Ana María`).
 - Un argumento vacío se escribe dejando nada entre los punto y coma: `a; ; c`.
@@ -210,7 +210,44 @@ Desde tu cuenta de estudiante activa, envía el título como único argumento y 
 proyectos.registrarPerfil[Redes comunitarias]
 ```
 
-Necesitas un trámite en curso y esta debe ser tu primera entrega. El sistema registra el proyecto y envía el perfil al docente de Taller de Grado. Si no hay un docente de Taller activo, recibirás un rechazo y podrás reintentar cuando haya uno.
+Necesitas un trámite en curso. Usa el mismo comando para la primera entrega y para una versión nueva:
+
+- **Primera entrega:** el sistema crea tu proyecto con el perfil pendiente de evaluación.
+- **Versión nueva:** solo si tu último perfil fue observado o rechazado. Puedes cambiar el título. La versión anterior se conserva con sus observaciones.
+
+Mientras tu perfil está pendiente o después de que lo aprueben, no puedes enviar otro. El sistema envía cada perfil al docente de Taller de Grado. Si no hay un docente de Taller activo, recibirás un rechazo y podrás reintentar cuando haya uno.
+
+### `proyectos.aprobarPerfil`
+
+Desde la cuenta activa de docente de Taller de Grado, indica la referencia del trámite. Envía el correo sin adjuntos.
+
+```text
+proyectos.aprobarPerfil[2026-2-218001234]
+```
+
+El trámite debe tener un perfil pendiente. El estudiante y el director de carrera reciben el aviso del perfil aprobado; desde ese momento Dirección puede asignar el tutor. Si no hay un director activo, el perfil queda aprobado igual.
+
+### `proyectos.observarPerfil`
+
+Desde la cuenta activa de docente de Taller de Grado, indica la referencia del trámite y escribe las observaciones en el **cuerpo** del correo. Úsalo para pedir cambios sobre el mismo tema, por ejemplo de forma.
+
+```text
+Asunto: proyectos.observarPerfil[2026-2-218001234]
+Cuerpo: Corregir el formato de la bibliografía.
+```
+
+El trámite debe tener un perfil pendiente y el cuerpo no puede ir vacío. Escribe solo las observaciones: el sistema guarda el cuerpo tal como llega, incluidas la firma o el mensaje citado si los dejas. El estudiante recibe las observaciones y puede presentar una versión nueva con `proyectos.registrarPerfil`.
+
+### `proyectos.rechazarPerfil`
+
+Igual que `proyectos.observarPerfil`, pero para pedir que el tema del proyecto cambie. Escribe el motivo en el **cuerpo** del correo.
+
+```text
+Asunto: proyectos.rechazarPerfil[2026-2-218001234]
+Cuerpo: El tema no es viable con los recursos de la carrera.
+```
+
+El estudiante recibe el motivo y puede presentar un perfil con otro tema con `proyectos.registrarPerfil`. Si el tema cambió lo juzgas tú al evaluarlo: el sistema no compara títulos.
 
 ### `proyectos.asignarTutor`
 
@@ -220,4 +257,4 @@ Desde la cuenta activa de Dirección, indica la referencia del trámite y el cor
 proyectos.asignarTutor[2026-2-218001234; docente@cpms.local]
 ```
 
-El perfil requiere el visto bueno de Taller de Grado y el proyecto debe estar sin tutor. El estudiante recibe por correo la designación. El visto bueno se registra mediante UC-004.
+El perfil vigente debe estar aprobado por Taller de Grado con `proyectos.aprobarPerfil`, y el proyecto debe estar sin tutor. El estudiante recibe por correo la designación.

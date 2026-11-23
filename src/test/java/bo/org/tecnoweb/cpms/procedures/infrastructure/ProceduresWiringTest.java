@@ -6,9 +6,12 @@ import static org.mockito.Mockito.mock;
 import bo.org.tecnoweb.cpms.mail.application.EmailCommandHandler;
 import bo.org.tecnoweb.cpms.mail.application.EmailSender;
 import bo.org.tecnoweb.cpms.procedures.application.AcademicCalendar;
+import bo.org.tecnoweb.cpms.procedures.application.ApproveProfileCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.AssignTutorCommandHandler;
+import bo.org.tecnoweb.cpms.procedures.application.ObserveProfileCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.OpenDegreeProcedureCommandHandler;
-import bo.org.tecnoweb.cpms.procedures.application.RegisterInitialProfileCommandHandler;
+import bo.org.tecnoweb.cpms.procedures.application.RegisterProfileCommandHandler;
+import bo.org.tecnoweb.cpms.procedures.application.RejectProfileCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.ReplaceOpeningRequirementCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectRepository;
@@ -17,7 +20,7 @@ import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-/** Checks UC-002 and UC-003 bean discovery without a database or mail server. */
+/** Checks UC-002, UC-003 and UC-004 bean discovery without a database or mail server. */
 class ProceduresWiringTest {
     /** All procedure commands are registered as distinct beans for the mail channel. */
     @Test
@@ -30,13 +33,15 @@ class ProceduresWiringTest {
             context.registerBean(EmailSender.class, () -> mock(EmailSender.class));
             context.registerBean(StoredFileService.class, () -> mock(StoredFileService.class));
             context.register(ProceduresConfiguration.class, MailDegreeProcedureNotifier.class,
-                    MailTutorAssignmentNotifier.class);
+                    MailTutorAssignmentNotifier.class, MailProjectProfileEvaluationNotifier.class);
             context.refresh();
 
             assertThat(context.getBeansOfType(EmailCommandHandler.class).values())
                     .extracting(EmailCommandHandler::actionKey)
                     .containsExactlyInAnyOrder(OpenDegreeProcedureCommandHandler.ACTION,
-                            ReplaceOpeningRequirementCommandHandler.ACTION, RegisterInitialProfileCommandHandler.ACTION,
+                            ReplaceOpeningRequirementCommandHandler.ACTION, RegisterProfileCommandHandler.ACTION,
+                            ApproveProfileCommandHandler.ACTION, ObserveProfileCommandHandler.ACTION,
+                            RejectProfileCommandHandler.ACTION,
                             AssignTutorCommandHandler.ACTION);
         }
     }

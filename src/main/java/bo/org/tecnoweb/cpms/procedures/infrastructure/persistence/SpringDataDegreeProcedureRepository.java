@@ -14,11 +14,11 @@ interface SpringDataDegreeProcedureRepository extends JpaRepository<DegreeProced
     /** Tells whether a procedure, ongoing or closed, has a reference (UC-002). */
     boolean existsByReference(String reference);
 
-    /** Locks a procedure that is still open by its reference (FR-055, UC-003). */
+    /** Locks a procedure that is still open by its reference (FR-055, UC-003, UC-004). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<DegreeProcedureEntity> findForUpdateByReferenceAndClosedAtIsNull(String reference);
 
-    /** Locks the student's ongoing procedure before registering a profile (UC-003, FR-004). */
+    /** Locks the student's ongoing procedure before registering a profile (UC-004, FR-004). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<DegreeProcedureEntity> findForUpdateByStudentIdAndClosedAtIsNull(UUID studentId);
 }

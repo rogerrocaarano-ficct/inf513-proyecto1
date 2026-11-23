@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.transaction.support.TransactionOperations;
 
-/** Shared account and attachment inputs for UC-002 and UC-003 tests. */
+/** Shared account and attachment inputs for UC-002, UC-003 and UC-004 tests. */
 public final class ProcedureFixtures {
     private ProcedureFixtures() {}
 

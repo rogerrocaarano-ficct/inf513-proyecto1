@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/** JPA adapter for the degree project aggregate (UC-003). */
+/** JPA adapter for the degree project aggregate (UC-003, UC-004). */
 @Repository
 @Transactional
 class JpaDegreeProjectRepository implements DegreeProjectRepository {
@@ -33,6 +33,6 @@ class JpaDegreeProjectRepository implements DegreeProjectRepository {
     /** {@inheritDoc} */
     @Override
     public void update(DegreeProject project) {
-        projects.findById(project.getId()).orElseThrow().updateTutor(project);
+        projects.findById(project.getId()).orElseThrow().update(project);
     }
 }

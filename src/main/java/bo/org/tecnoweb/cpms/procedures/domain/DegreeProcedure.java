@@ -145,7 +145,7 @@ public final class DegreeProcedure implements AggregateRoot {
     }
 
     /**
-     * Checks a procedure reference written in an email command (UC-002, UC-003).
+     * Checks a procedure reference written in an email command (UC-002, UC-003, UC-004).
      *
      * @param reference the reference, {@code <year>-<period>-<registration number>}
      * @return the reference without surrounding spaces
