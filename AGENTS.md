@@ -11,6 +11,7 @@ names it.
 | Path | Content |
 | --- | --- |
 | `README.md` | Vision: problem, process flow, approved use cases (`UC-xxx`), scope, and the project plan: team, milestones, iterations and risks (`RSK-xxx`); and the development environment: requirements and how to run the project |
+| `use-cases/UC-xxx.md` | Business description of each use case: goal, actors, preconditions, basic and alternative flows, exceptions, postconditions and business rules. It cites requirements by ID; commands and design stay out. Linked from the use case table of `README.md` |
 | `USER-GUIDE.md` | User guide: how to write email commands, every command with its arguments, and the system's replies. Update it in the same change that adds or changes a command |
 | `REQUIREMENTS.md` | Functional (`FR-xxx`) and non-functional (`NFR-xx-xxx`) requirements |
 | `GLOSSARY.md` | Domain terms, their definitions and the name each one takes in the code |
@@ -231,8 +232,8 @@ Files (attachments, documents and their versions) are kept on disk by the
 | Documentation language | Spanish |
 | Code language | English |
 
-- **Spanish:** the content of `README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`
-  and `USER-GUIDE.md`, branch names taken from a use case, and the description
+- **Spanish:** the content of `README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`,
+  `USER-GUIDE.md` and `use-cases/`, branch names taken from a use case, and the description
   and body of commit messages.
 - **English:** identifiers, comments, log messages and database names in the
   code; `AGENTS.md`, `USDP-FRAMEWORK.md` and the commit types.
@@ -262,7 +263,7 @@ Files (attachments, documents and their versions) are kept on disk by the
 Every change to the source code (`src/`, the build files and the Flyway
 migrations) goes through an OpenSpec change. Changes that only touch the
 documents in the root (`README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`,
-`USER-GUIDE.md`) do not.
+`USER-GUIDE.md`) and the use case descriptions (`use-cases/`) do not.
 
 1. **Propose** (`/opsx:propose` or `/opsx:explore` first): create the change
    in `openspec/changes/<name>/` with its proposal, specs, design and tasks.
