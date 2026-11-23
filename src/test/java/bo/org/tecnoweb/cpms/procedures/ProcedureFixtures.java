@@ -1,5 +1,6 @@
 package bo.org.tecnoweb.cpms.procedures;
 
+import bo.org.tecnoweb.cpms.mail.domain.Attachment;
 import bo.org.tecnoweb.cpms.procedures.domain.Semester;
 import bo.org.tecnoweb.cpms.storage.application.FileStorage;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
@@ -43,6 +44,14 @@ public final class ProcedureFixtures {
     /** Returns the content of a test PDF: a PDF header followed by its name. */
     public static byte[] pdfContent(String name) {
         return ("%PDF-1.7\n" + name).getBytes(StandardCharsets.US_ASCII);
+    }
+
+    /**
+     * Returns an attachment the mail channel already stored (issue #9), as the handlers of any use case
+     * receive it in a validated email.
+     */
+    public static Attachment stored(UUID storedFileId) {
+        return new Attachment.Stored(storedFileId);
     }
 
     /** Returns the data of a stored test PDF, without its content, for domain tests. */

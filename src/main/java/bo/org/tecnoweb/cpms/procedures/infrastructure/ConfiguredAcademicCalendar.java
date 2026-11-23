@@ -1,7 +1,7 @@
 package bo.org.tecnoweb.cpms.procedures.infrastructure;
 
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
-import bo.org.tecnoweb.cpms.procedures.application.AcademicCalendar;
+import bo.org.tecnoweb.cpms.procedures.application.degreeprocedure.AcademicCalendar;
 import bo.org.tecnoweb.cpms.procedures.domain.Semester;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

@@ -1,7 +1,7 @@
 package bo.org.tecnoweb.cpms.procedures.infrastructure;
 
 import bo.org.tecnoweb.cpms.mail.application.EmailSender;
-import bo.org.tecnoweb.cpms.procedures.application.DegreeProcedureNotifier;
+import bo.org.tecnoweb.cpms.procedures.application.degreeprocedure.DegreeProcedureNotifier;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRequirementReplacedEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureOpenedEvent;
 import java.util.List;

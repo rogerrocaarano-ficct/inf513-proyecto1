@@ -53,7 +53,7 @@ instead of copying it to another document.
   | --- | --- |
   | `common` | Shared domain types from `Design/common` (`AggregateRoot`, `DomainEvent`, `DomainException`, …), no layers |
   | `<subsystem>.domain` | Domain classes of the EA package `Design/<Subsystem>/domain`, without framework annotations |
-  | `<subsystem>.application` | Application services and ports (interfaces) of `Design/<Subsystem>/application` |
+  | `<subsystem>.application` | Application services and ports (interfaces) of `Design/<Subsystem>/application`: one package `<subsystem>.application.<usecase>` per use case (see "How a use case is implemented"), and at the root only the ports several use cases share. `mail` and `storage` have no use cases and keep a flat `application` |
   | `<subsystem>.infrastructure` | Adapters that implement the ports (JPA, POP3, SMTP, schedulers, configuration). Not modeled in EA |
 
   Subsystems: `mail`, `users`, `procedures`, `storage`. A new subsystem follows the same layers and
@@ -107,8 +107,15 @@ replies with the error when a `DomainException` is thrown. A use case does not
 touch any of that: it plugs into the channel by implementing
 `mail.application.EmailCommandHandler`.
 
-1. **Use case.** One class `<Name>UseCase` in `<subsystem>.application` per use
-   case: plain Java, dependencies through the constructor. **Each flow of the
+1. **Use case.** One class `<Name>UseCase` per use case, in its own package
+   `<subsystem>.application.<usecase>`, where `<usecase>` is the class name in
+   lowercase without `UseCase` (`users.application.usermanagement`,
+   `procedures.application.projectprofileevaluation`). The package holds the
+   use case and everything that belongs only to it: its notifier, its
+   contracts and its handlers (points 2 to 4), and a port that only it uses
+   (`degreeprocedure.AcademicCalendar`). Renaming the class renames the
+   package. The use case is plain Java, with its dependencies through the
+   constructor. **Each flow of the
    use case (basic flow, alternative flows) is one public method**, and its
    Javadoc names the flow (`UserManagementUseCase.signUpUser` is the basic
    flow, `listUsers` is A3). Each method: gets the active requester
@@ -127,14 +134,14 @@ touch any of that: it plugs into the channel by implementing
      the contract and calls one method of the use case with `email.getFrom()`
      as the requester.
 3. **Contract.** As a rule, the arguments are grouped in a record
-   `<Verb><Object>Command` or `<Verb><Object>Query` in `application`
-   (`SignUpUserCommand`; `ListUsersQuery` is used even with one argument). The
+   `<Verb><Object>Command` or `<Verb><Object>Query` in the package of the use
+   case (`SignUpUserCommand`; `ListUsersQuery` is used even with one argument). The
    only accepted exception is a command whose single argument identifies the
    affected entity, which may pass it directly
    (`DisableUserCommandHandler` calls `disableUser(requesterEmail, userEmail)`).
    Skipping the record is not the norm; the design of the change says why.
-4. **Replies and notices.** An outgoing port `<UseCase>Notifier` in
-   `application`, with one method per reply or notice, taking domain events or
+4. **Replies and notices.** An outgoing port `<UseCase>Notifier` in the
+   package of the use case, with one method per reply or notice, taking domain events or
    result records (`UserManagementNotifier`). The use case and the handler
    never send email themselves.
 5. **Wiring.** The use case and each handler are declared as `@Bean` in the
