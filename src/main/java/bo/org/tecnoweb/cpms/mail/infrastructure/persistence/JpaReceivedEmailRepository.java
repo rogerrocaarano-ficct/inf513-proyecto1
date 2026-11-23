@@ -1,7 +1,7 @@
 package bo.org.tecnoweb.cpms.mail.infrastructure.persistence;
 
 import bo.org.tecnoweb.cpms.mail.application.ReceivedEmailRepository;
-import bo.org.tecnoweb.cpms.mail.domain.File;
+import bo.org.tecnoweb.cpms.mail.domain.Attachment;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
 import java.util.EnumSet;
@@ -37,11 +37,19 @@ class JpaReceivedEmailRepository implements ReceivedEmailRepository {
      * {@inheritDoc}
      *
      * <p>Joins the caller's transaction if there is one. Attachments are written only when the email
-     * is inserted, since they never change.
+     * is inserted, since they never change, and only as references to their stored files: their
+     * content is never written to the database (issue #9).
+     *
+     * @throws IllegalStateException if the email is still {@link ReceivedEmailState#FETCHED}: its
+     *                               attachments must be stored first
      */
     @Override
     @Transactional
     public void store(ReceivedEmail email) {
+        if (email.getState() == ReceivedEmailState.FETCHED) {
+            throw new IllegalStateException("Email " + email.getId() + " must store its attachments before it is "
+                    + "stored");
+        }
         Optional<ReceivedEmailEntity> existing = emails.findById(email.getId());
         if (existing.isPresent()) {
             ReceivedEmailEntity entity = existing.get();
@@ -53,9 +61,7 @@ class JpaReceivedEmailRepository implements ReceivedEmailRepository {
         }
         ReceivedEmailEntity entity = new ReceivedEmailEntity(email.getId());
         copyFields(email, entity);
-        for (File file : email.getAttachments()) {
-            entity.getAttachments().add(new ReceivedEmailAttachmentEntity(file.getId(), file.getName(), file.getData()));
-        }
+        entity.getAttachmentIds().addAll(email.getAttachmentIds());
         emails.save(entity);
     }
 
@@ -101,8 +107,8 @@ class JpaReceivedEmailRepository implements ReceivedEmailRepository {
      * @return the email with its state and attachments
      */
     private static ReceivedEmail toDomain(ReceivedEmailEntity entity) {
-        List<File> attachments = entity.getAttachments().stream()
-                .map(a -> File.rehydrate().withId(a.getId()).withName(a.getName()).withData(a.getData()))
+        List<Attachment> attachments = entity.getAttachmentIds().stream()
+                .<Attachment>map(Attachment.Stored::new)
                 .toList();
         return ReceivedEmail.rehydrate()
                 .withId(entity.getId())

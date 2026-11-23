@@ -5,10 +5,10 @@
 | ID | Requisito | Verificación |
 | --- | --- | --- |
 | FR-001 | El sistema debe registrar la solicitud de titulación de un estudiante y abrir su expediente de titulación | |
-| FR-002 | El sistema debe registrar los documentos iniciales del estudiante: carta de solicitud, hoja de vida, fotocopia de cédula de identidad y boleta de inscripción con Modalidad de Graduación | |
+| FR-002 | El sistema debe registrar los requisitos de apertura del estudiante: carta de solicitud, hoja de vida, fotocopia de cédula de identidad y boleta de inscripción con Modalidad de Graduación | |
 | FR-003 | El sistema debe registrar el tutor que el director de carrera asigna al estudiante | |
 | FR-004 | El sistema debe registrar el perfil de proyecto, con el título del proyecto, que presenta el estudiante | |
-| FR-005 | El sistema debe registrar el visto bueno del perfil de proyecto emitido por el docente de Taller de Grado | |
+| FR-005 | El sistema debe registrar la aprobación del perfil de proyecto emitida por el docente de Taller de Grado | |
 | FR-006 | El sistema debe registrar los tres docentes que el director de carrera designa como tribunal evaluador del estudiante | |
 | FR-007 | El sistema debe notificar a cada miembro del tribunal su designación | |
 | FR-008 | El sistema debe registrar la entrega del documento del proyecto por el estudiante para su revisión | |
@@ -54,20 +54,22 @@
 | FR-048 | El sistema debe notificar al estudiante, al secretario(a) de dirección de carrera y al director de carrera cuando el documento del proyecto queda aprobado | |
 | FR-049 | El sistema debe permitir que cada usuario modifique la dirección de correo y el teléfono de su propia cuenta de usuario | |
 | FR-050 | El sistema debe permitir que el director de carrera gestione las cuentas de usuario cuyos roles son docente, docente de Taller de Grado, secretario(a) de dirección de carrera o estudiante | |
-| FR-051 | El sistema debe crear la cuenta de usuario del estudiante cuando la pide el secretario(a) de dirección de carrera, el director de carrera o el administrador, y cuando el secretario(a) abre su trámite de titulación, una vez verificados sus documentos iniciales | |
+| FR-051 | El sistema debe crear la cuenta de usuario del estudiante cuando la pide el secretario(a) de dirección de carrera, el director de carrera o el administrador, y cuando el secretario(a) abre su trámite de titulación, una vez verificados sus requisitos de apertura | |
 | FR-052 | El sistema debe mostrar el registro de cambios al administrador, al director de carrera y al secretario(a) de dirección de carrera, a cada uno dentro de su alcance | |
 | FR-053 | El sistema debe permitir que solo el administrador asigne o quite los roles de director de carrera y de administrador, y gestione las cuentas de usuario que los tienen | |
 | FR-054 | El sistema debe notificar al estudiante por correo la apertura y el cierre de su trámite de titulación | |
-| FR-055 | El sistema debe permitir que el secretario(a) de dirección de carrera reemplace un documento inicial de un trámite de titulación en curso | |
+| FR-055 | El sistema debe permitir que el secretario(a) de dirección de carrera reemplace el documento de un requisito de apertura de un trámite de titulación en curso | |
 | FR-056 | El sistema debe abrir el trámite de titulación sobre la cuenta de usuario existente del estudiante, y rechazar la apertura si esa cuenta está desactivada o ya tiene un trámite de titulación en curso | |
 | FR-057 | El sistema debe notificar al docente de Taller de Grado cada perfil de proyecto que presenta un estudiante | |
 | FR-058 | El sistema debe admitir un perfil de proyecto solo cuando el estudiante no tiene uno o su último perfil de proyecto fue rechazado u observado | |
 | FR-059 | El sistema debe mostrar al estudiante su proyecto de grado: el título del proyecto, sus perfiles de proyecto y las versiones del documento del proyecto, con el estado de cada uno | |
+| FR-060 | El sistema debe notificar al estudiante cada evaluación de su perfil de proyecto: aprobado, observado o rechazado, con las observaciones del docente de Taller de Grado | |
+| FR-061 | El sistema debe notificar al director de carrera cada perfil de proyecto aprobado | |
 
 ### Notes
 
 - Priority: la escala es MoSCoW. **Must**: sin esto la prueba de concepto por correo no lleva un trámite de titulación de la apertura al cierre; incluye las notificaciones que hacen actuar al siguiente actor, porque en la versión por correo son la interfaz. **Should**: importante, pero el flujo funciona sin ello. **Could**: lo primero que se recorta; además tiene reglas sin definir. La prioridad no recorta el alcance de la primera entrega (los diez casos de uso, SRC-011): ordena el trabajo de E2 y C1 y define qué se recorta primero, con acuerdo del docente, si se cumple RSK-005 (2026-11-07).
-- FR-008, FR-040: el estudiante puede entregar la primera versión desde que su perfil de proyecto tiene visto bueno y tiene tutor asignado (SRC-010). Si el tribunal se designa después, revisa la versión vigente que el tutor ya aprobó (FR-042).
+- FR-008, FR-040: el estudiante puede entregar la primera versión desde que su perfil de proyecto está aprobado y tiene tutor asignado (SRC-010). Si el tribunal se designa después, revisa la versión vigente que el tutor ya aprobó (FR-042).
 - FR-040, FR-044: cada versión se revisa en dos etapas. Primero la revisa el tutor, como filtro previo; si la observa, el estudiante entrega otra sin que el tribunal la vea. Si la aprueba, pasa a los miembros del tribunal evaluador.
 - FR-004, FR-023, FR-058: el estudiante puede presentar el perfil de proyecto desde que el secretario(a) abre su trámite de titulación. El primer perfil crea el proyecto de grado. Si el docente de Taller de Grado lo rechaza u observa, el estudiante presenta un perfil nuevo, que puede cambiar el título del proyecto; los anteriores se conservan (SRC-010).
 - FR-025, FR-043: la versión para la defensa final se entrega después de aprobar la predefensa y se revisa en las mismas dos etapas.
@@ -76,14 +78,17 @@
 - FR-035: en la versión por correo, la creación de la cuenta de usuario solo se notifica por correo: el usuario se identifica por su dirección de correo. En la futura versión web, la notificación incluirá una contraseña de un solo uso que el usuario debe cambiar en su primer inicio de sesión (SRC-008).
 - FR-037: la foto de perfil es opcional y solo la carga el propio usuario.
 - FR-001 a FR-019 vienen de RF01 a RF19 de SRC-002, con el mismo número. Se ajustó su texto según lo acordado con el equipo de desarrollo el 2026-10-26:
-  - Cada acción la registra quien la realiza: el estudiante presenta el perfil (FR-004) y entrega el documento (FR-008); el docente de Taller de Grado registra su visto bueno (FR-005); el tutor y el tribunal registran sus observaciones (FR-009). Las observaciones solo se registran en el sistema: no se aceptan por carta, a diferencia de lo que decían RF09 y SRC-001.
+  - Cada acción la registra quien la realiza: el estudiante presenta el perfil (FR-004) y entrega el documento (FR-008); el docente de Taller de Grado registra su aprobación (FR-005); el tutor y el tribunal registran sus observaciones (FR-009). Las observaciones solo se registran en el sistema: no se aceptan por carta, a diferencia de lo que decían RF09 y SRC-001.
   - El director de carrera fija las fechas de la predefensa y la defensa final (FR-012, FR-015), como dice SRC-001.
   - El tutor revisa y aprueba el documento junto al tribunal (FR-009, FR-011), como dice SRC-001.
-- FR-002: SRC-001 incluye la carta de solicitud entre los documentos iniciales; RF02 la omitía. El estudiante entrega los documentos iniciales en la oficina; el secretario(a) verifica que la carpeta esté completa, abre el trámite de titulación y crea la cuenta de usuario del estudiante (FR-051, SRC-007).
-- FR-002, FR-055: el secretario(a) digitaliza los documentos iniciales y los adjunta al abrir el trámite; el sistema los guarda en el expediente de titulación y solo admite reemplazarlos mientras el trámite está en curso (SRC-009).
-- FR-051, FR-056: los datos del estudiante que registra el secretario(a) son los de su cuenta de usuario (FR-026); el trámite no agrega datos propios. Si la dirección de correo y el registro universitario ya pertenecen a una misma cuenta de usuario activa de estudiante, el trámite se abre sobre ella sin crear otra. La cuenta nueva se crea con las mismas reglas y el mismo aviso por correo que en UC-001 (FR-033, FR-035), pero sin el alcance de FR-050 y FR-053: la autoriza la apertura del trámite (SRC-009).
+- FR-002: SRC-001 incluye la carta de solicitud entre los requisitos de apertura; RF02 la omitía. El estudiante entrega los requisitos de apertura en la oficina; el secretario(a) verifica que la carpeta esté completa, abre el trámite de titulación y crea la cuenta de usuario del estudiante (FR-051, SRC-007).
+- FR-002, FR-055: el secretario(a) digitaliza los requisitos de apertura y los adjunta al abrir el trámite; el sistema los guarda en el expediente de titulación y solo admite reemplazarlos mientras el trámite está en curso (SRC-009).
+- FR-051, FR-056: los datos del estudiante que registra el secretario(a) son los de su cuenta de usuario (FR-026); el trámite no agrega datos propios. La cuenta del estudiante se crea con la gestión de usuarios (UC-001), con sus reglas y su aviso por correo (FR-033, FR-035), y el trámite se abre después sobre esa cuenta, identificada por su registro universitario. Si ninguna cuenta tiene ese registro, la apertura se rechaza (SRC-009; acordado el 2026-11-23).
+- FR-001, FR-056: un estudiante abre como máximo un trámite de titulación por semestre, aunque el anterior del mismo semestre esté cerrado. El trámite se identifica por su referencia, formada por el semestre en que se abre y el registro universitario del estudiante (acordado el 2026-11-23).
 - FR-017, FR-018: la recepción de los dos ejemplares físicos se registra en una sola solicitud, solo después de la calificación final (FR-016), y en el mismo paso el sistema cierra el trámite y archiva el expediente de titulación. La cuenta de usuario del estudiante sigue activa, para que pueda consultar su trámite archivado (UC-008) (SRC-009).
-- FR-003: el tutor se asigna después del visto bueno del perfil, junto con el tribunal (paso 5 de SRC-001).
+- FR-003: el tutor se asigna después de la aprobación del perfil (FR-005). La designación del tribunal puede realizarse en otro momento (UC-003).
+- FR-022, FR-060: el docente de Taller de Grado observa el perfil cuando pide cambios sobre el mismo tema, por ejemplo de forma, y lo rechaza cuando el tema debe cambiar. En ambos casos el estudiante presenta una versión nueva, cuyo título puede cambiar; si el tema cambió lo juzga el docente, no el sistema (acordado el 2026-11-23).
+- FR-061: el aviso al director de carrera no condiciona la aprobación: si no hay un director activo, el perfil queda aprobado igual (acordado el 2026-11-23).
 - FR-011: el documento queda apto para la predefensa solo cuando lo aprueban los tres miembros del tribunal y el tutor.
 - SRC-007: los casos de uso se reestructuraron el 2026-10-27, numerados de nuevo desde UC-001. El detalle acordado en SRC-004, SRC-005 y SRC-006 corresponde a casos de uso anteriores y se vuelve a detallar en los nuevos.
 - NFR-IN-001, CON-006: el servidor de correo es infraestructura, no un actor. Los destinatarios de las notificaciones son los usuarios; cómo se envían se resuelve en el diseño.
@@ -107,7 +112,7 @@
 
 | ID | Requisito | Verificación |
 | --- | --- | --- |
-| NFR-003 | El sistema recibe las solicitudes de los usuarios y les envía respuestas y notificaciones por correo electrónico. Cada solicitud es un comando que el usuario escribe en el asunto del correo con la forma de una llamada a función, `Comando[arg1; arg2; …]`, con los argumentos separados por punto y coma. Los archivos se envían como adjuntos del correo, sin nombrarlos en el comando: el sistema reconoce qué documento es cada adjunto por una palabra de su nombre de archivo. | |
+| NFR-003 | El sistema recibe las solicitudes de los usuarios y les envía respuestas y notificaciones por correo electrónico. Cada solicitud es un comando que el usuario escribe en el asunto del correo con la forma de una llamada a función, `Comando[arg1; arg2; …]`, con los argumentos separados por punto y coma. Los archivos se envían como adjuntos del correo, sin nombrarlos en el comando: el sistema reconoce qué documento es cada adjunto por una palabra de su nombre de archivo. El texto libre de una solicitud, como las observaciones, se escribe en el cuerpo del correo. | |
 
 ### Restricciones
 

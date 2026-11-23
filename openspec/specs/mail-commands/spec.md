@@ -99,14 +99,50 @@ Antes de ejecutar un comando, el sistema SHALL comprobar que la cantidad de argu
 - **THEN** el sistema descarta el correo sin ejecutar el caso de uso
 - **AND** responde que se esperaban 0 adjuntos y llegó 1
 
+### Requirement: Adjuntos guardados en el almacenamiento de archivos
+
+Al guardar un correo leído del buzón, el sistema SHALL guardar el contenido de cada adjunto en el almacenamiento de archivos, en la misma transacción que el correo, y registrar en el correo solo la referencia a cada archivo, en su orden. La base de datos MUST NOT guardar el contenido de los adjuntos. Los archivos se conservan aunque el correo se descarte o su comando falle.
+
+#### Scenario: Correo con dos adjuntos
+- **WHEN** el sistema guarda un correo leído del buzón con dos adjuntos
+- **THEN** cada adjunto queda guardado en el almacenamiento de archivos con su nombre, tipo de contenido y tamaño
+- **AND** el correo registra las dos referencias en el orden de los adjuntos, sin su contenido
+
+#### Scenario: Comando pendiente tras un reinicio
+- **GIVEN** un correo guardado con un adjunto, que no llegó a un estado final porque la aplicación se detuvo
+- **WHEN** la aplicación se reinicia y ejecuta un ciclo de sondeo
+- **THEN** el sistema ejecuta el comando una vez con el mismo archivo guardado, sin volver a guardarlo
+
+#### Scenario: Correo descartado con adjuntos
+- **WHEN** un correo con un adjunto se descarta porque su comando no existe
+- **THEN** el archivo del adjunto sigue en el almacenamiento de archivos, referenciado por el correo
+
+#### Scenario: Falla al guardar un adjunto
+- **WHEN** el almacenamiento de archivos falla al guardar el segundo adjunto de un correo
+- **THEN** el correo no queda guardado y no queda ninguno de sus archivos
+- **AND** el mensaje sigue en el servidor para un ciclo posterior
+
+### Requirement: Adjunto vacío
+
+Cuando un correo leído del buzón tiene un adjunto sin contenido, el sistema SHALL descartar el correo sin ejecutarlo, sin guardar ninguno de sus adjuntos, y responder al remitente indicando el nombre del adjunto vacío.
+
+#### Scenario: Un adjunto de 0 bytes
+- **WHEN** llega un comando con dos adjuntos y el segundo, `boleta.pdf`, tiene 0 bytes
+- **THEN** el sistema descarta el correo sin ejecutar el caso de uso y sin guardar archivos
+- **AND** responde al remitente que el adjunto `boleta.pdf` está vacío
+
 ### Requirement: Ejecución del comando
 
-Un correo que cumple el contrato de su comando SHALL entregarse al caso de uso que lo atiende, con el remitente, los argumentos y los adjuntos. La confirmación de los cambios del caso de uso y el registro de que el correo fue procesado MUST ocurrir juntos: o se confirman los dos, o ninguno.
+Un correo que cumple el contrato de su comando SHALL entregarse al caso de uso que lo atiende, con el remitente, los argumentos y los identificadores de los archivos guardados de sus adjuntos, en su orden. La confirmación de los cambios del caso de uso y el registro de que el correo fue procesado MUST ocurrir juntos: o se confirman los dos, o ninguno.
 
 #### Scenario: Comando válido
 - **WHEN** llega un comando reconocido que cumple su contrato
 - **THEN** el sistema lo entrega a su caso de uso una vez
 - **AND** el correo queda procesado
+
+#### Scenario: Comando con adjuntos
+- **WHEN** llega un comando válido con dos adjuntos
+- **THEN** el caso de uso recibe los identificadores de los dos archivos guardados, en el orden de los adjuntos, y no su contenido
 
 #### Scenario: Falla al confirmar los cambios
 - **GIVEN** un comando válido
@@ -164,3 +200,57 @@ El sistema SHALL borrar del servidor cada mensaje cuyo correo quedó procesado o
 - **GIVEN** un correo guardado que aún no fue validado ni ejecutado
 - **WHEN** termina el ciclo de sondeo
 - **THEN** su mensaje sigue en el servidor
+
+### Requirement: Registro del tráfico de correo en la consola
+
+El sistema SHALL registrar en la consola cada conexión al servidor POP3, cada correo que entra (su UIDL, el remitente, la acción del comando y la cantidad de adjuntos), cada correo automático que ignora, cada mensaje que borra del servidor y cada correo que envía por SMTP (destinatario y cantidad de adjuntos). Las conexiones y las lecturas de un buzón vacío MUST registrarse en un nivel de detalle que no aparezca por omisión.
+
+#### Scenario: Correo que entra
+- **WHEN** el sistema lee del buzón un correo con asunto `usuarios.listar[]`, enviado por `ana@uagrm.bo` y sin adjuntos
+- **THEN** la consola muestra su UIDL, el remitente `ana@uagrm.bo`, la acción `usuarios.listar` y 0 adjuntos
+
+#### Scenario: Correo que entra sin un comando reconocible
+- **WHEN** el sistema lee del buzón un correo con asunto `hola`
+- **THEN** la consola muestra su UIDL y su remitente, e indica que no tiene una acción válida
+
+#### Scenario: Correo automático ignorado
+- **WHEN** el sistema lee del buzón un rebote del servidor de correo
+- **THEN** la consola muestra que ignoró ese mensaje, con su UIDL y su remitente
+
+#### Scenario: Mensaje borrado del servidor
+- **WHEN** el sistema borra del servidor el mensaje de un correo procesado
+- **THEN** la consola muestra el UIDL del mensaje borrado
+
+#### Scenario: Correo que sale
+- **WHEN** el sistema envía por SMTP un correo a `ana@uagrm.bo` con 1 adjunto
+- **THEN** la consola muestra el destinatario `ana@uagrm.bo` y 1 adjunto
+
+#### Scenario: Ciclo con el buzón vacío
+- **GIVEN** el nivel de detalle de la consola es el de por omisión
+- **WHEN** se ejecuta un ciclo de sondeo y el buzón no tiene mensajes
+- **THEN** la consola no muestra ninguna línea del canal de correo
+
+#### Scenario: Conexión al servidor POP3 con el nivel de detalle activado
+- **GIVEN** el nivel de detalle del canal de correo está activado
+- **WHEN** se ejecuta un ciclo de sondeo
+- **THEN** la consola muestra la conexión al servidor POP3 y cuántos mensajes tiene el buzón
+
+### Requirement: Registros sin datos del comando
+
+Los registros del tráfico de correo MUST NOT incluir los argumentos del comando, el asunto completo de un correo que entra ni el asunto de un correo que sale, porque contienen datos personales.
+
+#### Scenario: Comando con datos personales
+- **WHEN** entra un correo con asunto `usuarios.crearCuenta[Ana; Pérez; ana@uagrm.bo; ESTUDIANTE; 218000001; 7654321; 70000000]`
+- **THEN** la consola muestra la acción `usuarios.crearCuenta`
+- **AND** no muestra ninguno de sus argumentos
+
+#### Scenario: Respuesta a un comando con datos personales
+- **WHEN** el sistema responde un error al correo anterior con el asunto `Re: usuarios.crearCuenta[…]`
+- **THEN** la consola muestra el destinatario del envío
+- **AND** no muestra el asunto ni ninguno de los argumentos
+
+#### Scenario: Mensaje leído de nuevo con un UIDL ya procesado
+- **GIVEN** un correo procesado con el comando `usuarios.crearCuenta[…]`
+- **WHEN** el sistema vuelve a leer un mensaje con el mismo UIDL y lo borra sin ejecutarlo
+- **THEN** la advertencia de la consola muestra la acción del correo guardado y la del leído
+- **AND** no muestra sus asuntos ni sus argumentos

@@ -10,7 +10,7 @@ comando[argumento1; argumento2; …]
 
 - El **destinatario** es la dirección del sistema (en el entorno local, `sistema@cpms.local`).
 - El **asunto** lleva el comando: su nombre y, entre corchetes, los argumentos separados por punto y coma.
-- El **cuerpo** del correo no se lee: puede ir vacío o con cualquier texto.
+- El **cuerpo** del correo solo se lee en los comandos que piden texto libre, como las observaciones de `proyectos.observarPerfil` y `proyectos.rechazarPerfil`. En los demás puede ir vacío o con cualquier texto.
 - El nombre del comando **no distingue mayúsculas**: `usuarios.crearCuenta` y `USUARIOS.CREARCUENTA` son el mismo comando.
 - Los argumentos **sí distinguen mayúsculas**. Los espacios al inicio y al final de cada argumento se ignoran; los de adentro se conservan (`Ana María`).
 - Un argumento vacío se escribe dejando nada entre los punto y coma: `a; ; c`.
@@ -29,6 +29,7 @@ Solo se atienden los comandos que llegan desde una dirección con una cuenta act
 | El asunto no tiene la forma `comando[…]` | Recuerda la forma correcta del asunto |
 | El comando no existe | Indica que no existe y lista los comandos disponibles |
 | Faltan o sobran argumentos o adjuntos | Indica cuántos se esperaban y cuántos llegaron |
+| Un adjunto está vacío (0 bytes) | «No se pudo procesar el correo: el adjunto "X" está vacío.»; el comando no se ejecuta |
 | La dirección no tiene cuenta | Indica que la dirección no está registrada en el sistema |
 | La cuenta está desactivada | «La cuenta X está desactivada. Comuníquese con la Dirección de Carrera.»; el comando no se ejecuta |
 | La cuenta no tiene permiso | Indica qué no tiene permiso para hacer |
@@ -174,3 +175,86 @@ Un rechazo se ve así:
 No se pudo ejecutar el comando "usuarios.desactivar":
 - correo: La cuenta luis@uagrm.bo ya está desactivada.
 ```
+
+### `tramites.abrirTramite`
+
+Secretaría abre el trámite de titulación desde una cuenta administrativa activa (UC-002). El trámite se abre sobre la cuenta de estudiante: si el estudiante todavía no tiene cuenta, créala antes con `usuarios.crearCuenta` y el rol `estudiante`.
+
+```text
+tramites.abrirTramite[218001234]
+```
+
+El único argumento es el registro universitario del estudiante.
+
+Adjunta un PDF por cada requisito de apertura: la carta de solicitud, la hoja de vida, la copia de la cédula y la boleta de inscripción con Modalidad de Graduación. Cada PDF puede pesar hasta 25 MB. Usa las palabras `carta`, `cv`, `ci` y `boleta` en los nombres, por ejemplo `carta_solicitud.pdf`, `cv.pdf`, `ci.pdf` y `boleta.pdf`. El escaneo de la carta física es suficiente.
+
+El sistema rechaza la apertura si ninguna cuenta tiene ese registro, si la cuenta no es de estudiante o está desactivada, si el estudiante ya tiene un trámite en curso o si ya tuvo un trámite en el semestre vigente, aunque esté cerrado.
+
+Secretaría recibe la referencia del trámite, formada por el semestre vigente y el registro, por ejemplo `2026-2-218001234`. El estudiante recibe el aviso de apertura con la misma referencia.
+
+### `tramites.reemplazarDocumento`
+
+Secretaría puede sustituir el documento de un requisito de apertura mientras el trámite esté en curso. Usa la referencia recibida al abrirlo y adjunta un PDF con la palabra que identifica el requisito.
+
+```text
+tramites.reemplazarDocumento[2026-2-218001234]
+```
+
+Por ejemplo, adjunta `carta_corregida.pdf` para sustituir la carta. Secretaría recibe una confirmación que identifica el trámite y el requisito sustituido. El documento anterior se conserva como versión anterior.
+
+### `proyectos.registrarPerfil`
+
+Desde tu cuenta de estudiante activa, envía el título como único argumento y adjunta un PDF de hasta 25 MB.
+
+```text
+proyectos.registrarPerfil[Redes comunitarias]
+```
+
+Necesitas un trámite en curso. Usa el mismo comando para la primera entrega y para una versión nueva:
+
+- **Primera entrega:** el sistema crea tu proyecto con el perfil pendiente de evaluación.
+- **Versión nueva:** solo si tu último perfil fue observado o rechazado. Puedes cambiar el título. La versión anterior se conserva con sus observaciones.
+
+Mientras tu perfil está pendiente o después de que lo aprueben, no puedes enviar otro. El sistema envía cada perfil al docente de Taller de Grado. Si no hay un docente de Taller activo, recibirás un rechazo y podrás reintentar cuando haya uno.
+
+### `proyectos.aprobarPerfil`
+
+Desde la cuenta activa de docente de Taller de Grado, indica la referencia del trámite. Envía el correo sin adjuntos.
+
+```text
+proyectos.aprobarPerfil[2026-2-218001234]
+```
+
+El trámite debe tener un perfil pendiente. El estudiante y el director de carrera reciben el aviso del perfil aprobado; desde ese momento Dirección puede asignar el tutor. Si no hay un director activo, el perfil queda aprobado igual.
+
+### `proyectos.observarPerfil`
+
+Desde la cuenta activa de docente de Taller de Grado, indica la referencia del trámite y escribe las observaciones en el **cuerpo** del correo. Úsalo para pedir cambios sobre el mismo tema, por ejemplo de forma.
+
+```text
+Asunto: proyectos.observarPerfil[2026-2-218001234]
+Cuerpo: Corregir el formato de la bibliografía.
+```
+
+El trámite debe tener un perfil pendiente y el cuerpo no puede ir vacío. Escribe solo las observaciones: el sistema guarda el cuerpo tal como llega, incluidas la firma o el mensaje citado si los dejas. El estudiante recibe las observaciones y puede presentar una versión nueva con `proyectos.registrarPerfil`.
+
+### `proyectos.rechazarPerfil`
+
+Igual que `proyectos.observarPerfil`, pero para pedir que el tema del proyecto cambie. Escribe el motivo en el **cuerpo** del correo.
+
+```text
+Asunto: proyectos.rechazarPerfil[2026-2-218001234]
+Cuerpo: El tema no es viable con los recursos de la carrera.
+```
+
+El estudiante recibe el motivo y puede presentar un perfil con otro tema con `proyectos.registrarPerfil`. Si el tema cambió lo juzgas tú al evaluarlo: el sistema no compara títulos.
+
+### `proyectos.asignarTutor`
+
+Desde la cuenta activa de Dirección, indica la referencia del trámite y el correo del docente activo. Envía el correo sin adjuntos.
+
+```text
+proyectos.asignarTutor[2026-2-218001234; docente@cpms.local]
+```
+
+El perfil vigente debe estar aprobado por Taller de Grado con `proyectos.aprobarPerfil`, y el proyecto debe estar sin tutor. El estudiante recibe por correo la designación.

@@ -4,7 +4,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * Permission to perform an operation on user accounts, separate from the role: it lists the roles
+ * Permission to perform an operation, separate from the role: it lists the roles
  * allowed to perform it.
  *
  * <p>The {@code SIGNUP_<role>} permissions allow creating accounts of that role, and the {@code
@@ -13,6 +13,24 @@ import java.util.Set;
  * of that role; only directors and administrators hold them.
  */
 public enum RolePermission {
+
+    /** Open a graduation procedure (UC-002, FR-001). */
+    OPEN_DEGREE_PROCEDURE("abrir trámites de titulación", Role.ADMINISTRATIVE),
+
+    /** Replace the document of an opening requirement (UC-002, FR-055). */
+    REPLACE_OPENING_REQUIREMENT("reemplazar requisitos de apertura", Role.ADMINISTRATIVE),
+
+    /** Submit the project profile or a new version of it (UC-004, FR-004, FR-023). */
+    REGISTER_PROJECT_PROFILE("presentar el perfil de proyecto", Role.STUDENT),
+
+    /** Approve, observe or reject a project profile (UC-004, FR-005, FR-022, FR-039). */
+    EVALUATE_PROJECT_PROFILE("evaluar perfiles de proyecto", Role.CAPSTONE_PROJECT_PROFESSOR),
+
+    /** Assign the project tutor (UC-003, FR-003). */
+    ASSIGN_TUTOR("asignar un tutor", Role.DIRECTOR),
+
+    /** Be eligible for the project tutor designation (UC-003, FR-003). */
+    BE_PROJECT_TUTOR("ser tutor de proyecto", Role.PROFESSOR, Role.CAPSTONE_PROJECT_PROFESSOR, Role.DIRECTOR),
 
     /** Create student accounts. */
     SIGNUP_STUDENT("crear cuentas de estudiante", Role.ADMINISTRATIVE, Role.DIRECTOR, Role.SYSTEM_ADMIN),

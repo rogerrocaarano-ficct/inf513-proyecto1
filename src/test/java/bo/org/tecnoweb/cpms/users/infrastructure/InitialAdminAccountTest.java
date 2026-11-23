@@ -66,6 +66,11 @@ class InitialAdminAccountTest {
         }
 
         @Override
+        public Optional<User> getByUagrmCodeForUpdate(String code) {
+            return inserted.stream().filter(u -> code.equals(u.getUagrmCode())).findFirst();
+        }
+
+        @Override
         public Optional<User> getById(UUID id) {
             return inserted.stream().filter(u -> u.getId().equals(id)).findFirst();
         }

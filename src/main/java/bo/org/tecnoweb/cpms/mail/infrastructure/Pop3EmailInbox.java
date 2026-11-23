@@ -1,7 +1,8 @@
 package bo.org.tecnoweb.cpms.mail.infrastructure;
 
+import bo.org.tecnoweb.cpms.common.DomainValidationException;
 import bo.org.tecnoweb.cpms.mail.application.EmailInbox;
-import bo.org.tecnoweb.cpms.mail.domain.File;
+import bo.org.tecnoweb.cpms.mail.domain.Attachment;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import jakarta.mail.Address;
 import jakarta.mail.FetchProfile;
@@ -14,8 +15,10 @@ import jakarta.mail.Part;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
 import jakarta.mail.UIDFolder;
+import jakarta.mail.internet.ContentType;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeUtility;
+import jakarta.mail.internet.ParseException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +43,7 @@ class Pop3EmailInbox implements EmailInbox {
     private static final Logger log = LoggerFactory.getLogger(Pop3EmailInbox.class);
     private static final Set<String> BULK_PRECEDENCE = Set.of("bulk", "junk", "list");
     private static final String TIMEOUT_MS = "10000";
+    private static final String UNKNOWN_CONTENT_TYPE = "application/octet-stream";
 
     private final MailProperties properties;
     private final Session session;
@@ -64,22 +68,35 @@ class Pop3EmailInbox implements EmailInbox {
      *
      * <p>Automatic emails found while reading are deleted from the server and do not count toward
      * {@code maxMessages}.
+     *
+     * <p>Logs every email read with its UIDL, sender, command action and number of attachments,
+     * never its subject or arguments. The summary of an empty inbox is logged at DEBUG so idle
+     * cycles stay quiet.
      */
     @Override
     public List<ReceivedEmail> poll(int maxMessages) {
         List<ReceivedEmail> emails = new ArrayList<>();
         withInbox(folder -> {
+            int total = folder.getMessageCount();
             for (Message message : folder.getMessages()) {
                 if (emails.size() >= maxMessages) {
                     break;
                 }
                 String uid = folder.getUID(message);
                 if (isAutomatic(message)) {
-                    log.info("Ignoring automatic email {}", uid);
+                    log.info("Ignoring automatic email {} from {}", uid, senderAddress(message));
                     message.setFlag(Flags.Flag.DELETED, true);
                     continue;
                 }
-                emails.add(toEmail(message, uid));
+                ReceivedEmail email = toEmail(message, uid);
+                log.info("Received email {} from {}: {} ({} attachments)",
+                        uid, email.getFrom(), actionForLog(email), email.getAttachments().size());
+                emails.add(email);
+            }
+            if (total == 0) {
+                log.debug("POP3 inbox has 0 messages; read 0");
+            } else {
+                log.info("POP3 inbox has {} messages; read {}", total, emails.size());
             }
         });
         return emails;
@@ -87,6 +104,9 @@ class Pop3EmailInbox implements EmailInbox {
 
     /**
      * {@inheritDoc}
+     *
+     * <p>Logs the UIDL of the message flagged for deletion; logs nothing if it is no longer on the
+     * server.
      */
     @Override
     public void delete(String mailboxId) {
@@ -94,9 +114,25 @@ class Pop3EmailInbox implements EmailInbox {
             for (Message message : folder.getMessages()) {
                 if (mailboxId.equals(folder.getUID(message))) {
                     message.setFlag(Flags.Flag.DELETED, true);
+                    log.info("Deleted message {} from the POP3 server", mailboxId);
                 }
             }
         });
+    }
+
+    /**
+     * Describes the command of an email for the log without its arguments, which may hold personal
+     * data (NFR-003 syntax).
+     *
+     * @param email the email read
+     * @return {@code action <name>}, or {@code no valid action} when the subject is not a command
+     */
+    private static String actionForLog(ReceivedEmail email) {
+        try {
+            return "action " + email.parseAction();
+        } catch (DomainValidationException e) {
+            return "no valid action";
+        }
     }
 
     /**
@@ -126,6 +162,8 @@ class Pop3EmailInbox implements EmailInbox {
         POP3Folder folder = null;
         try {
             store = session.getStore("pop3");
+            log.debug("Connecting to POP3 server {}:{} as {}",
+                    properties.pop3().host(), properties.pop3().port(), properties.pop3().username());
             store.connect(properties.pop3().host(), properties.pop3().port(),
                     properties.pop3().username(), properties.pop3().password());
             folder = (POP3Folder) store.getFolder("INBOX");
@@ -212,7 +250,7 @@ class Pop3EmailInbox implements EmailInbox {
      *
      * @param message the message read from the server
      * @param uid     its UIDL
-     * @return a new email in state {@link bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState#RECEIVED}
+     * @return a new email in state {@link bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState#FETCHED}
      */
     private static ReceivedEmail toEmail(Message message, String uid) {
         ReceivedEmail email = ReceivedEmail.builder().withMailboxId(uid);
@@ -233,7 +271,7 @@ class Pop3EmailInbox implements EmailInbox {
      */
     private static final class Content {
         String body;
-        final List<File> attachments = new ArrayList<>();
+        final List<Attachment> attachments = new ArrayList<>();
     }
 
     /**
@@ -255,13 +293,31 @@ class Pop3EmailInbox implements EmailInbox {
         }
         String fileName = part.getFileName();
         if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition()) || fileName != null) {
-            String name = fileName == null ? "adjunto" : MimeUtility.decodeText(fileName);
+            String name = fileName == null || fileName.isBlank() ? "adjunto" : MimeUtility.decodeText(fileName);
             byte[] data = part.getInputStream().readAllBytes();
-            content.attachments.add(File.builder().withName(name).withData(data));
+            content.attachments.add(new Attachment.Content(name, baseType(part.getContentType()), data));
             return;
         }
         if (content.body == null && part.isMimeType("text/plain")) {
             content.body = String.valueOf(part.getContent());
+        }
+    }
+
+    /**
+     * Reduces the content type of a part to its base type, which file storage keeps (issue #9).
+     *
+     * @param contentType the {@code Content-Type} header of the part
+     * @return the base type in lower case, without parameters, or {@code application/octet-stream}
+     *         when the header is missing or cannot be parsed
+     */
+    static String baseType(String contentType) {
+        if (contentType == null || contentType.isBlank()) {
+            return UNKNOWN_CONTENT_TYPE;
+        }
+        try {
+            return new ContentType(contentType).getBaseType().toLowerCase(Locale.ROOT);
+        } catch (ParseException e) {
+            return UNKNOWN_CONTENT_TYPE;
         }
     }
 

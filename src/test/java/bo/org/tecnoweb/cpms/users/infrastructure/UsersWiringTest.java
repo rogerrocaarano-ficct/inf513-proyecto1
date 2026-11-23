@@ -10,11 +10,12 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 
 /**
  * The application starts with the users subsystem wired: its handler joins the mail channel and the
- * configured administrator exists.
+ * configured administrator exists. Without the {@code local} profile no test account is created.
  */
 @SpringBootTest(properties = "cpms.users.admin-email=admin@cpms.test")
 @Import(TestcontainersConfiguration.class)
@@ -26,6 +27,9 @@ class UsersWiringTest {
     @Autowired
     private UserRepository users;
 
+    @Autowired
+    private ApplicationContext context;
+
     @Test
     void handlersAreRegisteredInTheMailChannel() {
         assertThat(handlers).extracting(EmailCommandHandler::actionKey)
@@ -36,5 +40,11 @@ class UsersWiringTest {
     void configuredAdministratorExistsAfterStartup() {
         assertThat(users.getByEmail("admin@cpms.test")).get()
                 .satisfies(admin -> assertThat(admin.getRole()).isEqualTo(Role.SYSTEM_ADMIN));
+    }
+
+    @Test
+    void noTestAccountIsCreatedWithoutTheLocalProfile() {
+        assertThat(context.getBeansOfType(LocalTestAccounts.class)).isEmpty();
+        assertThat(users.getByEmail("director@test.local")).isEmpty();
     }
 }

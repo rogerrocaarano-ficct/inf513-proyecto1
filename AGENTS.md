@@ -11,6 +11,7 @@ names it.
 | Path | Content |
 | --- | --- |
 | `README.md` | Vision: problem, process flow, approved use cases (`UC-xxx`), scope, and the project plan: team, milestones, iterations and risks (`RSK-xxx`); and the development environment: requirements and how to run the project |
+| `use-cases/UC-xxx.md` | Business description of each use case: goal, actors, preconditions, basic and alternative flows, exceptions, postconditions and business rules. It cites requirements by ID; commands and design stay out. Linked from the use case table of `README.md` |
 | `USER-GUIDE.md` | User guide: how to write email commands, every command with its arguments, and the system's replies. Update it in the same change that adds or changes a command |
 | `REQUIREMENTS.md` | Functional (`FR-xxx`) and non-functional (`NFR-xx-xxx`) requirements |
 | `GLOSSARY.md` | Domain terms, their definitions and the name each one takes in the code |
@@ -19,7 +20,7 @@ names it.
 | `src/main/java/bo/org/tecnoweb/cpms/` | Application code |
 | `src/main/resources/` | Configuration (`application.properties`) and, later, Flyway migrations in `db/migration/` |
 | `src/test/java/bo/org/tecnoweb/cpms/` | Tests |
-| `.agents/skills/` | Agent skills shared by every agent ([Agent Skills](https://agentskills.io) format). `ea-drift [use case \| package]` lists the deviations of the EA model from the current code, to fix them in EA |
+| `.agents/skills/` | Agent skills shared by every agent ([Agent Skills](https://agentskills.io) format). `ea-drift [use case \| package]` lists the deviations of the EA model from the current code, to fix them in EA. `ea-checklist [element \| package]` presents the changes still to make by hand in EA as tables per element, read from the current model |
 | `.claude/skills/` | Pointers for Claude Code, which only reads this folder: each `SKILL.md` repeats the name and description and sends to the one in `.agents/skills/`. Edit the skill in `.agents/skills/` only |
 | `openspec/` | OpenSpec changes (`changes/`), archived changes (`changes/archive/`), the specs of the system (`specs/`) and its configuration (`config.yaml`) |
 
@@ -52,10 +53,10 @@ instead of copying it to another document.
   | --- | --- |
   | `common` | Shared domain types from `Design/common` (`AggregateRoot`, `DomainEvent`, `DomainException`, …), no layers |
   | `<subsystem>.domain` | Domain classes of the EA package `Design/<Subsystem>/domain`, without framework annotations |
-  | `<subsystem>.application` | Application services and ports (interfaces) of `Design/<Subsystem>/application` |
+  | `<subsystem>.application` | Application services and ports (interfaces) of `Design/<Subsystem>/application`: one package `<subsystem>.application.<usecase>` per use case (see "How a use case is implemented"), and at the root only the ports several use cases share. `mail` and `storage` have no use cases and keep a flat `application` |
   | `<subsystem>.infrastructure` | Adapters that implement the ports (JPA, POP3, SMTP, schedulers, configuration). Not modeled in EA |
 
-  Subsystems: `mail`, `users`. A new subsystem follows the same layers and
+  Subsystems: `mail`, `users`, `procedures`, `storage`. A new subsystem follows the same layers and
   the "Reference Architecture" below.
 - Add a dependency only when a use case needs it, and say why in the commit.
 
@@ -106,8 +107,15 @@ replies with the error when a `DomainException` is thrown. A use case does not
 touch any of that: it plugs into the channel by implementing
 `mail.application.EmailCommandHandler`.
 
-1. **Use case.** One class `<Name>UseCase` in `<subsystem>.application` per use
-   case: plain Java, dependencies through the constructor. **Each flow of the
+1. **Use case.** One class `<Name>UseCase` per use case, in its own package
+   `<subsystem>.application.<usecase>`, where `<usecase>` is the class name in
+   lowercase without `UseCase` (`users.application.usermanagement`,
+   `procedures.application.projectprofileevaluation`). The package holds the
+   use case and everything that belongs only to it: its notifier, its
+   contracts and its handlers (points 2 to 4), and a port that only it uses
+   (`degreeprocedure.AcademicCalendar`). Renaming the class renames the
+   package. The use case is plain Java, with its dependencies through the
+   constructor. **Each flow of the
    use case (basic flow, alternative flows) is one public method**, and its
    Javadoc names the flow (`UserManagementUseCase.signUpUser` is the basic
    flow, `listUsers` is A3). Each method: gets the active requester
@@ -121,18 +129,19 @@ touch any of that: it plugs into the channel by implementing
    - A constant `public static final String ACTION` with the command name
      (`usuarios.crearCuenta`), returned by `actionKey()`.
    - `requiredArgs()` and `requiredFiles()` return the exact counts.
-   - `handle(email)` has no logic: it reads `email.parseArgs()` (and the
-     attachments), builds the contract and calls one method of the use case
-     with `email.getFrom()` as the requester.
+   - `handle(email)` has no logic: it reads `email.parseArgs()` (and
+     `email.getAttachmentIds()`, the stored files of the attachments), builds
+     the contract and calls one method of the use case with `email.getFrom()`
+     as the requester.
 3. **Contract.** As a rule, the arguments are grouped in a record
-   `<Verb><Object>Command` or `<Verb><Object>Query` in `application`
-   (`SignUpUserCommand`; `ListUsersQuery` is used even with one argument). The
+   `<Verb><Object>Command` or `<Verb><Object>Query` in the package of the use
+   case (`SignUpUserCommand`; `ListUsersQuery` is used even with one argument). The
    only accepted exception is a command whose single argument identifies the
    affected entity, which may pass it directly
    (`DisableUserCommandHandler` calls `disableUser(requesterEmail, userEmail)`).
    Skipping the record is not the norm; the design of the change says why.
-4. **Replies and notices.** An outgoing port `<UseCase>Notifier` in
-   `application`, with one method per reply or notice, taking domain events or
+4. **Replies and notices.** An outgoing port `<UseCase>Notifier` in the
+   package of the use case, with one method per reply or notice, taking domain events or
    result records (`UserManagementNotifier`). The use case and the handler
    never send email themselves.
 5. **Wiring.** The use case and each handler are declared as `@Bean` in the
@@ -177,6 +186,44 @@ email as processed. The use case does not open its own. A `DomainException`
 rolls it back and its message goes to the sender. Emails leave only after the
 commit, through the notifier.
 
+### File storage
+
+Files (attachments and documents) are kept on disk by the `storage`
+subsystem; the database keeps only their metadata (`stored_file`).
+
+- Every subsystem stores and reads files only through
+  `storage.application.StoredFileService` (`store`, `get`, `readContent`).
+  Never use `StoredFileRepository` or `FileStorage` from another subsystem.
+- The mail channel stores every attachment when it receives the email, and
+  the handler passes the identifiers of the stored files to the use case
+  (`email.getAttachmentIds()`), never their content. The attachments of every
+  email are kept, also when the email is discarded or its command fails.
+- A use case that receives a document checks it with `get` (name, type,
+  size) and `readContent`, and adopts it by keeping its `UUID`: the file is
+  not copied (`DegreeProcedureUseCase.open`).
+- **Versions are business data.** An aggregate that keeps versions of a
+  document stores each one in its own table, numbered from 1, with the
+  `UUID` of the stored file of that version and the data of the business
+  (state, observations, dates): `DegreeProject` and
+  `degree_project_profile_version` (UC-004). Every version is an ordinary
+  stored file; the storage does not chain them.
+- **Deprecated:** the version history of the storage (`appendVersion`,
+  `storeNewVersion`, `getHistory`). New code does not use it. Only the
+  replacement of opening requirements (`DegreeProcedureUseCase.replaceRequirement`,
+  UC-002) still does, until it moves to versions in its own table.
+- The service runs inside the caller's transaction, like a use case. A file
+  written in a transaction that rolls back is deleted, so the use case does
+  nothing to clean up.
+- No bytes in the database: no `byte[]` field in a JPA entity and no new
+  `BYTEA` column.
+- Size and format limits of each document (NFR-005) are rules of the use case
+  that receives it, checked before it adopts the file
+  (`InitialDocument.requirePdf`).
+- Tests of a use case build a real `StoredFileService` over in-memory doubles
+  of its ports (`ProcedureFixtures.Storage`); its integration test uses the
+  throwaway folder that `TestcontainersConfiguration` sets in
+  `cpms.storage.root`.
+
 ### Documentation and tests
 
 - Javadoc in English on every type and every public or package-private method,
@@ -195,8 +242,8 @@ commit, through the notifier.
 | Documentation language | Spanish |
 | Code language | English |
 
-- **Spanish:** the content of `README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`
-  and `USER-GUIDE.md`, branch names taken from a use case, and the description
+- **Spanish:** the content of `README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`,
+  `USER-GUIDE.md` and `use-cases/`, branch names taken from a use case, and the description
   and body of commit messages.
 - **English:** identifiers, comments, log messages and database names in the
   code; `AGENTS.md`, `USDP-FRAMEWORK.md` and the commit types.
@@ -226,7 +273,7 @@ commit, through the notifier.
 Every change to the source code (`src/`, the build files and the Flyway
 migrations) goes through an OpenSpec change. Changes that only touch the
 documents in the root (`README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`,
-`USER-GUIDE.md`) do not.
+`USER-GUIDE.md`) and the use case descriptions (`use-cases/`) do not.
 
 1. **Propose** (`/opsx:propose` or `/opsx:explore` first): create the change
    in `openspec/changes/<name>/` with its proposal, specs, design and tasks.

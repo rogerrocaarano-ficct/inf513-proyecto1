@@ -38,3 +38,6 @@ out/
 
 ### Secrets ###
 .env
+
+### Local data (stored files of the local profile) ###
+data/
