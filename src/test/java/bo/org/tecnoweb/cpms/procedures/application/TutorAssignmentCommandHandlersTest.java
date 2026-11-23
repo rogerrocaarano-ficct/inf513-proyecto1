@@ -32,11 +32,11 @@ class TutorAssignmentCommandHandlersTest {
         var useCase = mock(TutorAssignmentUseCase.class);
         var handler = new AssignTutorCommandHandler(useCase);
         handler.handle(ReceivedEmail.builder().withState(ReceivedEmailState.VALIDATED).fromSender("director@test")
-                .withSubject("proyectos.asignarTutor[TR-001; docente@test]"));
+                .withSubject("proyectos.asignarTutor[2026-2-123456; docente@test]"));
 
         assertThat(handler.actionKey()).isEqualTo("proyectos.asignarTutor");
         assertThat(handler.requiredArgs()).isEqualTo(2);
         assertThat(handler.requiredFiles()).isZero();
-        verify(useCase).assignTutor("director@test", new AssignTutorCommand("TR-001", "docente@test"));
+        verify(useCase).assignTutor("director@test", new AssignTutorCommand("2026-2-123456", "docente@test"));
     }
 }

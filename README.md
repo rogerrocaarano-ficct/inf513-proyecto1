@@ -146,6 +146,8 @@ Este comando levanta los contenedores de `compose.yaml` y arranca la aplicación
 
 Los archivos que guarda la aplicación (documentos adjuntos y sus versiones) van a la carpeta `data/storage` de la raíz del repositorio, que git ignora. La base de datos guarda solo sus datos descriptivos, así que la carpeta y la base van juntas: si se borra una, conviene borrar también la otra.
 
+El semestre vigente, que forma parte de la referencia de cada trámite (por ejemplo `2026-2-218001234`), se toma de la variable de entorno `CPMS_CURRENT_SEMESTER` con la forma `<año>-<periodo>`; sin ella vale `2026-2`. Hay que cambiarla al empezar cada semestre, hasta que exista la gestión del calendario académico. Con un valor inválido la aplicación no arranca.
+
 La aplicación está lista cuando la consola muestra `Started CpmsApplication`.
 
 ### Probar un comando

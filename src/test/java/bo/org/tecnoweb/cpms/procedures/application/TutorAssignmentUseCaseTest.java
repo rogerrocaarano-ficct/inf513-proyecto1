@@ -31,7 +31,7 @@ class TutorAssignmentUseCaseTest {
     private final TutorAssignmentUseCase useCase = new TutorAssignmentUseCase(users, procedures, projects, notifier,
             storage.service);
     private final User student = student();
-    private final DegreeProcedure procedure = DegreeProcedure.rehydrate(UUID.randomUUID(), 1,
+    private final DegreeProcedure procedure = DegreeProcedure.rehydrate(UUID.randomUUID(), "2026-2-123456",
             student.getId(), UUID.randomUUID(), Instant.now(), null, Map.of());
     private final RegisterInitialProfileCommand submission = new RegisterInitialProfileCommand("Redes", storage.pdf("perfil.pdf"));
 
@@ -82,7 +82,7 @@ class TutorAssignmentUseCaseTest {
     void rejectsStudentAssigningTutor() {
         when(users.getByEmail(student.getEmailAddress())).thenReturn(Optional.of(student));
 
-        assertThatThrownBy(() -> useCase.assignTutor(student.getEmailAddress(), new AssignTutorCommand("TR-001", "doc@test")))
+        assertThatThrownBy(() -> useCase.assignTutor(student.getEmailAddress(), new AssignTutorCommand("2026-2-123456", "doc@test")))
                 .isInstanceOf(UserNotAuthorizedException.class);
         verifyNoInteractions(procedures, projects, notifier);
     }
@@ -97,10 +97,10 @@ class TutorAssignmentUseCaseTest {
         when(users.getByEmail(director.getEmailAddress())).thenReturn(Optional.of(director));
         when(users.getByEmail(tutor.getEmailAddress())).thenReturn(Optional.of(tutor));
         when(users.getById(student.getId())).thenReturn(Optional.of(student));
-        when(procedures.getOpenByReferenceForUpdate(1)).thenReturn(Optional.of(procedure));
+        when(procedures.getOpenByReferenceForUpdate("2026-2-123456")).thenReturn(Optional.of(procedure));
         when(projects.getByProcedureId(procedure.getId())).thenReturn(Optional.of(project));
 
-        useCase.assignTutor(director.getEmailAddress(), new AssignTutorCommand("TR-001", tutor.getEmailAddress()));
+        useCase.assignTutor(director.getEmailAddress(), new AssignTutorCommand("2026-2-123456", tutor.getEmailAddress()));
 
         assertThat(project.getTutorId()).isEqualTo(tutor.getId());
         var sequence = inOrder(projects, notifier);

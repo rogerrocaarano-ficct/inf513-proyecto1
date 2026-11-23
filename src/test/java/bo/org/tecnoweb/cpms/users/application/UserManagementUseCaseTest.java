@@ -328,8 +328,8 @@ class UserManagementUseCaseTest {
         }
 
         @Override
-        public Optional<User> getByEmailForUpdate(String email) {
-            return getByEmail(email);
+        public Optional<User> getByUagrmCodeForUpdate(String code) {
+            return saved.stream().filter(u -> code.equals(u.getUagrmCode())).findFirst();
         }
 
         @Override

@@ -24,7 +24,7 @@ class InitialDocumentEntity {
     @Id
     private UUID id;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "procedure_reference")
+    @JoinColumn(name = "procedure_id")
     private DegreeProcedureEntity procedure;
     @Enumerated(EnumType.STRING)
     @Column(name = "document_type")

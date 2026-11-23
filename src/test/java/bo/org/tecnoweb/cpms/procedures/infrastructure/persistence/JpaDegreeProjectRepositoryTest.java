@@ -39,11 +39,12 @@ class JpaDegreeProjectRepositoryTest {
         users.insert(student);
         users.insert(secretary);
         users.insert(tutor);
-        var procedure = procedures.insert(DegreeProcedure.builder().withStudent(student)
-                .open(student, secretary, storedDocuments(storedFiles, transactions)));
+        var procedure = DegreeProcedure.builder().open(student, secretary, SEMESTER,
+                storedDocuments(storedFiles, transactions));
+        procedures.insert(procedure);
         var file = storedPdf(storedFiles, transactions, "perfil.pdf");
         var project = DegreeProject.builder().withProcedureId(procedure.getId()).withTitle("Redes")
-                .registerInitialProfile(file, student.getEmailAddress(), "taller@test", "TR-001");
+                .registerInitialProfile(file, student.getEmailAddress(), "taller@test", "2026-2-123456");
         projects.insert(project);
 
         var pending = projects.getByProcedureId(procedure.getId()).orElseThrow();
@@ -51,12 +52,12 @@ class JpaDegreeProjectRepositoryTest {
         assertThat(pending.getProfile().approved()).isFalse();
         assertThat(pending.pullEvents()).isEmpty();
         assertThatThrownBy(() -> projects.insert(DegreeProject.builder().withProcedureId(procedure.getId())
-                .withTitle("Otro").registerInitialProfile(file, student.getEmailAddress(), "taller@test", "TR-001")))
+                .withTitle("Otro").registerInitialProfile(file, student.getEmailAddress(), "taller@test", "2026-2-123456")))
                 .isInstanceOf(DataIntegrityViolationException.class);
 
         jdbc.update("UPDATE degree_project SET profile_approved = true WHERE id = ?", project.getId());
         var approved = projects.getByProcedureId(procedure.getId()).orElseThrow();
-        approved.assignTutor(tutor.getId(), tutor.getFullName(), student.getEmailAddress(), "TR-001");
+        approved.assignTutor(tutor.getId(), tutor.getFullName(), student.getEmailAddress(), "2026-2-123456");
         projects.update(approved);
         assertThat(projects.getByProcedureId(procedure.getId()).orElseThrow().getTutorId()).isEqualTo(tutor.getId());
     }

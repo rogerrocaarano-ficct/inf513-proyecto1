@@ -7,7 +7,7 @@
 | Administrador | Rol técnico que crea y mantiene las cuentas de usuario y sus roles | `Role.SYSTEM_ADMIN` (etiqueta `administrador`) |
 | Archivo almacenado | Archivo que el sistema guarda en su carpeta de almacenamiento, con su nombre original, tipo, tamaño y fecha; cada versión de un archivo es un archivo almacenado distinto, enlazado a la anterior. No confundir con la versión del documento, que es la entrega del estudiante con sus revisiones | `StoredFile` |
 | Biblioteca | Biblioteca de la universidad que recibe uno de los dos ejemplares físicos del proyecto | |
-| Calendario académico | Vista de las predefensas y defensas finales programadas, por fecha | |
+| Calendario académico | Todas las fechas que establece la facultad: los semestres y las evaluaciones programadas, como las predefensas y defensas finales | `AcademicCalendar` (por ahora solo da el semestre vigente) |
 | Calificación final | Nota que el tribunal evaluador asigna al proyecto al concluir la defensa final | |
 | Cédula de identidad | Número del documento de identidad de una persona (CI), registrado en su cuenta de usuario; obligatorio para el estudiante | `ci` |
 | Comando | Solicitud que el usuario escribe en el asunto de un correo con la forma `Comando[arg1; arg2; …]`, con los argumentos separados por punto y coma, en la prueba de concepto por correo | `EmailCommandHandler` (atiende un comando; su nombre es `actionKey`) |
@@ -36,14 +36,16 @@
 | Perfil de proyecto | Documento breve con la propuesta del proyecto que el estudiante presenta para que el docente de Taller de Grado evalúe su viabilidad | `ProjectProfile` |
 | Plazo de revisión | Tiempo del que disponen el tribunal evaluador y el tutor para revisar una versión del documento del proyecto | |
 | Predefensa | Defensa interna del proyecto de grado y revisión del prototipo ante el tribunal evaluador, que habilita la defensa final | |
+| Procedimientos | Subsistema que gestiona los flujos de la facultad referidos al trámite de titulación | paquete `procedures` |
 | Proyecto de Grado | Proyecto que el estudiante desarrolla y defiende para titularse en la Modalidad de Graduación del mismo nombre; nace con el perfil de proyecto y avanza con las versiones del documento del proyecto hasta la defensa final | `DegreeProject` |
-| Referencia del trámite | Identificador del expediente que figura en las respuestas y se usa en comandos como el de sustitución de documentos. Ejemplo `TR-001` | `DegreeProcedure.reference` |
+| Referencia del trámite | Identificador del expediente que figura en las respuestas y se usa en comandos como el de sustitución de documentos. Se forma con el semestre en que se abre el trámite y el registro universitario del estudiante. Ejemplo `2026-2-218001234` | `DegreeProcedure.reference` |
 | Registro de cambios | Historial de los cambios hechos en el sistema: quién cambió qué dato y cuándo | |
 | Registro universitario | Código que la universidad asigna a cada estudiante y que no se repite entre estudiantes | `uagrmCode` (que también guarda el código administrativo o de docente de las demás cuentas) |
 | Revisión | Resultado que un revisor registra sobre una versión del documento del proyecto: aprobada u observada, con sus observaciones en texto y un PDF anotado opcional | |
 | Revisor | Tutor o miembro del tribunal evaluador designado en un trámite para revisar el documento del proyecto | |
 | Rol | Función general que una cuenta de usuario tiene en el sistema, una por cuenta: estudiante, docente, docente de Taller de Grado, secretario(a) de dirección de carrera, director de carrera o administrador | `Role` |
 | Secretario(a) de dirección de carrera | Personal de la Dirección de Carrera que recibe los documentos del trámite y lleva el expediente de titulación | `Role.ADMINISTRATIVE` (etiqueta `administrativo`) |
+| Semestre | Periodo académico en que se divide el año, escrito año y periodo (1 o 2), por ejemplo `2026-2`; un estudiante abre como máximo un trámite de titulación por semestre | `Semester` |
 | Servicio de correo | Servicio de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones | `EmailInbox` (recepción), `EmailSender` (envío) |
 | Solicitud de titulación | Pedido del estudiante para iniciar el trámite de titulación, que acompaña a los documentos iniciales | |
 | Título del proyecto | Nombre del proyecto de grado que el estudiante indica al presentar su perfil de proyecto; un perfil de proyecto nuevo puede cambiarlo | `DegreeProject.title` |

@@ -257,4 +257,11 @@ class UserTest {
             assertThat(luis.pullEvents()).isEmpty();
         }
     }
+
+    @Test
+    void onlyAStudentAccountIsAStudent() {
+        for (Role role : Role.values()) {
+            assertThat(account(role).isStudent()).as(role.name()).isEqualTo(role == Role.STUDENT);
+        }
+    }
 }

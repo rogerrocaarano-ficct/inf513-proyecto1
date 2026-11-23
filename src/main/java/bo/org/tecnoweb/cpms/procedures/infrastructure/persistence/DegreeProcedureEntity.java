@@ -6,8 +6,6 @@ import bo.org.tecnoweb.cpms.procedures.domain.InitialDocument;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
@@ -17,15 +15,14 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
 
-/** JPA representation of a graduation procedure (UC-002). */
+/** JPA representation of a graduation procedure, keyed by its UUID (UC-002). */
 @Entity
 @Table(name = "degree_procedure")
 class DegreeProcedureEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reference;
-    @Column(nullable = false, unique = true)
     private UUID id;
+    @Column(nullable = false, unique = true)
+    private String reference;
     private UUID studentId;
     private UUID openedBy;
     private Instant openedAt;
@@ -41,6 +38,7 @@ class DegreeProcedureEntity {
     /** Maps a new aggregate for insertion. */
     DegreeProcedureEntity(DegreeProcedure procedure) {
         id = procedure.getId();
+        reference = procedure.getReference();
         studentId = procedure.getStudentId();
         openedBy = procedure.getOpenedBy();
         openedAt = procedure.getOpenedAt();

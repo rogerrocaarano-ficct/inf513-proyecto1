@@ -347,6 +347,16 @@ public class User implements AggregateRoot {
     }
 
     /**
+     * Tells whether this is a student account, the only kind that can hold a graduation procedure
+     * (UC-002, FR-056).
+     *
+     * @return {@code true} if the account has the student role
+     */
+    public boolean isStudent() {
+        return role == Role.STUDENT;
+    }
+
+    /**
      * Tells whether the account is active. A disabled account may not send commands (FR-032).
      *
      * @return {@code true} if the account is active

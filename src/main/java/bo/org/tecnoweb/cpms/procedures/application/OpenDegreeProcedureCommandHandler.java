@@ -23,7 +23,7 @@ public class OpenDegreeProcedureCommandHandler implements EmailCommandHandler {
     /** {@inheritDoc} */
     @Override
     public int requiredArgs() {
-        return 7;
+        return 1;
     }
 
     /** {@inheritDoc} */
@@ -35,8 +35,6 @@ public class OpenDegreeProcedureCommandHandler implements EmailCommandHandler {
     /** {@inheritDoc} */
     @Override
     public void handle(ReceivedEmail email) {
-        var args = email.parseArgs();
-        useCase.open(email.getFrom(), new OpenDegreeProcedureCommand(args.get(0), args.get(1), args.get(2),
-                args.get(3), args.get(4), args.get(5), args.get(6), email.getAttachmentIds()));
+        useCase.open(email.getFrom(), new OpenDegreeProcedureCommand(email.parseArgs().get(0), email.getAttachmentIds()));
     }
 }

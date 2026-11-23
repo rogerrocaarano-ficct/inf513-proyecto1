@@ -1,5 +1,6 @@
 package bo.org.tecnoweb.cpms.procedures.infrastructure;
 
+import bo.org.tecnoweb.cpms.procedures.application.AcademicCalendar;
 import bo.org.tecnoweb.cpms.procedures.application.AssignTutorCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.DegreeProcedureNotifier;
 import bo.org.tecnoweb.cpms.procedures.application.DegreeProcedureUseCase;
@@ -11,7 +12,6 @@ import bo.org.tecnoweb.cpms.procedures.application.TutorAssignmentUseCase;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectRepository;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
-import bo.org.tecnoweb.cpms.users.application.UserManagementNotifier;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,8 +41,8 @@ class ProceduresConfiguration {
     /** Creates the UC-002 application service. */
     @Bean
     DegreeProcedureUseCase degreeProcedureUseCase(UserRepository users, DegreeProcedureRepository procedures,
-            UserManagementNotifier userNotifier, DegreeProcedureNotifier notifier, StoredFileService storedFiles) {
-        return new DegreeProcedureUseCase(users, procedures, userNotifier, notifier, storedFiles);
+            DegreeProcedureNotifier notifier, StoredFileService storedFiles, AcademicCalendar calendar) {
+        return new DegreeProcedureUseCase(users, procedures, notifier, storedFiles, calendar);
     }
 
     /** Registers the FR-001 opening command with the mail channel. */

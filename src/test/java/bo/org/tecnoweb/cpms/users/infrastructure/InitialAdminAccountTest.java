@@ -66,8 +66,8 @@ class InitialAdminAccountTest {
         }
 
         @Override
-        public Optional<User> getByEmailForUpdate(String email) {
-            return getByEmail(email);
+        public Optional<User> getByUagrmCodeForUpdate(String code) {
+            return inserted.stream().filter(u -> code.equals(u.getUagrmCode())).findFirst();
         }
 
         @Override

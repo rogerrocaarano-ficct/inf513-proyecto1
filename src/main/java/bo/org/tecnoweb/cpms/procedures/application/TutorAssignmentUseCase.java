@@ -50,7 +50,7 @@ public class TutorAssignmentUseCase {
                 .orElseThrow(() -> invalid("tutor", "Ingrese el correo de un docente activo."));
         User student = users.getById(procedure.getStudentId()).orElseThrow();
         project.assignTutor(tutor.getId(), tutor.getFullName(), student.getEmailAddress(),
-                DegreeProcedure.referenceLabel(procedure.getReference()));
+                procedure.getReference());
         projects.update(project);
         for (var event : project.pullEvents()) {
             if (event instanceof DegreeProjectTutorAssignedEvent assigned) {
@@ -74,7 +74,7 @@ public class TutorAssignmentUseCase {
         InitialDocument.requirePdf(file, storedFiles.readContent(file.getId()));
         DegreeProject project = DegreeProject.builder().withProcedureId(procedure.getId()).withTitle(command.title())
                 .registerInitialProfile(file, student.getEmailAddress(), workshop.getEmailAddress(),
-                        DegreeProcedure.referenceLabel(procedure.getReference()));
+                        procedure.getReference());
         projects.insert(project);
         for (var event : project.pullEvents()) {
             if (event instanceof DegreeProjectProfileRegisteredEvent registered) {

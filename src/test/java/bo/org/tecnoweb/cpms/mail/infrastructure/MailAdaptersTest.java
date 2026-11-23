@@ -258,7 +258,7 @@ class MailAdaptersTest {
             when(storedFiles.get(id)).thenReturn(metadata);
             when(storedFiles.readContent(id)).thenReturn(new byte[] {1, 2, 3});
 
-            sender.send("taller@uagrm.bo", "Perfil de proyecto: TR-001", "Perfil adjunto.", List.of(id));
+            sender.send("taller@uagrm.bo", "Perfil de proyecto: 2026-2-123456", "Perfil adjunto.", List.of(id));
 
             MimeMessage sent = greenMail.getReceivedMessagesForDomain("uagrm.bo")[0];
             BodyPart attachment = ((Multipart) sent.getContent()).getBodyPart(1);

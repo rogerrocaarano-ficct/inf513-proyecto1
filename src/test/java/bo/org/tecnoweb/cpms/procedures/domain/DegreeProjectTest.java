@@ -13,13 +13,13 @@ class DegreeProjectTest {
     @Test
     void registersOnlyTheFirstProfile() {
         var project = DegreeProject.builder().withProcedureId(UUID.randomUUID()).withTitle(" Redes ");
-        project.registerInitialProfile(pdf("perfil.pdf"), "student@test", "workshop@test", "TR-001");
+        project.registerInitialProfile(pdf("perfil.pdf"), "student@test", "workshop@test", "2026-2-123456");
 
         assertThat(project.getTitle()).isEqualTo("Redes");
         assertThat(project.getProfile().approved()).isFalse();
         assertThat(project.pullEvents()).singleElement().isInstanceOf(DegreeProjectProfileRegisteredEvent.class);
         assertThatThrownBy(() -> project.registerInitialProfile(
-                pdf("otro.pdf"), "student@test", "workshop@test", "TR-001")).isInstanceOf(DomainValidationException.class);
+                pdf("otro.pdf"), "student@test", "workshop@test", "2026-2-123456")).isInstanceOf(DomainValidationException.class);
         assertThat(project.pullEvents()).isEmpty();
     }
 
@@ -28,7 +28,7 @@ class DegreeProjectTest {
     void profileKeepsTheStoredFile() {
         var file = pdf("perfil.pdf");
         var project = DegreeProject.builder().withProcedureId(UUID.randomUUID()).withTitle("Redes")
-                .registerInitialProfile(file, "student@test", "workshop@test", "TR-001");
+                .registerInitialProfile(file, "student@test", "workshop@test", "2026-2-123456");
 
         assertThat(project.getProfile().storedFileId()).isEqualTo(file.getId());
     }
@@ -39,7 +39,7 @@ class DegreeProjectTest {
         var project = DegreeProject.builder().withProcedureId(UUID.randomUUID()).withTitle("  ");
 
         assertThatThrownBy(() -> project.registerInitialProfile(
-                pdf("perfil.pdf"), "student@test", "workshop@test", "TR-001")).isInstanceOf(DomainValidationException.class);
+                pdf("perfil.pdf"), "student@test", "workshop@test", "2026-2-123456")).isInstanceOf(DomainValidationException.class);
         assertThat(project.getProfile()).isNull();
         assertThat(project.pullEvents()).isEmpty();
     }
@@ -48,20 +48,20 @@ class DegreeProjectTest {
     @Test
     void assignsOnlyAfterApproval() {
         var project = DegreeProject.builder().withProcedureId(UUID.randomUUID()).withTitle("Redes")
-                .registerInitialProfile(pdf("perfil.pdf"), "student@test", "workshop@test", "TR-001");
+                .registerInitialProfile(pdf("perfil.pdf"), "student@test", "workshop@test", "2026-2-123456");
         var tutorId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> project.assignTutor(tutorId, "Luis", "student@test", "TR-001"))
+        assertThatThrownBy(() -> project.assignTutor(tutorId, "Luis", "student@test", "2026-2-123456"))
                 .isInstanceOf(DomainValidationException.class);
         assertThat(project.getTutorId()).isNull();
 
         var approved = DegreeProject.rehydrate(project.getId(), project.getProcedureId(), project.getTitle(),
                 new ProjectProfile(project.getProfile().storedFileId(), true), null);
         assertThat(approved.pullEvents()).isEmpty();
-        approved.assignTutor(tutorId, "Luis", "student@test", "TR-001");
+        approved.assignTutor(tutorId, "Luis", "student@test", "2026-2-123456");
         assertThat(approved.getTutorId()).isEqualTo(tutorId);
         assertThat(approved.pullEvents()).singleElement().isInstanceOf(DegreeProjectTutorAssignedEvent.class);
-        assertThatThrownBy(() -> approved.assignTutor(UUID.randomUUID(), "Rosa", "student@test", "TR-001"))
+        assertThatThrownBy(() -> approved.assignTutor(UUID.randomUUID(), "Rosa", "student@test", "2026-2-123456"))
                 .isInstanceOf(DomainValidationException.class);
         assertThat(approved.getTutorId()).isEqualTo(tutorId);
     }

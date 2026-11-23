@@ -20,7 +20,7 @@ class MailTutorAssignmentNotifierTest {
     private final MailTutorAssignmentNotifier notifier = new MailTutorAssignmentNotifier(publisher, outbox);
 
     private static DegreeProjectProfileRegisteredEvent profileRegistered(UUID storedFileId) {
-        return new DegreeProjectProfileRegisteredEvent("student@test", "workshop@test", "TR-001", "Redes",
+        return new DegreeProjectProfileRegisteredEvent("student@test", "workshop@test", "2026-2-123456", "Redes",
                 new ProjectProfile(storedFileId, false), Instant.now());
     }
 
@@ -35,7 +35,7 @@ class MailTutorAssignmentNotifierTest {
         verifyNoInteractions(outbox);
 
         notifier.onProfileRegistered(event);
-        verify(outbox).send(eq("workshop@test"), eq("Perfil de proyecto: TR-001"), contains("Redes"),
+        verify(outbox).send(eq("workshop@test"), eq("Perfil de proyecto: 2026-2-123456"), contains("Redes"),
                 eq(List.of(profileId)));
     }
 
@@ -52,13 +52,13 @@ class MailTutorAssignmentNotifierTest {
     /** The designation goes to the student (FR-020). */
     @Test
     void sendsTutorDesignationToStudent() {
-        var event = new DegreeProjectTutorAssignedEvent("student@test", "TR-001", "Luis Pérez", Instant.now());
+        var event = new DegreeProjectTutorAssignedEvent("student@test", "2026-2-123456", "Luis Pérez", Instant.now());
 
         notifier.notifyTutorAssigned(event);
         verify(publisher).publishEvent(event);
         verifyNoInteractions(outbox);
 
         notifier.onTutorAssigned(event);
-        verify(outbox).send(eq("student@test"), eq("Tutor asignado: TR-001"), contains("Luis Pérez"), eq(List.of()));
+        verify(outbox).send(eq("student@test"), eq("Tutor asignado: 2026-2-123456"), contains("Luis Pérez"), eq(List.of()));
     }
 }

@@ -1,5 +1,6 @@
 package bo.org.tecnoweb.cpms.procedures;
 
+import bo.org.tecnoweb.cpms.procedures.domain.Semester;
 import bo.org.tecnoweb.cpms.storage.application.FileStorage;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
@@ -19,6 +20,12 @@ import org.springframework.transaction.support.TransactionOperations;
 /** Shared account and attachment inputs for UC-002 and UC-003 tests. */
 public final class ProcedureFixtures {
     private ProcedureFixtures() {}
+
+    /** The semester of the openings in the tests. */
+    public static final Semester SEMESTER = new Semester(2026, 2);
+
+    /** The reference of the {@link #student()}'s procedure opened in {@link #SEMESTER}. */
+    public static final String REFERENCE = "2026-2-123456";
 
     /** Returns an active secretary. */
     public static User secretary() {

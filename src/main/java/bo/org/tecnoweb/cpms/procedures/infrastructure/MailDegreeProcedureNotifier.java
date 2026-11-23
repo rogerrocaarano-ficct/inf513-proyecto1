@@ -27,8 +27,8 @@ class MailDegreeProcedureNotifier implements DegreeProcedureNotifier {
 
     /** {@inheritDoc} */
     @Override
-    public void notifyOpened(DegreeProcedureOpenedEvent event, String reference) {
-        publisher.publishEvent(new OpeningNotice(event, reference));
+    public void notifyOpened(DegreeProcedureOpenedEvent event) {
+        publisher.publishEvent(event);
     }
 
     /** {@inheritDoc} */
@@ -39,9 +39,8 @@ class MailDegreeProcedureNotifier implements DegreeProcedureNotifier {
 
     /** Confirms to the requester and notifies the student after commit (FR-054). */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    void onOpened(OpeningNotice notice) {
-        var event = notice.event();
-        String reference = notice.reference();
+    void onOpened(DegreeProcedureOpenedEvent event) {
+        String reference = event.reference();
         send(event.requester(), "Trámite abierto: " + reference,
                 "Se abrió el trámite de titulación de " + event.studentName() + ".\n"
                         + "Referencia: " + reference + "\nDocumentos iniciales registrados: 4.");
@@ -64,7 +63,4 @@ class MailDegreeProcedureNotifier implements DegreeProcedureNotifier {
             log.warn("Could not send procedure notification: {}", subject, exception);
         }
     }
-
-    /** Associates an opening event with the reference assigned by persistence. */
-    record OpeningNotice(DegreeProcedureOpenedEvent event, String reference) {}
 }
