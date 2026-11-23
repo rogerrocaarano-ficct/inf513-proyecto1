@@ -23,7 +23,7 @@ class DegreeProcedureTest {
         var student = student();
         var procedure = DegreeProcedure.builder().open(student, secretary(), SEMESTER, documents());
 
-        assertThat(procedure.getDocuments()).hasSize(4);
+        assertThat(procedure.getRequirements()).hasSize(4);
         assertThat(procedure.getStudentId()).isEqualTo(student.getId());
         assertThat(procedure.getReference()).isEqualTo(REFERENCE);
         assertThat(procedure.pullEvents()).singleElement().isInstanceOfSatisfying(DegreeProcedureOpenedEvent.class,
@@ -59,17 +59,28 @@ class DegreeProcedureTest {
                         e -> assertThat(e.getErrors()).containsOnlyKeys("cuenta"));
     }
 
-    /** An invalid attachment set leaves the aggregate untouched (FR-002). */
+    /** A repeated requirement leaves the aggregate untouched (FR-002). */
     @Test
-    void rejectsDuplicateDocumentWithoutPartialOpening() {
+    void rejectsARepeatedRequirementWithoutPartialOpening() {
         var procedure = DegreeProcedure.builder();
 
         assertThatThrownBy(() -> procedure.open(student(), secretary(), SEMESTER,
                 List.of(pdf("carta.pdf"), pdf("ci.pdf"), pdf("ci_copia.pdf"), pdf("cv.pdf"))))
-                .isInstanceOf(DomainValidationException.class);
-        assertThat(procedure.getDocuments()).isEmpty();
+                .isInstanceOfSatisfying(DomainValidationException.class, e -> assertThat(e.getErrors())
+                        .containsExactly(Map.entry(PdfDocument.FIELD,
+                                "Se recibió más de un documento para el requisito Cédula de identidad.")));
+        assertThat(procedure.getRequirements()).isEmpty();
         assertThat(procedure.getReference()).isNull();
         assertThat(procedure.pullEvents()).isEmpty();
+    }
+
+    /** Every opening requirement needs its document (FR-002). */
+    @Test
+    void rejectsAMissingRequirement() {
+        assertThatThrownBy(() -> DegreeProcedure.builder().open(student(), secretary(), SEMESTER,
+                List.of(pdf("carta.pdf"), pdf("cv.pdf"), pdf("ci.pdf"))))
+                .isInstanceOfSatisfying(DomainValidationException.class, e -> assertThat(e.getErrors())
+                        .containsExactly(Map.entry(PdfDocument.FIELD, "Falta el requisito Boleta de inscripción.")));
     }
 
     /** The replacement updates only the selected type and rejects closed procedures (FR-055). */
@@ -79,19 +90,19 @@ class DegreeProcedureTest {
         var secretary = secretary();
         var opened = DegreeProcedure.builder().open(student, secretary, SEMESTER, documents());
         var persisted = DegreeProcedure.rehydrate(opened.getId(), REFERENCE, student.getId(), secretary.getId(),
-                opened.getOpenedAt(), null, opened.getDocuments());
+                opened.getOpenedAt(), null, opened.getRequirements());
 
         var corrected = pdf("carta_corregida.pdf");
-        persisted.replaceInitialDocument(secretary, corrected);
+        persisted.replaceRequirement(secretary, corrected);
 
-        assertThat(persisted.getDocuments().get(InitialDocument.LETTER).storedFileId()).isEqualTo(corrected.getId());
-        assertThat(persisted.documentOf(InitialDocument.RESUME)).isEqualTo(opened.documentOf(InitialDocument.RESUME));
+        assertThat(persisted.getRequirements().get(OpeningRequirement.LETTER)).isEqualTo(corrected.getId());
+        assertThat(persisted.requirementOf(OpeningRequirement.RESUME)).isEqualTo(opened.requirementOf(OpeningRequirement.RESUME));
         assertThat(persisted.pullEvents()).singleElement().isInstanceOfSatisfying(
-                DegreeProcedureDocumentReplacedEvent.class, event -> assertThat(event.reference()).isEqualTo(REFERENCE));
+                DegreeProcedureRequirementReplacedEvent.class, event -> assertThat(event.reference()).isEqualTo(REFERENCE));
 
         var closed = DegreeProcedure.rehydrate(opened.getId(), REFERENCE, student.getId(), secretary.getId(),
-                opened.getOpenedAt(), Instant.now(), opened.getDocuments());
-        assertThatThrownBy(() -> closed.replaceInitialDocument(secretary, pdf("carta_corregida.pdf")))
+                opened.getOpenedAt(), Instant.now(), opened.getRequirements());
+        assertThatThrownBy(() -> closed.replaceRequirement(secretary, pdf("carta_corregida.pdf")))
                 .isInstanceOf(DomainValidationException.class);
     }
 

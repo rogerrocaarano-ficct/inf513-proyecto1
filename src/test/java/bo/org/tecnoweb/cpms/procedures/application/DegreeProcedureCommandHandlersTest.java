@@ -41,7 +41,7 @@ class DegreeProcedureCommandHandlersTest {
     @Test
     void delegatesReplacement() {
         var useCase = mock(DegreeProcedureUseCase.class);
-        var handler = new ReplaceInitialDocumentCommandHandler(useCase);
+        var handler = new ReplaceOpeningRequirementCommandHandler(useCase);
         var id = UUID.randomUUID();
         var email = ReceivedEmail.builder().withState(ReceivedEmailState.VALIDATED).fromSender("secretaria@cpms.test")
                 .withSubject("tramites.reemplazarDocumento[2026-2-123456]")
@@ -52,6 +52,6 @@ class DegreeProcedureCommandHandlersTest {
         assertThat(handler.actionKey()).isEqualTo("tramites.reemplazarDocumento");
         assertThat(handler.requiredArgs()).isEqualTo(1);
         assertThat(handler.requiredFiles()).isEqualTo(1);
-        verify(useCase).replace("secretaria@cpms.test", new ReplaceInitialDocumentCommand("2026-2-123456", id));
+        verify(useCase).replaceRequirement("secretaria@cpms.test", new ReplaceOpeningRequirementCommand("2026-2-123456", id));
     }
 }

@@ -1,21 +1,27 @@
 package bo.org.tecnoweb.cpms.procedures.infrastructure.persistence;
 
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedure;
-import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedure.Document;
-import bo.org.tecnoweb.cpms.procedures.domain.InitialDocument;
-import jakarta.persistence.CascadeType;
+import bo.org.tecnoweb.cpms.procedures.domain.OpeningRequirement;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.MapKey;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
 
-/** JPA representation of a graduation procedure, keyed by its UUID (UC-002). */
+/**
+ * JPA representation of a graduation procedure, keyed by its UUID (UC-002). Its opening requirements
+ * are values of the procedure: one row per requirement with the stored file of its current version.
+ */
 @Entity
 @Table(name = "degree_procedure")
 class DegreeProcedureEntity {
@@ -28,9 +34,12 @@ class DegreeProcedureEntity {
     private Instant openedAt;
     private Instant closedAt;
 
-    @OneToMany(mappedBy = "procedure", cascade = CascadeType.ALL, orphanRemoval = true)
-    @MapKey(name = "type")
-    private Map<InitialDocument, InitialDocumentEntity> documents = new EnumMap<>(InitialDocument.class);
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "degree_procedure_requirement", joinColumns = @JoinColumn(name = "procedure_id"))
+    @MapKeyEnumerated(EnumType.STRING)
+    @MapKeyColumn(name = "requirement")
+    @Column(name = "stored_file_id", nullable = false, unique = true)
+    private Map<OpeningRequirement, UUID> requirements = new EnumMap<>(OpeningRequirement.class);
 
     /** Constructor used by JPA. */
     protected DegreeProcedureEntity() {}
@@ -42,19 +51,16 @@ class DegreeProcedureEntity {
         studentId = procedure.getStudentId();
         openedBy = procedure.getOpenedBy();
         openedAt = procedure.getOpenedAt();
-        updateDocuments(procedure);
+        updateRequirements(procedure);
     }
 
-    /** Maps the aggregate and its files to the domain. */
+    /** Maps the aggregate and the stored files of its requirements to the domain. */
     DegreeProcedure toDomain() {
-        Map<InitialDocument, Document> files = new EnumMap<>(InitialDocument.class);
-        documents.forEach((type, entity) -> files.put(type, entity.toDomain()));
-        return DegreeProcedure.rehydrate(id, reference, studentId, openedBy, openedAt, closedAt, files);
+        return DegreeProcedure.rehydrate(id, reference, studentId, openedBy, openedAt, closedAt, requirements);
     }
 
-    /** Copies current file data while retaining each persisted document identity. */
-    void updateDocuments(DegreeProcedure procedure) {
-        procedure.getDocuments().forEach((type, document) -> documents
-                .computeIfAbsent(type, key -> new InitialDocumentEntity(this, key)).update(document));
+    /** Copies the stored file of the current version of each requirement (FR-055). */
+    void updateRequirements(DegreeProcedure procedure) {
+        requirements.putAll(procedure.getRequirements());
     }
 }

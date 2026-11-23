@@ -7,7 +7,7 @@ import bo.org.tecnoweb.cpms.procedures.domain.DegreeProject;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectProfileRegisteredEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectRepository;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectTutorAssignedEvent;
-import bo.org.tecnoweb.cpms.procedures.domain.InitialDocument;
+import bo.org.tecnoweb.cpms.procedures.domain.PdfDocument;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
 import bo.org.tecnoweb.cpms.users.domain.Role;
@@ -71,7 +71,7 @@ public class TutorAssignmentUseCase {
                 .findFirst().orElseThrow(() -> invalid("perfil",
                         "No hay un docente de Taller de Grado activo. Intente nuevamente más adelante."));
         StoredFile file = storedFiles.get(command.attachmentId());
-        InitialDocument.requirePdf(file, storedFiles.readContent(file.getId()));
+        PdfDocument.require(file, storedFiles.readContent(file.getId()));
         DegreeProject project = DegreeProject.builder().withProcedureId(procedure.getId()).withTitle(command.title())
                 .registerInitialProfile(file, student.getEmailAddress(), workshop.getEmailAddress(),
                         procedure.getReference());

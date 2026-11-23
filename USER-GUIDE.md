@@ -186,7 +186,7 @@ tramites.abrirTramite[218001234]
 
 El único argumento es el registro universitario del estudiante.
 
-Adjunta la carta de solicitud, la hoja de vida, la copia de la cédula y la boleta de inscripción con Modalidad de Graduación. Envía un PDF de hasta 25 MB por documento. Usa las palabras `carta`, `cv`, `ci` y `boleta` en los nombres, por ejemplo `carta_solicitud.pdf`, `cv.pdf`, `ci.pdf` y `boleta.pdf`. El escaneo de la carta física es suficiente.
+Adjunta un PDF por cada requisito de apertura: la carta de solicitud, la hoja de vida, la copia de la cédula y la boleta de inscripción con Modalidad de Graduación. Cada PDF puede pesar hasta 25 MB. Usa las palabras `carta`, `cv`, `ci` y `boleta` en los nombres, por ejemplo `carta_solicitud.pdf`, `cv.pdf`, `ci.pdf` y `boleta.pdf`. El escaneo de la carta física es suficiente.
 
 El sistema rechaza la apertura si ninguna cuenta tiene ese registro, si la cuenta no es de estudiante o está desactivada, si el estudiante ya tiene un trámite en curso o si ya tuvo un trámite en el semestre vigente, aunque esté cerrado.
 
@@ -194,13 +194,13 @@ Secretaría recibe la referencia del trámite, formada por el semestre vigente y
 
 ### `tramites.reemplazarDocumento`
 
-Secretaría puede sustituir un documento inicial mientras el trámite esté en curso. Usa la referencia recibida al abrirlo y adjunta un PDF con la palabra que identifica el tipo de documento.
+Secretaría puede sustituir el documento de un requisito de apertura mientras el trámite esté en curso. Usa la referencia recibida al abrirlo y adjunta un PDF con la palabra que identifica el requisito.
 
 ```text
 tramites.reemplazarDocumento[2026-2-218001234]
 ```
 
-Por ejemplo, adjunta `carta_corregida.pdf` para sustituir la carta. Secretaría recibe una confirmación que identifica el trámite y el documento sustituido.
+Por ejemplo, adjunta `carta_corregida.pdf` para sustituir la carta. Secretaría recibe una confirmación que identifica el trámite y el requisito sustituido. El documento anterior se conserva como versión anterior.
 
 ### `proyectos.registrarPerfil`
 

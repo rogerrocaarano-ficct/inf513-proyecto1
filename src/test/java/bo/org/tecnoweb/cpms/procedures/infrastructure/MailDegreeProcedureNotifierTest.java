@@ -4,7 +4,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import bo.org.tecnoweb.cpms.mail.application.EmailSender;
-import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureDocumentReplacedEvent;
+import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRequirementReplacedEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureOpenedEvent;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
@@ -30,22 +30,23 @@ class MailDegreeProcedureNotifierTest {
 
         notifier.onOpened(event);
 
-        verify(outbox).send(eq(event.requester()), eq("Trámite abierto: 2026-2-123456"), contains("Ana Pérez"), anyList());
+        verify(outbox).send(eq(event.requester()), eq("Trámite abierto: 2026-2-123456"),
+                contains("Requisitos de apertura registrados: 4."), anyList());
         verify(outbox).send(eq(event.student()), eq("Apertura de trámite: 2026-2-123456"), contains("2026-2-123456"), anyList());
     }
 
     /** Confirms an FR-055 replacement to the requester. */
     @Test
     void replacementPublishesAndConfirms() {
-        var event = new DegreeProcedureDocumentReplacedEvent("secretaria@cpms.test", "2026-2-123456",
+        var event = new DegreeProcedureRequirementReplacedEvent("secretaria@cpms.test", "2026-2-123456",
                 "Carta de solicitud", Instant.now());
-        notifier.notifyDocumentReplaced(event);
+        notifier.notifyRequirementReplaced(event);
         verify(publisher).publishEvent(event);
         verifyNoInteractions(outbox);
 
         notifier.onReplaced(event);
 
-        verify(outbox).send(eq(event.requester()), eq("Documento inicial reemplazado: 2026-2-123456"),
-                contains("Carta de solicitud"), anyList());
+        verify(outbox).send(eq(event.requester()), eq("Requisito de apertura reemplazado: 2026-2-123456"),
+                eq("Se reemplazó el requisito Carta de solicitud en el expediente 2026-2-123456."), anyList());
     }
 }

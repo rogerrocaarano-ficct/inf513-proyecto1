@@ -47,7 +47,7 @@ Con el sistema, cada etapa del trámite queda registrada en un expediente digita
 | ID | Caso de uso | ¿Qué soluciona? | Prioridad |
 | --- | --- | --- | --- |
 | UC-001 | Gestión de usuarios | Todos los participantes del trámite necesitan una cuenta con sus roles para usar el sistema | Must |
-| UC-002 | Habilitación académica de solicitudes | La solicitud y los documentos iniciales del estudiante se reciben en papel y no se sabe si el trámite fue habilitado | Must |
+| UC-002 | Habilitación académica de solicitudes | La solicitud y los requisitos de apertura del estudiante se reciben en papel y no se sabe si el trámite fue habilitado | Must |
 | UC-003 | Asignación de tutor y registro del perfil de proyecto | La designación del tutor y la entrega del perfil de proyecto no quedan registradas en ningún lugar consultable | Must |
 | UC-004 | Evaluación de viabilidad y conformación del tribunal | La evaluación del perfil y la designación de los miembros del tribunal se comunican por papel o en persona | Must |
 | UC-005 | Revisión, versionado y control de plazos del tribunal | Las observaciones del tribunal, las correcciones del estudiante y sus plazos quedan dispersos en cartas y versiones impresas | Must |

@@ -72,7 +72,7 @@ class DegreeProcedureByEmailIntegrationTest {
     @BeforeEach
     void setup() throws Exception {
         jdbc.update("DELETE FROM degree_project");
-        jdbc.update("DELETE FROM initial_document");
+        jdbc.update("DELETE FROM degree_procedure_requirement");
         jdbc.update("DELETE FROM degree_procedure");
         jdbc.update("DELETE FROM received_email");
         jdbc.update("DELETE FROM stored_file");
@@ -149,7 +149,7 @@ class DegreeProcedureByEmailIntegrationTest {
         // The documents adopt the stored files of the attachments: one file on disk per attachment.
         assertThat(jdbc.queryForObject("SELECT count(*) FROM stored_file", Integer.class)).isEqualTo(4);
         assertThat(jdbc.queryForList("""
-                SELECT d.stored_file_id FROM initial_document d
+                SELECT d.stored_file_id FROM degree_procedure_requirement d
                 JOIN received_email_attachment a ON a.stored_file_id = d.stored_file_id
                 """)).hasSize(4);
         UUID original = letter();
@@ -163,7 +163,7 @@ class DegreeProcedureByEmailIntegrationTest {
                 .containsExactly(original, corrected);
         assertThat(storedFiles.readContent(original))
                 .containsExactly("%PDF-1.7\ncarta.pdf".getBytes(StandardCharsets.US_ASCII));
-        assertThat(subjectsTo(SECRETARY)).contains("Documento inicial reemplazado: " + REFERENCE);
+        assertThat(subjectsTo(SECRETARY)).contains("Requisito de apertura reemplazado: " + REFERENCE);
 
         jdbc.update("UPDATE degree_procedure SET closed_at = now() WHERE reference = ?", REFERENCE);
         command(SECRETARY, "tramites.reemplazarDocumento[" + REFERENCE + "]", "carta_tardia.pdf");
@@ -173,7 +173,7 @@ class DegreeProcedureByEmailIntegrationTest {
     }
 
     private UUID letter() {
-        return jdbc.queryForObject("SELECT stored_file_id FROM initial_document WHERE document_type = 'LETTER'",
+        return jdbc.queryForObject("SELECT stored_file_id FROM degree_procedure_requirement WHERE requirement = 'LETTER'",
                 UUID.class);
     }
 
@@ -236,7 +236,7 @@ class DegreeProcedureByEmailIntegrationTest {
 
     private List<String> filenames() {
         return jdbc.queryForList("""
-                SELECT original_name FROM initial_document JOIN stored_file ON stored_file.id = stored_file_id
+                SELECT original_name FROM degree_procedure_requirement JOIN stored_file ON stored_file.id = stored_file_id
                 """, String.class);
     }
 

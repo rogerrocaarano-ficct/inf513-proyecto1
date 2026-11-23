@@ -2,10 +2,11 @@ package bo.org.tecnoweb.cpms.procedures.application;
 
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedure;
-import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureDocumentReplacedEvent;
+import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRequirementReplacedEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureOpenedEvent;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
-import bo.org.tecnoweb.cpms.procedures.domain.InitialDocument;
+import bo.org.tecnoweb.cpms.procedures.domain.OpeningRequirement;
+import bo.org.tecnoweb.cpms.procedures.domain.PdfDocument;
 import bo.org.tecnoweb.cpms.procedures.domain.Semester;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
@@ -18,7 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Opens graduation procedures and replaces initial documents (UC-002). The procedure is opened on a
+ * Opens graduation procedures and replaces the documents of their opening requirements (UC-002). The procedure is opened on a
  * student account created beforehand by UC-001, found by its registration number. The PDFs arrive as
  * files the mail channel already stored; the use case validates them and adopts them as documents
  * (issue #9).
@@ -42,7 +43,7 @@ public class DegreeProcedureUseCase {
 
     /**
      * Basic flow: opens the procedure of an existing student account, found by its registration
-     * number, with the four initial PDFs (FR-001, FR-002, FR-051, FR-056). A student opens at most
+     * number, with one PDF per opening requirement (FR-001, FR-002, FR-051, FR-056). A student opens at most
      * one procedure per semester.
      *
      * @param requesterEmail the address of the sender
@@ -75,21 +76,22 @@ public class DegreeProcedureUseCase {
     }
 
     /**
-     * A2: replaces a document in an ongoing procedure (FR-055). The received PDF becomes the current
-     * version of the document and the replaced one is kept as its previous version (issue #9).
+     * A2: replaces the document of an opening requirement in an ongoing procedure (FR-055). The
+     * received PDF becomes the current version of the requirement and the replaced one is kept as its
+     * previous version (issue #9).
      */
-    public void replace(String requesterEmail, ReplaceInitialDocumentCommand command) {
-        User requester = requireActiveRequester(requesterEmail, RolePermission.REPLACE_INITIAL_DOCUMENT);
+    public void replaceRequirement(String requesterEmail, ReplaceOpeningRequirementCommand command) {
+        User requester = requireActiveRequester(requesterEmail, RolePermission.REPLACE_OPENING_REQUIREMENT);
         DegreeProcedure procedure = procedures.getOpenByReferenceForUpdate(DegreeProcedure.parseReference(command.reference()))
                 .orElseThrow(DegreeProcedure::unavailable);
         StoredFile file = requirePdf(command.attachmentId());
-        UUID previousId = procedure.documentOf(InitialDocument.classify(file)).storedFileId();
-        procedure.replaceInitialDocument(requester, file);
+        UUID previousId = procedure.requirementOf(OpeningRequirement.classify(file));
+        procedure.replaceRequirement(requester, file);
         storedFiles.appendVersion(previousId, file.getId());
         procedures.update(procedure);
         for (var event : procedure.pullEvents()) {
-            if (event instanceof DegreeProcedureDocumentReplacedEvent replaced) {
-                notifier.notifyDocumentReplaced(replaced);
+            if (event instanceof DegreeProcedureRequirementReplacedEvent replaced) {
+                notifier.notifyRequirementReplaced(replaced);
             }
         }
     }
@@ -120,7 +122,7 @@ public class DegreeProcedureUseCase {
      */
     private StoredFile requirePdf(UUID id) {
         StoredFile file = storedFiles.get(id);
-        InitialDocument.requirePdf(file, storedFiles.readContent(id));
+        PdfDocument.require(file, storedFiles.readContent(id));
         return file;
     }
 

@@ -5,7 +5,7 @@
 | ID | Requisito | Verificación |
 | --- | --- | --- |
 | FR-001 | El sistema debe registrar la solicitud de titulación de un estudiante y abrir su expediente de titulación | |
-| FR-002 | El sistema debe registrar los documentos iniciales del estudiante: carta de solicitud, hoja de vida, fotocopia de cédula de identidad y boleta de inscripción con Modalidad de Graduación | |
+| FR-002 | El sistema debe registrar los requisitos de apertura del estudiante: carta de solicitud, hoja de vida, fotocopia de cédula de identidad y boleta de inscripción con Modalidad de Graduación | |
 | FR-003 | El sistema debe registrar el tutor que el director de carrera asigna al estudiante | |
 | FR-004 | El sistema debe registrar el perfil de proyecto, con el título del proyecto, que presenta el estudiante | |
 | FR-005 | El sistema debe registrar el visto bueno del perfil de proyecto emitido por el docente de Taller de Grado | |
@@ -54,11 +54,11 @@
 | FR-048 | El sistema debe notificar al estudiante, al secretario(a) de dirección de carrera y al director de carrera cuando el documento del proyecto queda aprobado | |
 | FR-049 | El sistema debe permitir que cada usuario modifique la dirección de correo y el teléfono de su propia cuenta de usuario | |
 | FR-050 | El sistema debe permitir que el director de carrera gestione las cuentas de usuario cuyos roles son docente, docente de Taller de Grado, secretario(a) de dirección de carrera o estudiante | |
-| FR-051 | El sistema debe crear la cuenta de usuario del estudiante cuando la pide el secretario(a) de dirección de carrera, el director de carrera o el administrador, y cuando el secretario(a) abre su trámite de titulación, una vez verificados sus documentos iniciales | |
+| FR-051 | El sistema debe crear la cuenta de usuario del estudiante cuando la pide el secretario(a) de dirección de carrera, el director de carrera o el administrador, y cuando el secretario(a) abre su trámite de titulación, una vez verificados sus requisitos de apertura | |
 | FR-052 | El sistema debe mostrar el registro de cambios al administrador, al director de carrera y al secretario(a) de dirección de carrera, a cada uno dentro de su alcance | |
 | FR-053 | El sistema debe permitir que solo el administrador asigne o quite los roles de director de carrera y de administrador, y gestione las cuentas de usuario que los tienen | |
 | FR-054 | El sistema debe notificar al estudiante por correo la apertura y el cierre de su trámite de titulación | |
-| FR-055 | El sistema debe permitir que el secretario(a) de dirección de carrera reemplace un documento inicial de un trámite de titulación en curso | |
+| FR-055 | El sistema debe permitir que el secretario(a) de dirección de carrera reemplace el documento de un requisito de apertura de un trámite de titulación en curso | |
 | FR-056 | El sistema debe abrir el trámite de titulación sobre la cuenta de usuario existente del estudiante, y rechazar la apertura si esa cuenta está desactivada o ya tiene un trámite de titulación en curso | |
 | FR-057 | El sistema debe notificar al docente de Taller de Grado cada perfil de proyecto que presenta un estudiante | |
 | FR-058 | El sistema debe admitir un perfil de proyecto solo cuando el estudiante no tiene uno o su último perfil de proyecto fue rechazado u observado | |
@@ -79,8 +79,8 @@
   - Cada acción la registra quien la realiza: el estudiante presenta el perfil (FR-004) y entrega el documento (FR-008); el docente de Taller de Grado registra su visto bueno (FR-005); el tutor y el tribunal registran sus observaciones (FR-009). Las observaciones solo se registran en el sistema: no se aceptan por carta, a diferencia de lo que decían RF09 y SRC-001.
   - El director de carrera fija las fechas de la predefensa y la defensa final (FR-012, FR-015), como dice SRC-001.
   - El tutor revisa y aprueba el documento junto al tribunal (FR-009, FR-011), como dice SRC-001.
-- FR-002: SRC-001 incluye la carta de solicitud entre los documentos iniciales; RF02 la omitía. El estudiante entrega los documentos iniciales en la oficina; el secretario(a) verifica que la carpeta esté completa, abre el trámite de titulación y crea la cuenta de usuario del estudiante (FR-051, SRC-007).
-- FR-002, FR-055: el secretario(a) digitaliza los documentos iniciales y los adjunta al abrir el trámite; el sistema los guarda en el expediente de titulación y solo admite reemplazarlos mientras el trámite está en curso (SRC-009).
+- FR-002: SRC-001 incluye la carta de solicitud entre los requisitos de apertura; RF02 la omitía. El estudiante entrega los requisitos de apertura en la oficina; el secretario(a) verifica que la carpeta esté completa, abre el trámite de titulación y crea la cuenta de usuario del estudiante (FR-051, SRC-007).
+- FR-002, FR-055: el secretario(a) digitaliza los requisitos de apertura y los adjunta al abrir el trámite; el sistema los guarda en el expediente de titulación y solo admite reemplazarlos mientras el trámite está en curso (SRC-009).
 - FR-051, FR-056: los datos del estudiante que registra el secretario(a) son los de su cuenta de usuario (FR-026); el trámite no agrega datos propios. La cuenta del estudiante se crea con la gestión de usuarios (UC-001), con sus reglas y su aviso por correo (FR-033, FR-035), y el trámite se abre después sobre esa cuenta, identificada por su registro universitario. Si ninguna cuenta tiene ese registro, la apertura se rechaza (SRC-009; acordado el 2026-11-23).
 - FR-001, FR-056: un estudiante abre como máximo un trámite de titulación por semestre, aunque el anterior del mismo semestre esté cerrado. El trámite se identifica por su referencia, formada por el semestre en que se abre y el registro universitario del estudiante (acordado el 2026-11-23).
 - FR-017, FR-018: la recepción de los dos ejemplares físicos se registra en una sola solicitud, solo después de la calificación final (FR-016), y en el mismo paso el sistema cierra el trámite y archiva el expediente de titulación. La cuenta de usuario del estudiante sigue activa, para que pueda consultar su trámite archivado (UC-008) (SRC-009).

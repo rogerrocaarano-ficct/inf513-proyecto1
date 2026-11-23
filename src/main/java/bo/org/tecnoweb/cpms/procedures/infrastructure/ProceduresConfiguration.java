@@ -6,7 +6,7 @@ import bo.org.tecnoweb.cpms.procedures.application.DegreeProcedureNotifier;
 import bo.org.tecnoweb.cpms.procedures.application.DegreeProcedureUseCase;
 import bo.org.tecnoweb.cpms.procedures.application.OpenDegreeProcedureCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.RegisterInitialProfileCommandHandler;
-import bo.org.tecnoweb.cpms.procedures.application.ReplaceInitialDocumentCommandHandler;
+import bo.org.tecnoweb.cpms.procedures.application.ReplaceOpeningRequirementCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.TutorAssignmentNotifier;
 import bo.org.tecnoweb.cpms.procedures.application.TutorAssignmentUseCase;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
@@ -53,7 +53,7 @@ class ProceduresConfiguration {
 
     /** Registers the FR-055 replacement command with the mail channel. */
     @Bean
-    ReplaceInitialDocumentCommandHandler replaceInitialDocumentCommandHandler(DegreeProcedureUseCase useCase) {
-        return new ReplaceInitialDocumentCommandHandler(useCase);
+    ReplaceOpeningRequirementCommandHandler replaceOpeningRequirementCommandHandler(DegreeProcedureUseCase useCase) {
+        return new ReplaceOpeningRequirementCommandHandler(useCase);
     }
 }

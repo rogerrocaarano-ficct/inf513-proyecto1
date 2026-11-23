@@ -3,14 +3,14 @@ package bo.org.tecnoweb.cpms.procedures.application;
 import bo.org.tecnoweb.cpms.mail.application.EmailCommandHandler;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 
-/** Maps the UC-002 replacement (FR-055) email command. */
-public class ReplaceInitialDocumentCommandHandler implements EmailCommandHandler {
+/** Maps the UC-002 email command that replaces the document of an opening requirement (FR-055). */
+public class ReplaceOpeningRequirementCommandHandler implements EmailCommandHandler {
     /** Command name in the email subject. */
     public static final String ACTION = "tramites.reemplazarDocumento";
     private final DegreeProcedureUseCase useCase;
 
     /** Receives the use case to which the command delegates. */
-    public ReplaceInitialDocumentCommandHandler(DegreeProcedureUseCase useCase) {
+    public ReplaceOpeningRequirementCommandHandler(DegreeProcedureUseCase useCase) {
         this.useCase = useCase;
     }
 
@@ -35,7 +35,7 @@ public class ReplaceInitialDocumentCommandHandler implements EmailCommandHandler
     /** {@inheritDoc} */
     @Override
     public void handle(ReceivedEmail email) {
-        useCase.replace(email.getFrom(), new ReplaceInitialDocumentCommand(
+        useCase.replaceRequirement(email.getFrom(), new ReplaceOpeningRequirementCommand(
                 email.parseArgs().getFirst(), email.getAttachmentIds().getFirst()));
     }
 }

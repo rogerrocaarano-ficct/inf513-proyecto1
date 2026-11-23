@@ -14,7 +14,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
- * Graduation procedure and its initial documents (UC-002, FR-001, FR-002, FR-055). It is identified
+ * Graduation procedure and the documents of its opening requirements (UC-002, FR-001, FR-002, FR-055). It is identified
  * by its {@code UUID}; its reference, {@code <semester>-<registration number>}, is the business
  * identifier used in replies and commands.
  */
@@ -32,7 +32,7 @@ public final class DegreeProcedure implements AggregateRoot {
     private UUID openedBy;
     private Instant openedAt;
     private Instant closedAt;
-    private final Map<InitialDocument, Document> documents = new EnumMap<>(InitialDocument.class);
+    private final Map<OpeningRequirement, UUID> requirements = new EnumMap<>(OpeningRequirement.class);
     private final List<DomainEvent> events = new ArrayList<>();
 
     private DegreeProcedure() {}
@@ -44,9 +44,13 @@ public final class DegreeProcedure implements AggregateRoot {
         return procedure;
     }
 
-    /** Restores a persisted procedure without raising events. */
+    /**
+     * Restores a persisted procedure without raising events.
+     *
+     * @param requirements the stored file of the current version of each opening requirement
+     */
     public static DegreeProcedure rehydrate(UUID id, String reference, UUID studentId, UUID openedBy,
-            Instant openedAt, Instant closedAt, Map<InitialDocument, Document> documents) {
+            Instant openedAt, Instant closedAt, Map<OpeningRequirement, UUID> requirements) {
         var procedure = new DegreeProcedure();
         procedure.id = id;
         procedure.reference = reference;
@@ -54,22 +58,22 @@ public final class DegreeProcedure implements AggregateRoot {
         procedure.openedBy = openedBy;
         procedure.openedAt = openedAt;
         procedure.closedAt = closedAt;
-        procedure.documents.putAll(documents);
+        procedure.requirements.putAll(requirements);
         return procedure;
     }
 
     /**
-     * Opens the procedure of a student account with one valid PDF per document type (FR-002, FR-056).
-     * The reference is built from the semester and the student's registration number. Each document
-     * adopts a stored file already validated with {@link InitialDocument#requirePdf} (issue #9).
+     * Opens the procedure of a student account with one valid PDF per opening requirement (FR-002,
+     * FR-056). The reference is built from the semester and the student's registration number. Each
+     * requirement adopts a stored file already validated with {@link PdfDocument#require} (issue #9).
      *
      * @param student     the account of the student, found by its registration number
      * @param requester   the account that opens the procedure
      * @param semester    the current semester
-     * @param attachments the four initial PDFs
+     * @param attachments one PDF per opening requirement
      * @return this procedure
      * @throws DomainValidationException if the account is not an active student account, or a
-     *                                   document is missing or repeated
+     *                                   requirement is missing or repeated
      */
     public DegreeProcedure open(User student, User requester, Semester semester, List<StoredFile> attachments) {
         if (openedAt != null) {
@@ -82,20 +86,21 @@ public final class DegreeProcedure implements AggregateRoot {
         if (!student.isActive()) {
             throw new DomainValidationException(Map.of("cuenta", "La cuenta del estudiante está desactivada."));
         }
-        Map<InitialDocument, Document> validated = new EnumMap<>(InitialDocument.class);
-        Instant now = Instant.now();
+        Map<OpeningRequirement, UUID> fulfilled = new EnumMap<>(OpeningRequirement.class);
         for (StoredFile file : attachments) {
-            InitialDocument type = InitialDocument.classify(file);
-            if (validated.putIfAbsent(type, new Document(file.getId(), requester.getId(), now)) != null) {
-                throw InitialDocument.invalid("Se recibió más de un documento de tipo " + type.label() + ".");
+            OpeningRequirement requirement = OpeningRequirement.classify(file);
+            if (fulfilled.putIfAbsent(requirement, file.getId()) != null) {
+                throw OpeningRequirement.invalid(
+                        "Se recibió más de un documento para el requisito " + requirement.label() + ".");
             }
         }
-        for (InitialDocument type : InitialDocument.values()) {
-            if (!validated.containsKey(type)) {
-                throw InitialDocument.invalid("Falta el documento " + type.label() + ".");
+        for (OpeningRequirement requirement : OpeningRequirement.values()) {
+            if (!fulfilled.containsKey(requirement)) {
+                throw OpeningRequirement.invalid("Falta el requisito " + requirement.label() + ".");
             }
         }
-        documents.putAll(validated);
+        Instant now = Instant.now();
+        requirements.putAll(fulfilled);
         studentId = student.getId();
         reference = referenceOf(semester, student);
         openedAt = now;
@@ -106,18 +111,21 @@ public final class DegreeProcedure implements AggregateRoot {
     }
 
     /**
-     * Replaces one initial document while the procedure is open (FR-055). The document adopts the
-     * stored file, already validated with {@link InitialDocument#requirePdf}; the use case links it
-     * as the next version of the replaced one, which is kept (issue #9).
+     * Replaces the document of one opening requirement while the procedure is open (FR-055). The
+     * requirement adopts the stored file, already validated with {@link PdfDocument#require}; the use
+     * case links it as the next version of the replaced one, which is kept (issue #9).
+     *
+     * @param requester the account that replaces it
+     * @param file      the received PDF, whose name tells the requirement
      */
-    public void replaceInitialDocument(User requester, StoredFile file) {
+    public void replaceRequirement(User requester, StoredFile file) {
         if (openedAt == null || closedAt != null) {
             throw unavailable();
         }
-        InitialDocument type = InitialDocument.classify(file);
-        Instant now = Instant.now();
-        documents.put(type, new Document(file.getId(), requester.getId(), now));
-        events.add(new DegreeProcedureDocumentReplacedEvent(requester.getEmailAddress(), reference, type.label(), now));
+        OpeningRequirement requirement = OpeningRequirement.classify(file);
+        requirements.put(requirement, file.getId());
+        events.add(new DegreeProcedureRequirementReplacedEvent(requester.getEmailAddress(), reference,
+                requirement.label(), Instant.now()));
     }
 
     /** Reports that the given reference has no ongoing procedure. */
@@ -183,9 +191,13 @@ public final class DegreeProcedure implements AggregateRoot {
         return closedAt;
     }
 
-    /** Returns the current document by type. */
-    public Map<InitialDocument, Document> getDocuments() {
-        return Map.copyOf(documents);
+    /**
+     * Returns the stored file of the current version of each opening requirement.
+     *
+     * @return the stored files, by requirement
+     */
+    public Map<OpeningRequirement, UUID> getRequirements() {
+        return Map.copyOf(requirements);
     }
 
     /** Returns and clears pending domain events. */
@@ -197,27 +209,17 @@ public final class DegreeProcedure implements AggregateRoot {
     }
 
     /**
-     * Returns the current document of a type.
+     * Returns the stored file of the current version of an opening requirement.
      *
-     * @param type the document type
-     * @return the document, whose stored file is the current version
-     * @throws IllegalStateException if the procedure has no document of that type
+     * @param requirement the requirement
+     * @return the stored file
+     * @throws IllegalStateException if the procedure has no document for that requirement
      */
-    public Document documentOf(InitialDocument type) {
-        Document document = documents.get(type);
-        if (document == null) {
-            throw new IllegalStateException("Procedure " + id + " has no document " + type);
+    public UUID requirementOf(OpeningRequirement requirement) {
+        UUID storedFileId = requirements.get(requirement);
+        if (storedFileId == null) {
+            throw new IllegalStateException("Procedure " + id + " has no document for " + requirement);
         }
-        return document;
+        return storedFileId;
     }
-
-    /**
-     * Stored file and audit metadata of an initial document (FR-002, FR-055). The name, type and
-     * content of the PDF are kept by the file storage (issue #9).
-     *
-     * @param storedFileId the stored file of the current version
-     * @param updatedBy    the account that registered or replaced it
-     * @param updatedAt    when it was registered or replaced
-     */
-    public record Document(UUID storedFileId, UUID updatedBy, Instant updatedAt) {}
 }

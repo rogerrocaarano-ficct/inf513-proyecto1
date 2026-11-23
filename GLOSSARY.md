@@ -23,7 +23,6 @@
 | Docente | Profesor de la carrera que puede participar en un trámite de titulación como docente de Taller de Grado, tutor o miembro del tribunal | `Role.PROFESSOR` (etiqueta `docente`) |
 | Docente de Taller de Grado | Docente de la materia Taller de Grado, único en la carrera, que evalúa la viabilidad de todos los perfiles de proyecto; en el sistema, rol de cuenta | `Role.CAPSTONE_PROJECT_PROFESSOR` (etiqueta `docente_taller`) |
 | Documento del proyecto | Documento escrito del Proyecto de Grado que el estudiante entrega para la revisión del tribunal evaluador y del tutor, en una o más versiones | |
-| Documentos iniciales | Carta de solicitud, hoja de vida, fotocopia de cédula de identidad y boleta de inscripción con Modalidad de Graduación que el estudiante presenta para iniciar el trámite | `InitialDocument` |
 | Ejemplar físico | Copia impresa del proyecto aprobado que se archiva: una en la biblioteca y otra en la Dirección de Carrera | |
 | Estadísticas | Indicadores y reportes de titulación de la carrera, obtenidos de los trámites de titulación registrados | |
 | Estudiante | Postulante que realiza el trámite de titulación por Proyecto de Grado | `Role.STUDENT` (etiqueta `estudiante`) |
@@ -41,13 +40,14 @@
 | Referencia del trámite | Identificador del expediente que figura en las respuestas y se usa en comandos como el de sustitución de documentos. Se forma con el semestre en que se abre el trámite y el registro universitario del estudiante. Ejemplo `2026-2-218001234` | `DegreeProcedure.reference` |
 | Registro de cambios | Historial de los cambios hechos en el sistema: quién cambió qué dato y cuándo | |
 | Registro universitario | Código que la universidad asigna a cada estudiante y que no se repite entre estudiantes | `uagrmCode` (que también guarda el código administrativo o de docente de las demás cuentas) |
+| Requisitos de apertura | Requisitos para iniciar el trámite de titulación por Proyecto de Grado: carta de solicitud, hoja de vida, fotocopia de cédula de identidad y boleta de inscripción con Modalidad de Graduación. El estudiante los presenta en la oficina y el secretario(a) adjunta un PDF por cada uno al abrir el trámite | `OpeningRequirement` |
 | Revisión | Resultado que un revisor registra sobre una versión del documento del proyecto: aprobada u observada, con sus observaciones en texto y un PDF anotado opcional | |
 | Revisor | Tutor o miembro del tribunal evaluador designado en un trámite para revisar el documento del proyecto | |
 | Rol | Función general que una cuenta de usuario tiene en el sistema, una por cuenta: estudiante, docente, docente de Taller de Grado, secretario(a) de dirección de carrera, director de carrera o administrador | `Role` |
 | Secretario(a) de dirección de carrera | Personal de la Dirección de Carrera que recibe los documentos del trámite y lleva el expediente de titulación | `Role.ADMINISTRATIVE` (etiqueta `administrativo`) |
 | Semestre | Periodo académico en que se divide el año, escrito año y periodo (1 o 2), por ejemplo `2026-2`; un estudiante abre como máximo un trámite de titulación por semestre | `Semester` |
 | Servicio de correo | Servicio de correo electrónico por el que el sistema recibe solicitudes y envía respuestas y notificaciones | `EmailInbox` (recepción), `EmailSender` (envío) |
-| Solicitud de titulación | Pedido del estudiante para iniciar el trámite de titulación, que acompaña a los documentos iniciales | |
+| Solicitud de titulación | Pedido del estudiante para iniciar el trámite de titulación, que acompaña a los requisitos de apertura | |
 | Título del proyecto | Nombre del proyecto de grado que el estudiante indica al presentar su perfil de proyecto; un perfil de proyecto nuevo puede cambiarlo | `DegreeProject.title` |
 | Trámite de titulación | Proceso que sigue un estudiante desde su solicitud de titulación hasta el archivo de su expediente | `DegreeProcedure` |
 | Tribunal evaluador | Grupo de tres docentes que revisa el documento del proyecto y evalúa la predefensa y la defensa final de un estudiante | |

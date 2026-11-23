@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.*;
 import bo.org.tecnoweb.cpms.TestcontainersConfiguration;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedure;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
-import bo.org.tecnoweb.cpms.procedures.domain.InitialDocument;
+import bo.org.tecnoweb.cpms.procedures.domain.OpeningRequirement;
 import bo.org.tecnoweb.cpms.procedures.domain.Semester;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
@@ -54,13 +54,13 @@ class JpaDegreeProcedureRepositoryTest {
         transactions.executeWithoutResult(status -> {
             var read = procedures.getOpenByReferenceForUpdate(stored.getReference()).orElseThrow();
             assertThat(read.getId()).isEqualTo(stored.getId());
-            assertThat(read.getDocuments()).hasSize(4);
+            assertThat(read.getRequirements()).hasSize(4);
             assertThat(read.pullEvents()).isEmpty();
-            read.replaceInitialDocument(requester, corrected);
+            read.replaceRequirement(requester, corrected);
             procedures.update(read);
         });
         assertThat(procedures.getOpenByReferenceForUpdate(stored.getReference()).orElseThrow()
-                .getDocuments().get(InitialDocument.IDENTITY).storedFileId()).isEqualTo(corrected.getId());
+                .getRequirements().get(OpeningRequirement.IDENTITY)).isEqualTo(corrected.getId());
 
         jdbc.update("UPDATE degree_procedure SET closed_at = now() WHERE id = ?", stored.getId());
         assertThat(procedures.existsOpenForStudent(student.getId())).isFalse();
@@ -75,10 +75,26 @@ class JpaDegreeProcedureRepositoryTest {
     /** No procedures entity keeps file bytes: only the references to stored files (issue #9). */
     @Test
     void entitiesKeepNoFileContent() {
-        for (Class<?> entity : List.of(DegreeProcedureEntity.class, InitialDocumentEntity.class,
-                DegreeProjectEntity.class)) {
+        for (Class<?> entity : List.of(DegreeProcedureEntity.class, DegreeProjectEntity.class)) {
             assertThat(Arrays.stream(entity.getDeclaredFields()).<Class<?>>map(Field::getType)).as(entity.getSimpleName())
                     .doesNotContain(byte[].class);
         }
+    }
+
+    /** The opening requirements are values of the procedure, keyed by procedure and requirement (V11). */
+    @Test
+    void requirementsAreValuesWithoutTheirOwnIdentity() {
+        assertThat(jdbc.queryForList("""
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'degree_procedure_requirement' ORDER BY column_name
+                """, String.class)).containsExactly("procedure_id", "requirement", "stored_file_id");
+        assertThat(jdbc.queryForList("""
+                SELECT k.column_name FROM information_schema.table_constraints c
+                JOIN information_schema.key_column_usage k ON k.constraint_name = c.constraint_name
+                WHERE c.table_name = 'degree_procedure_requirement' AND c.constraint_type = 'PRIMARY KEY'
+                ORDER BY k.ordinal_position
+                """, String.class)).containsExactly("procedure_id", "requirement");
+        assertThat(jdbc.queryForList(
+                "SELECT table_name FROM information_schema.tables WHERE table_name = 'initial_document'")).isEmpty();
     }
 }

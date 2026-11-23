@@ -23,7 +23,7 @@ class DegreeProjectTest {
         assertThat(project.pullEvents()).isEmpty();
     }
 
-    /** The profile adopts the stored file (issue #9); the PDF rules are checked in InitialDocumentTest. */
+    /** The profile adopts the stored file (issue #9); the PDF rules are checked in PdfDocumentTest. */
     @Test
     void profileKeepsTheStoredFile() {
         var file = pdf("perfil.pdf");

@@ -8,7 +8,7 @@ import static org.mockito.Mockito.*;
 import bo.org.tecnoweb.cpms.common.DomainValidationException;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedure;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
-import bo.org.tecnoweb.cpms.procedures.domain.InitialDocument;
+import bo.org.tecnoweb.cpms.procedures.domain.OpeningRequirement;
 import bo.org.tecnoweb.cpms.storage.domain.StoredFile;
 import bo.org.tecnoweb.cpms.users.domain.Role;
 import bo.org.tecnoweb.cpms.users.domain.User;
@@ -155,7 +155,7 @@ class DegreeProcedureUseCaseTest {
     void deniesADirector() {
         when(users.getByEmail(requester)).thenReturn(Optional.of(secretary().withRole(Role.DIRECTOR)));
         assertThatThrownBy(() -> useCase.open(requester, command)).isInstanceOf(UserNotAuthorizedException.class);
-        assertThatThrownBy(() -> useCase.replace(requester, new ReplaceInitialDocumentCommand(REFERENCE, storage.pdf("ci.pdf"))))
+        assertThatThrownBy(() -> useCase.replaceRequirement(requester, new ReplaceOpeningRequirementCommand(REFERENCE, storage.pdf("ci.pdf"))))
                 .isInstanceOf(UserNotAuthorizedException.class);
         verify(users, never()).getByUagrmCodeForUpdate(any());
         verifyNoInteractions(procedures, notifier);
@@ -167,8 +167,8 @@ class DegreeProcedureUseCaseTest {
         allowOpening();
         useCase.open(requester, command);
 
-        verify(procedures).insert(argThat(procedure -> procedure.getDocuments().values().stream()
-                .map(DegreeProcedure.Document::storedFileId).toList().containsAll(command.attachmentIds())));
+        verify(procedures).insert(argThat(procedure -> procedure.getRequirements().values()
+                .containsAll(command.attachmentIds())));
         assertThat(storage.writes).isEmpty();
     }
 
@@ -189,34 +189,34 @@ class DegreeProcedureUseCaseTest {
     @Test
     void replacementLinksTheReceivedFileAsTheNextVersion() {
         var opened = openedProcedure();
-        var previous = opened.documentOf(InitialDocument.IDENTITY).storedFileId();
+        var previous = opened.requirementOf(OpeningRequirement.IDENTITY);
         var received = storage.pdf("ci_actualizada.pdf");
 
-        useCase.replace(requester, new ReplaceInitialDocumentCommand(REFERENCE, received));
+        useCase.replaceRequirement(requester, new ReplaceOpeningRequirementCommand(REFERENCE, received));
 
         verify(procedures).update(argThat(procedure ->
-                procedure.documentOf(InitialDocument.IDENTITY).storedFileId().equals(received)));
+                procedure.requirementOf(OpeningRequirement.IDENTITY).equals(received)));
         assertThat(storage.service.getHistory(received)).extracting(StoredFile::getId)
                 .containsExactly(previous, received);
         assertThat(storage.writes).isEmpty();
-        verify(notifier).notifyDocumentReplaced(argThat(event -> event.reference().equals(REFERENCE)));
+        verify(notifier).notifyRequirementReplaced(argThat(event -> event.reference().equals(REFERENCE)));
     }
 
     /** An invalid PDF, a malformed reference or an unavailable procedure neither replaces nor links versions (FR-055). */
     @Test
     void rejectedReplacementLinksNothing() {
         var opened = openedProcedure();
-        var previous = opened.documentOf(InitialDocument.IDENTITY).storedFileId();
+        var previous = opened.requirementOf(OpeningRequirement.IDENTITY);
         var notPdf = storage.store("ci.pdf", "texto".getBytes(StandardCharsets.US_ASCII));
 
-        assertThatThrownBy(() -> useCase.replace(requester, new ReplaceInitialDocumentCommand(REFERENCE, notPdf)))
+        assertThatThrownBy(() -> useCase.replaceRequirement(requester, new ReplaceOpeningRequirementCommand(REFERENCE, notPdf)))
                 .isInstanceOf(DomainValidationException.class);
         var valid = storage.pdf("ci.pdf");
-        assertThatThrownBy(() -> useCase.replace(requester, new ReplaceInitialDocumentCommand("TR-001", valid)))
+        assertThatThrownBy(() -> useCase.replaceRequirement(requester, new ReplaceOpeningRequirementCommand("TR-001", valid)))
                 .isInstanceOfSatisfying(DomainValidationException.class,
                         e -> assertThat(e.getErrors()).containsOnlyKeys(DegreeProcedure.REFERENCE_FIELD));
         when(procedures.getOpenByReferenceForUpdate("2026-2-999")).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> useCase.replace(requester, new ReplaceInitialDocumentCommand("2026-2-999", valid)))
+        assertThatThrownBy(() -> useCase.replaceRequirement(requester, new ReplaceOpeningRequirementCommand("2026-2-999", valid)))
                 .isInstanceOf(DomainValidationException.class);
 
         verify(procedures, never()).update(any());
@@ -231,7 +231,7 @@ class DegreeProcedureUseCaseTest {
         var files = storage.documents().stream().map(storage.service::get).toList();
         var opened = DegreeProcedure.builder().open(student, secretary, SEMESTER, files);
         var persisted = DegreeProcedure.rehydrate(opened.getId(), REFERENCE, student.getId(), secretary.getId(),
-                opened.getOpenedAt(), null, opened.getDocuments());
+                opened.getOpenedAt(), null, opened.getRequirements());
         when(procedures.getOpenByReferenceForUpdate(REFERENCE)).thenReturn(Optional.of(persisted));
         return persisted;
     }

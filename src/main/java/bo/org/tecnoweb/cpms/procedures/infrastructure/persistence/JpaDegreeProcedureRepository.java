@@ -51,6 +51,6 @@ class JpaDegreeProcedureRepository implements DegreeProcedureRepository {
     /** {@inheritDoc} */
     @Override
     public void update(DegreeProcedure procedure) {
-        procedures.findById(procedure.getId()).orElseThrow().updateDocuments(procedure);
+        procedures.findById(procedure.getId()).orElseThrow().updateRequirements(procedure);
     }
 }

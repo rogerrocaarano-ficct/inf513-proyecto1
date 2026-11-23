@@ -9,7 +9,7 @@ import bo.org.tecnoweb.cpms.procedures.application.AcademicCalendar;
 import bo.org.tecnoweb.cpms.procedures.application.AssignTutorCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.OpenDegreeProcedureCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.application.RegisterInitialProfileCommandHandler;
-import bo.org.tecnoweb.cpms.procedures.application.ReplaceInitialDocumentCommandHandler;
+import bo.org.tecnoweb.cpms.procedures.application.ReplaceOpeningRequirementCommandHandler;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProcedureRepository;
 import bo.org.tecnoweb.cpms.procedures.domain.DegreeProjectRepository;
 import bo.org.tecnoweb.cpms.storage.application.StoredFileService;
@@ -36,7 +36,7 @@ class ProceduresWiringTest {
             assertThat(context.getBeansOfType(EmailCommandHandler.class).values())
                     .extracting(EmailCommandHandler::actionKey)
                     .containsExactlyInAnyOrder(OpenDegreeProcedureCommandHandler.ACTION,
-                            ReplaceInitialDocumentCommandHandler.ACTION, RegisterInitialProfileCommandHandler.ACTION,
+                            ReplaceOpeningRequirementCommandHandler.ACTION, RegisterInitialProfileCommandHandler.ACTION,
                             AssignTutorCommandHandler.ACTION);
         }
     }

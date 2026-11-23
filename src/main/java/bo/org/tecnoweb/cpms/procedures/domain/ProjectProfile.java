@@ -24,7 +24,7 @@ public record ProjectProfile(UUID storedFileId, boolean approved) {
 
     /**
      * Creates a profile awaiting evaluation, which adopts a stored PDF already validated with
-     * {@link InitialDocument#requirePdf}.
+     * {@link PdfDocument#require}.
      *
      * @param file the stored file with the PDF
      * @return the pending profile
