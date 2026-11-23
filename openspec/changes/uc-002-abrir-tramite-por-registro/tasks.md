@@ -2,7 +2,7 @@
 
 ## 1. Cuentas (`users`)
 
-- [ ] 1.1 Agregar `RolePermission.HOLD_DEGREE_PROCEDURE` («tener un trámite de titulación», `Role.STUDENT`) con su Javadoc (UC-002, FR-056); verificar con `RolePermissionTest` (o la prueba de permisos existente) que solo `STUDENT` lo tiene
+- [ ] 1.1 Agregar `User.isStudent()` con su Javadoc (UC-002, FR-056); verificar con `UserTest` que es verdadero solo para una cuenta con rol de estudiante
 - [ ] 1.2 Reemplazar `UserRepository.getByEmailForUpdate` por `getByUagrmCodeForUpdate(String code)` y su método derivado con bloqueo pesimista en `SpringDataUserAccountRepository`; verificar con `JpaUserRepositoryTest` (Testcontainers) que encuentra la cuenta por registro y devuelve vacío para un registro inexistente
 
 ## 2. Semestre vigente
@@ -12,7 +12,7 @@
 
 ## 3. Dominio del trámite
 
-- [ ] 3.1 Cambiar `DegreeProcedure`: `builder().open(student, requester, semester, attachments)`, referencia `String` asignada con `referenceOf`, permiso `HOLD_DEGREE_PROCEDURE` en lugar de comparar roles, `parseReference(String)` con el formato `<año>-<periodo>-<registro>`; eliminar `withStudent`, `referenceLabel`, `requireMatchingStudent` e `incompatibleAccount`. Agregar `reference` a `DegreeProcedureOpenedEvent`. Verificar con `DegreeProcedureTest`: referencia `2026-2-218001234` y evento con ella, cuenta que no es de estudiante o desactivada rechazada, referencias válidas e inválidas en `parseReference`, reemplazo sin cambios
+- [ ] 3.1 Cambiar `DegreeProcedure`: `builder().open(student, requester, semester, attachments)`, referencia `String` asignada con `referenceOf`, `student.isStudent()` en lugar de comparar roles, `parseReference(String)` con el formato `<año>-<periodo>-<registro>`; eliminar `withStudent`, `referenceLabel`, `requireMatchingStudent` e `incompatibleAccount`. Agregar `reference` a `DegreeProcedureOpenedEvent`. Verificar con `DegreeProcedureTest`: referencia `2026-2-218001234` y evento con ella, cuenta que no es de estudiante o desactivada rechazada, referencias válidas e inválidas en `parseReference`, reemplazo sin cambios
 - [ ] 3.2 Ajustar `DegreeProcedureRepository` (`insert` sin retorno, `existsByReference`, `getOpenByReferenceForUpdate(String)`) y su Javadoc; el proyecto vuelve a compilar al terminar el grupo 4
 
 ## 4. Caso de uso, handlers y avisos

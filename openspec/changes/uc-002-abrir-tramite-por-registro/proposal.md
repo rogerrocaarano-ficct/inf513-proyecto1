@@ -9,7 +9,7 @@ Pertenece a **UC-002 Habilitación académica de solicitudes**, flujo básico (a
 ## What Changes
 
 - **BREAKING** — **Apertura por registro**: `tramites.abrirTramite` recibe un solo argumento, el registro universitario del estudiante, y los cuatro PDF iniciales. La cuenta del estudiante se crea antes con `usuarios.crearCuenta` (UC-001); la apertura ya no crea cuentas. Si no hay una cuenta con ese registro, la apertura se rechaza.
-- La cuenta del registro debe poder tener un trámite de titulación (estudiante), estar activa y no tener un trámite en curso (FR-056). La comprobación del rol pasa por un permiso, no por comparar roles.
+- La cuenta del registro debe poder tener un trámite de titulación (estudiante), estar activa y no tener un trámite en curso (FR-056). La comprobación de que es una cuenta de estudiante la responde la propia cuenta, sin comparar roles en el trámite.
 - **BREAKING** — **Referencia del trámite**: pasa de `TR-<n>` asignado por la base de datos a `<semestre>-<registro>` (por ejemplo `2026-2-218001234`), construida por el agregado al abrirse con el semestre vigente. La usan `tramites.reemplazarDocumento` y `proyectos.asignarTutor`.
 - **Un trámite por semestre**: un estudiante no puede abrir dos trámites de titulación en el mismo semestre, aunque el primero esté cerrado.
 - **Semestre vigente**: lo da un puerto de calendario académico. Mientras no exista el caso de uso de gestión del calendario académico, su adaptador lee el valor de la configuración.
@@ -33,7 +33,7 @@ Ninguna.
 
 - **Modelo de EA**: UC-002 no tiene diseño en EA (no hay caso de uso ni paquete `Design/Procedures`). Por decisión del equipo, el modelo no se consulta en este change; se sigue la arquitectura de referencia de `AGENTS.md`.
 - **Requisitos**: FR-001, FR-002, FR-051, FR-055, FR-056 sin cambio de texto. Cambia la nota de FR-051/FR-056 en `REQUIREMENTS.md` (la cuenta se crea por UC-001 y la apertura la referencia) y se agrega la regla de un trámite por estudiante y semestre (acuerdo del 2026-11-23).
-- **Código**: `procedures` (dominio, caso de uso, handlers, notificadores, persistencia, configuración y pruebas); `users.domain` (`UserRepository` busca por registro con bloqueo; permiso nuevo en `RolePermission`); migración `V10`.
+- **Código**: `procedures` (dominio, caso de uso, handlers, notificadores, persistencia, configuración y pruebas); `users.domain` (`UserRepository` busca por registro con bloqueo; consulta nueva `User.isStudent()`); migración `V10`.
 - **Configuración**: propiedad nueva `cpms.academic.current-semester`.
 - **Dependencias**: ninguna nueva.
 - **Documentos**: `USER-GUIDE.md` (`tramites.abrirTramite`, `tramites.reemplazarDocumento`, `proyectos.asignarTutor`), `GLOSSARY.md` (referencia del trámite, semestre, calendario académico, subsistema Procedimientos), `REQUIREMENTS.md`.

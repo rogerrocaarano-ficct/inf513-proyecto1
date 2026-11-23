@@ -42,9 +42,14 @@ El bloqueo de la fila de la cuenta en el paso 2 serializa dos aperturas del mism
 
 `OpenDegreeProcedureCommand(String code, List<UUID> attachmentIds)`. Se conserva el record porque, además del registro, lleva los adjuntos. `OpenDegreeProcedureCommandHandler.requiredArgs()` pasa de 7 a 1; `requiredFiles()` sigue en 4.
 
-### Permiso del estudiante
+### Cuenta de estudiante
 
-Nuevo `RolePermission.HOLD_DEGREE_PROCEDURE` («tener un trámite de titulación», `Role.STUDENT`), con la misma forma que `BE_PROJECT_TUTOR`. `DegreeProcedure.open` comprueba `student.hasPermissionTo(HOLD_DEGREE_PROCEDURE)` y `student.isActive()`, con mensajes en el campo `registro` («La cuenta del registro 218001234 no es de estudiante.») y `cuenta` («La cuenta del estudiante está desactivada.»). Desaparecen `requireMatchingStudent`, `incompatibleAccount` y toda comparación de roles.
+`User.isStudent()` dice si la cuenta tiene el rol de estudiante. `DegreeProcedure.open` comprueba `student.isStudent()` y `student.isActive()`, con mensajes en el campo `registro` («La cuenta del registro 218001234 no es de estudiante.») y `cuenta` («La cuenta del estudiante está desactivada.»). Desaparecen `requireMatchingStudent`, `incompatibleAccount` y toda comparación de roles fuera de `User`.
+
+La comprobación hace falta porque el registro (`uagrmCode`) también guarda códigos de docentes y administrativos, y es único entre todas las cuentas.
+
+- *Alternativa descartada:* un permiso `RolePermission.HOLD_DEGREE_PROCEDURE`. `RolePermission` autoriza lo que hace el remitente; aquí no hay acción del estudiante que autorizar, solo un dato de la cuenta referenciada.
+- *Pendiente fuera de este change:* `RolePermission.BE_PROJECT_TUTOR` (UC-003) tiene la misma naturaleza: describe la cuenta elegida como tutor, no lo que hace el remitente.
 
 ### Agregado y referencia
 
@@ -93,5 +98,5 @@ UC-002 sin diseño en EA; se sigue la arquitectura de referencia. El modelo se r
 
 - `procedures.domain`: nuevo `Semester`; `DegreeProcedure` (`reference: String`, `open(student, requester, semester, attachments)`, `referenceOf`, `parseReference(String)`; se eliminan `withStudent`, `referenceLabel`, `requireMatchingStudent`, `incompatibleAccount`); `DegreeProcedureOpenedEvent` con `reference`; `DegreeProcedureRepository` (`existsByReference`, `getOpenByReferenceForUpdate(String)`, `insert` sin retorno).
 - `procedures.application`: nuevo puerto `AcademicCalendar`; `OpenDegreeProcedureCommand(code, attachmentIds)`; `DegreeProcedureUseCase` sin `UserManagementNotifier` y con `AcademicCalendar`; `DegreeProcedureNotifier.notifyOpened(event)`.
-- `users.domain`: `RolePermission.HOLD_DEGREE_PROCEDURE`; `UserRepository.getByUagrmCodeForUpdate` reemplaza a `getByEmailForUpdate`.
+- `users.domain`: `User.isStudent()`; `UserRepository.getByUagrmCodeForUpdate` reemplaza a `getByEmailForUpdate`.
 - Infraestructura: nuevo `ConfiguredAcademicCalendar`; `MailDegreeProcedureNotifier` sin `OpeningNotice`; entidades y repositorios JPA de trámites con clave `UUID`.
