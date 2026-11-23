@@ -1,5 +1,6 @@
 package bo.org.tecnoweb.cpms.mail.infrastructure;
 
+import bo.org.tecnoweb.cpms.common.DomainValidationException;
 import bo.org.tecnoweb.cpms.mail.application.EmailInbox;
 import bo.org.tecnoweb.cpms.mail.domain.Attachment;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
@@ -67,22 +68,35 @@ class Pop3EmailInbox implements EmailInbox {
      *
      * <p>Automatic emails found while reading are deleted from the server and do not count toward
      * {@code maxMessages}.
+     *
+     * <p>Logs every email read with its UIDL, sender, command action and number of attachments,
+     * never its subject or arguments. The summary of an empty inbox is logged at DEBUG so idle
+     * cycles stay quiet.
      */
     @Override
     public List<ReceivedEmail> poll(int maxMessages) {
         List<ReceivedEmail> emails = new ArrayList<>();
         withInbox(folder -> {
+            int total = folder.getMessageCount();
             for (Message message : folder.getMessages()) {
                 if (emails.size() >= maxMessages) {
                     break;
                 }
                 String uid = folder.getUID(message);
                 if (isAutomatic(message)) {
-                    log.info("Ignoring automatic email {}", uid);
+                    log.info("Ignoring automatic email {} from {}", uid, senderAddress(message));
                     message.setFlag(Flags.Flag.DELETED, true);
                     continue;
                 }
-                emails.add(toEmail(message, uid));
+                ReceivedEmail email = toEmail(message, uid);
+                log.info("Received email {} from {}: {} ({} attachments)",
+                        uid, email.getFrom(), actionForLog(email), email.getAttachments().size());
+                emails.add(email);
+            }
+            if (total == 0) {
+                log.debug("POP3 inbox has 0 messages; read 0");
+            } else {
+                log.info("POP3 inbox has {} messages; read {}", total, emails.size());
             }
         });
         return emails;
@@ -90,6 +104,9 @@ class Pop3EmailInbox implements EmailInbox {
 
     /**
      * {@inheritDoc}
+     *
+     * <p>Logs the UIDL of the message flagged for deletion; logs nothing if it is no longer on the
+     * server.
      */
     @Override
     public void delete(String mailboxId) {
@@ -97,9 +114,25 @@ class Pop3EmailInbox implements EmailInbox {
             for (Message message : folder.getMessages()) {
                 if (mailboxId.equals(folder.getUID(message))) {
                     message.setFlag(Flags.Flag.DELETED, true);
+                    log.info("Deleted message {} from the POP3 server", mailboxId);
                 }
             }
         });
+    }
+
+    /**
+     * Describes the command of an email for the log without its arguments, which may hold personal
+     * data (NFR-003 syntax).
+     *
+     * @param email the email read
+     * @return {@code action <name>}, or {@code no valid action} when the subject is not a command
+     */
+    private static String actionForLog(ReceivedEmail email) {
+        try {
+            return "action " + email.parseAction();
+        } catch (DomainValidationException e) {
+            return "no valid action";
+        }
     }
 
     /**
@@ -129,6 +162,8 @@ class Pop3EmailInbox implements EmailInbox {
         POP3Folder folder = null;
         try {
             store = session.getStore("pop3");
+            log.debug("Connecting to POP3 server {}:{} as {}",
+                    properties.pop3().host(), properties.pop3().port(), properties.pop3().username());
             store.connect(properties.pop3().host(), properties.pop3().port(),
                     properties.pop3().username(), properties.pop3().password());
             folder = (POP3Folder) store.getFolder("INBOX");

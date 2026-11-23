@@ -124,8 +124,10 @@ class InboxPollerServiceTest {
             assertThat(output.getOut())
                     .contains("WARN")
                     .contains("Deleting message 1 without executing it")
-                    .contains("stored subject \"usuarios.listar[]\"")
-                    .contains("read subject \"usuarios.crearCuenta[Ana]\"");
+                    .contains("stored action usuarios.listar")
+                    .contains("read action usuarios.crearcuenta")
+                    .doesNotContain("usuarios.listar[]")
+                    .doesNotContain("[Ana]");
         }
 
         @Test

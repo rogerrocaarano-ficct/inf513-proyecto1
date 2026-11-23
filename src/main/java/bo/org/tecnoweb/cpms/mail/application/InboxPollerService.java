@@ -122,9 +122,9 @@ public class InboxPollerService {
                 // server reused the UIDL (e.g. a recreated GreenMail), this drops a new command:
                 // warn so it does not go unnoticed.
                 log.warn("Deleting message {} without executing it: an email with that UIDL is already {} "
-                                + "(stored subject \"{}\", read subject \"{}\"). If the subjects differ, the server "
-                                + "reused the UIDL",
-                        email.getMailboxId(), stored.get().getState(), stored.get().getSubject(), email.getSubject());
+                                + "(stored {}, read {}). If they differ, the server reused the UIDL",
+                        email.getMailboxId(), stored.get().getState(), actionForLog(stored.get()),
+                        actionForLog(email));
                 deleteFromServer(email.getMailboxId());
             }
             // RECEIVED or VALIDATED: getNotProcessed() takes it up.
@@ -300,6 +300,21 @@ public class InboxPollerService {
             inbox.delete(mailboxId);
         } catch (RuntimeException e) {
             log.error("Could not delete message {} from the server; it is deleted when read again", mailboxId, e);
+        }
+    }
+
+    /**
+     * Describes the command of an email for the log without its subject or arguments, which may
+     * hold personal data.
+     *
+     * @param email the email
+     * @return {@code action <name>}, or {@code no valid action} when the subject is not a command
+     */
+    private static String actionForLog(ReceivedEmail email) {
+        try {
+            return "action " + email.parseAction();
+        } catch (DomainValidationException e) {
+            return "no valid action";
         }
     }
 
