@@ -84,7 +84,7 @@ class JpaReceivedEmailRepositoryTest {
         assertThat(jdbc.queryForList("SELECT column_name FROM information_schema.columns "
                 + "WHERE table_name = 'received_email_attachment'", String.class))
                 .containsExactlyInAnyOrder("id", "received_email_id", "position", "stored_file_id");
-        assertThat(Arrays.stream(ReceivedEmailAttachmentEntity.class.getDeclaredFields()).map(Field::getType))
+        assertThat(Arrays.stream(ReceivedEmailAttachmentEntity.class.getDeclaredFields()).<Class<?>>map(Field::getType))
                 .doesNotContain(byte[].class);
     }
 
