@@ -2,18 +2,18 @@
 
 ## Purpose
 
-Habilitar la apertura de un expediente de titulación y el reemplazo de sus documentos iniciales por correo.
+Habilitar la apertura de un expediente de titulación y el reemplazo de los documentos de sus requisitos de apertura por correo.
 
 ## Requirements
 
 ### Requirement: Apertura de trámite de titulación
 
-El sistema SHALL permitir a Secretaría abrir un trámite por correo con el registro universitario de una cuenta de estudiante existente y cuatro PDF iniciales, uno por tipo, de hasta 25 MiB cada uno. La apertura no crea cuentas: la cuenta del estudiante se crea antes con la gestión de usuarios (UC-001).
+El sistema SHALL permitir a Secretaría abrir un trámite por correo con el registro universitario de una cuenta de estudiante existente y un PDF por cada requisito de apertura (carta de solicitud, hoja de vida, cédula de identidad y boleta de inscripción), de hasta 25 MiB cada uno. La apertura no crea cuentas: la cuenta del estudiante se crea antes con la gestión de usuarios (UC-001).
 
 #### Scenario: Estudiante con cuenta activa
 
 - **WHEN** el registro corresponde a una cuenta de estudiante activa sin trámite en curso ni trámite en el semestre vigente
-- **THEN** el sistema abre el trámite sobre esa cuenta, guarda los cuatro documentos, confirma la referencia a Secretaría y avisa al estudiante.
+- **THEN** el sistema abre el trámite sobre esa cuenta, guarda un documento por requisito, confirma la referencia a Secretaría y avisa al estudiante.
 
 #### Scenario: Estudiante sin cuenta
 
@@ -22,17 +22,17 @@ El sistema SHALL permitir a Secretaría abrir un trámite por correo con el regi
 
 #### Scenario: Apertura rechazada
 
-- **WHEN** el remitente carece de autorización, el registro o los adjuntos son inválidos, la cuenta del registro no es de estudiante, está desactivada, tiene un trámite en curso o ya tiene un trámite en el semestre vigente
+- **WHEN** el remitente carece de autorización, el registro o los adjuntos son inválidos, falta o se repite un requisito, la cuenta del registro no es de estudiante, está desactivada, tiene un trámite en curso o ya tiene un trámite en el semestre vigente
 - **THEN** el sistema informa el rechazo sin abrir un expediente parcial y sin cambiar la cuenta.
 
-### Requirement: Reemplazo de documento inicial
+### Requirement: Reemplazo de requisito de apertura
 
-El sistema SHALL admitir que Secretaría sustituya un documento inicial por su referencia de trámite y un PDF cuyo nombre identifique el tipo. El documento sustituido SHALL conservarse como versión anterior del nuevo.
+El sistema SHALL admitir que Secretaría sustituya el documento de un requisito de apertura por su referencia de trámite y un PDF cuyo nombre identifique el requisito. El documento sustituido SHALL conservarse como versión anterior del nuevo.
 
 #### Scenario: Trámite en curso
 
 - **WHEN** la referencia identifica un trámite en curso y el adjunto es válido
-- **THEN** el sistema sustituye el documento de ese tipo, conserva los demás y confirma a Secretaría.
+- **THEN** el sistema sustituye el documento de ese requisito, conserva los demás y confirma a Secretaría indicando el requisito.
 - **AND** el PDF recibido pasa a ser la versión vigente del documento y el sustituido queda como su versión anterior, con su contenido sin cambios.
 
 #### Scenario: Trámite no disponible
