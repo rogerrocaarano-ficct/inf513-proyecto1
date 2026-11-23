@@ -1,0 +1,17 @@
+# Build context of the Dockerfile: only the Gradle wrapper, the build files and src are needed.
+.git
+.gradle
+.agents
+.claude
+.idea
+.vscode
+build
+bin
+data
+openspec
+use-cases
+*.md
+compose*.yaml
+Dockerfile
+.dockerignore
+.env

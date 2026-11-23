@@ -12,17 +12,17 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * Creates the test accounts of the local development environment at startup, so that every role of
- * UC-001 can be tried without creating the accounts by email first.
+ * Creates the test accounts of the local development environment and of the deployed test environment at
+ * startup, so that every role of UC-001 can be tried without creating the accounts by email first.
  *
- * <p>Runs only with the {@code local} profile ({@code ./gradlew bootRun}): never in production nor in the
- * automated tests. Each account goes through {@link User#signUp(User)}, so it follows the same data rules
+ * <p>Runs only with the {@code local} profile ({@code ./gradlew bootRun}) and the {@code staging} profile
+ * ({@code compose.staging.yaml}): never in production nor in the automated tests. Each account goes through {@link User#signUp(User)}, so it follows the same data rules
  * as an account created by email, but its events are discarded: no email is sent. An address that already
  * has an account is skipped, and that account is never changed. The administrator is not created here: it
  * comes from {@link InitialAdminAccount}.
  */
 @Component
-@Profile("local")
+@Profile({"local", "staging"})
 class LocalTestAccounts implements ApplicationRunner {
 
     /** Domain of every test account. */

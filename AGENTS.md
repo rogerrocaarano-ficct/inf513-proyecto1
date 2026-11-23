@@ -17,6 +17,8 @@ names it.
 | `GLOSSARY.md` | Domain terms, their definitions and the name each one takes in the code |
 | `USDP-FRAMEWORK.md` | Reference of the process: phases, workflows, artifacts and exit criteria |
 | `build.gradle.kts`, `settings.gradle.kts`, `gradle/` | Gradle build of the application `cpms` |
+| `compose.yaml` | Local environment started by `./gradlew bootRun` |
+| `Dockerfile`, `.dockerignore`, `compose.staging.yaml` | Image of the application and the disposable test environment deployed with Dokploy from `develop` (profile `staging`) |
 | `src/main/java/bo/org/tecnoweb/cpms/` | Application code |
 | `src/main/resources/` | Configuration (`application.properties`) and, later, Flyway migrations in `db/migration/` |
 | `src/test/java/bo/org/tecnoweb/cpms/` | Tests |
@@ -66,6 +68,12 @@ The requirements and the steps to set up and use the local environment are in
 `README.md`, section "Entorno de desarrollo". In short: `./gradlew bootRun`
 starts `compose.yaml` (PostgreSQL, GreenMail, Roundcube) with the `local`
 profile, and the webmail is at <http://localhost:8025>.
+
+The deployed test environment (`compose.staging.yaml`, profile `staging`) runs
+the same services on the team's Dokploy server, publishes only the webmail, and
+is disposable: `StagingDatabaseReset` cleans the database at every startup and
+the stored files live in a `tmpfs`. See `README.md`, "Entorno de pruebas
+desplegado".
 
 ## Reference Architecture
 

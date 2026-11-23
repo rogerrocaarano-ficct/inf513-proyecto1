@@ -1,0 +1,69 @@
+# Test environment, deployed with Dokploy from the develop branch (see README.md, "Entorno de pruebas
+# desplegado"). Same services as compose.yaml, but no port is published: Dokploy routes a domain to the
+# webmail (service roundcube, port 80) and the mail server and the database stay inside this network.
+# Disposable: no named volumes, and every startup of the application starts with empty data.
+# Not used by ./gradlew bootRun (compose.yaml) nor by the tests (Testcontainers).
+name: cpms-staging
+
+services:
+  app:
+    build: .
+    environment:
+      SPRING_PROFILES_ACTIVE: staging
+      POSTGRES_DB: ${POSTGRES_DB:-cpms}
+      POSTGRES_USER: ${POSTGRES_USER:-cpms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cpms}
+      CPMS_CURRENT_SEMESTER: ${CPMS_CURRENT_SEMESTER:-2026-2}
+    # Disposable environment: the stored files live in memory and the staging profile cleans the database
+    # at every startup (StagingDatabaseReset), so each build or restart starts empty.
+    tmpfs:
+      - /var/lib/cpms/storage:mode=1777
+    depends_on:
+      postgres:
+        condition: service_healthy
+      greenmail:
+        condition: service_started
+        # GreenMail keeps the mail in memory and numbers the messages from 1 again when it restarts:
+        # restart the application with it, so the database is cleaned too.
+        restart: true
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cpms}
+      POSTGRES_USER: ${POSTGRES_USER:-cpms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cpms}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  greenmail:
+    image: greenmail/standalone:2.1.15
+    environment:
+      # SMTP 3025, POP3 3110, IMAP 3143, only inside this network. Any address can log in (auth disabled);
+      # the system mailbox is sistema@cpms.local / secret. Mail is kept in memory: a redeploy empties it.
+      GREENMAIL_OPTS: >-
+        -Dgreenmail.setup.test.all
+        -Dgreenmail.hostname=0.0.0.0
+        -Dgreenmail.auth.disabled
+        -Dgreenmail.users=sistema:secret@cpms.local
+        -Dgreenmail.users.login=email
+    restart: unless-stopped
+
+  roundcube:
+    image: roundcube/roundcubemail:1.6.19-apache
+    depends_on:
+      - greenmail
+    environment:
+      ROUNDCUBEMAIL_DEFAULT_HOST: greenmail
+      ROUNDCUBEMAIL_DEFAULT_PORT: 3143
+      ROUNDCUBEMAIL_SMTP_SERVER: greenmail
+      ROUNDCUBEMAIL_SMTP_PORT: 3025
+      ROUNDCUBEMAIL_DB_TYPE: sqlite
+      # Fixed key, so sessions survive a restart of the container.
+      ROUNDCUBEMAIL_DES_KEY: ${ROUNDCUBEMAIL_DES_KEY:-cpms-staging-des-key-24c}
+    restart: unless-stopped

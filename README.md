@@ -209,6 +209,32 @@ GreenMail guarda los correos en memoria: se pierden cada vez que se reinicia su 
 | Un comando no recibe respuesta y el log muestra `Deleting message … without executing it` | Se recreó GreenMail sin borrar la base: ejecutar `docker compose down -v` y volver a levantar |
 | El build pide Java 25 | Instalar un JDK 25 y comprobar con `java -version` |
 
+### Entorno de pruebas desplegado
+
+Para que los testers prueben los comandos sin instalar nada, el mismo stack corre en el servidor Dokploy del equipo con `compose.staging.yaml`: la aplicación (imagen del `Dockerfile`, perfil `staging`), PostgreSQL 17, GreenMail y Roundcube. Solo el webmail es accesible desde internet; el servidor de correo y la base no publican ningún puerto.
+
+**El entorno es desechable.** Cada vez que arranca la aplicación (en cada despliegue o reinicio) se vacían la base y los archivos, se aplican las migraciones desde cero y se vuelven a crear las cuentas de prueba. Los trámites, cuentas creadas y correos de una sesión de pruebas no se conservan. El webmail no pide contraseña real: no cargar datos personales reales.
+
+#### Configurar el despliegue en Dokploy
+
+1. Crear un servicio de tipo **Compose** con el repositorio de GitHub, rama `develop` y archivo `compose.staging.yaml`. Activar el despliegue automático para que cada merge a `develop` despliegue la versión nueva.
+2. En **Domains**, agregar un dominio para el servicio `roundcube`, puerto `80` (con HTTPS si el dominio lo permite).
+3. Opcional, en **Environment**:
+
+   | Variable | Valor por defecto | Para qué |
+   | --- | --- | --- |
+   | `POSTGRES_PASSWORD` | `cpms` | Contraseña de la base interna |
+   | `ROUNDCUBEMAIL_DES_KEY` | fija en el Compose | Clave de 24 caracteres de las sesiones del webmail |
+   | `CPMS_CURRENT_SEMESTER` | `2026-2` | Semestre vigente, como en el entorno local |
+
+4. Desplegar. El log del servicio `app` muestra `Successfully applied N migrations`, `Started CpmsApplication` y `Created 11 local test accounts`.
+
+#### Probar desde el entorno desplegado
+
+Los testers abren el dominio del webmail y siguen los pasos de [Probar un comando](#probar-un-comando): mismas cuentas de `test.local`, cualquier contraseña, y comandos dirigidos a `sistema@cpms.local`.
+
+Si un comando no recibe respuesta y el log de `app` muestra `Deleting message … without executing it`, GreenMail se reinició solo y la aplicación no: reiniciar el servicio `app` desde Dokploy, lo que también vacía el entorno.
+
 ### Ejecutar contra el servidor de producción
 
 El perfil `local` solo se usa con `bootRun`. Fuera de él, la aplicación toma la configuración del correo, de la base y de la carpeta de archivos de variables de entorno (NFR-007):
