@@ -19,6 +19,7 @@ names it.
 | `build.gradle.kts`, `settings.gradle.kts`, `gradle/` | Gradle build of the application `cpms` |
 | `compose.yaml` | Local environment started by `./gradlew bootRun` |
 | `Dockerfile`, `.dockerignore`, `compose.staging.yaml` | Image of the application and the disposable test environment deployed with Dokploy from `develop` (profile `staging`) |
+| `compose.production.yaml` | Production deployed with Dokploy from `main`: only the application, against the mail server and database of tecnoweb, configured by environment variables |
 | `src/main/java/bo/org/tecnoweb/cpms/` | Application code |
 | `src/main/resources/` | Configuration (`application.properties`) and, later, Flyway migrations in `db/migration/` |
 | `src/test/java/bo/org/tecnoweb/cpms/` | Tests |

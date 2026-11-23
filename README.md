@@ -237,13 +237,30 @@ Si un comando no recibe respuesta y el log de `app` muestra `Deleting message �
 
 ### Ejecutar contra el servidor de producción
 
-El perfil `local` solo se usa con `bootRun`. Fuera de él, la aplicación toma la configuración del correo, de la base y de la carpeta de archivos de variables de entorno (NFR-007):
+En producción corre solo la aplicación, con el perfil por defecto: usa el servidor de correo (NFR-007) y la base de datos (NFR-008) de tecnoweb. Se despliega en el servidor Dokploy del equipo con `compose.production.yaml`, desde la rama `main`. La base y los archivos se conservan: nunca se limpian al arrancar.
 
-| Variable | Valor |
-| --- | --- |
-| `CPMS_MAIL_POP3_HOST`, `CPMS_MAIL_SMTP_HOST` | `mail.tecnoweb.org.bo` |
-| `CPMS_MAIL_USERNAME`, `CPMS_MAIL_PASSWORD` | Usuario y contraseña del buzón del sistema |
-| `CPMS_MAIL_ADDRESS` | Dirección del sistema, remitente de las respuestas |
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://db.tecnoweb.org.bo:5432/db_grupo03sc` (NFR-008) |
-| `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | Usuario y contraseña de la base que entrega el docente |
-| `CPMS_STORAGE_ROOT` | Carpeta persistente donde la aplicación guarda los archivos, con permiso de escritura. Es obligatoria: sin ella la aplicación no arranca. Se respalda junto con la base de datos |
+#### Requisitos previos
+
+- El SMTP de `mail.tecnoweb.org.bo` valida al remitente por su dirección IP (NFR-007): la IP del servidor de Dokploy tiene que estar aceptada, o las respuestas no salen (el log muestra el envío rechazado).
+- El servidor de Dokploy tiene que llegar a `mail.tecnoweb.org.bo` (puertos 110 y 25) y a `db.tecnoweb.org.bo` (puerto 5432). Sin la base, la aplicación no arranca.
+
+#### Configurar el despliegue en Dokploy
+
+1. Crear un servicio de tipo **Compose** con el repositorio de GitHub, rama `main` y archivo `compose.production.yaml`. No lleva dominio: la aplicación no tiene interfaz web.
+2. En **Environment**, cargar las variables. Las obligatorias detienen el despliegue si faltan:
+
+   | Variable | Obligatoria | Valor |
+   | --- | --- | --- |
+   | `CPMS_MAIL_ADDRESS` | sí | Dirección del sistema, remitente de las respuestas |
+   | `CPMS_MAIL_USERNAME`, `CPMS_MAIL_PASSWORD` | sí | Usuario y contraseña del buzón del sistema |
+   | `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | sí | Usuario y contraseña de la base que entrega el docente |
+   | `CPMS_MAIL_POP3_HOST`, `CPMS_MAIL_SMTP_HOST` | no | Por defecto `mail.tecnoweb.org.bo` |
+   | `SPRING_DATASOURCE_URL` | no | Por defecto `jdbc:postgresql://db.tecnoweb.org.bo:5432/db_grupo03sc` |
+   | `CPMS_ADMIN_EMAIL` | no | Primer administrador, creado al arrancar si no existe; vacío por defecto |
+   | `CPMS_CURRENT_SEMESTER` | no | Semestre vigente, por defecto `2026-2`; cambiarlo al empezar cada semestre |
+
+3. Desplegar. El log del servicio `app` muestra `No active profile set` y `Started CpmsApplication`, sin `Successfully cleaned schema` ni cuentas de prueba.
+
+Los archivos van en el volumen `cpms-storage` (carpeta `/var/lib/cpms/storage` dentro del contenedor), que se conserva entre despliegues. La base guarda solo sus datos descriptivos, así que **el volumen se respalda junto con la base** y no se borra al eliminar el proyecto en Dokploy.
+
+Para ejecutar el JAR fuera de Dokploy, las mismas variables se definen en el entorno, y además `CPMS_STORAGE_ROOT` con una carpeta persistente y con permiso de escritura: sin ella la aplicación no arranca.
