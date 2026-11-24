@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import bo.org.tecnoweb.cpms.TestcontainersConfiguration;
 import bo.org.tecnoweb.cpms.mail.application.EmailCommandHandler;
+import bo.org.tecnoweb.cpms.users.application.DocumentedCommand;
+import bo.org.tecnoweb.cpms.users.application.commandhelp.ShowHelpQueryHandler;
 import bo.org.tecnoweb.cpms.users.domain.Role;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
 import java.util.List;
@@ -33,7 +35,8 @@ class UsersWiringTest {
     @Test
     void handlersAreRegisteredInTheMailChannel() {
         assertThat(handlers).extracting(EmailCommandHandler::actionKey)
-                .contains("usuarios.crearCuenta", "usuarios.listar", "usuarios.desactivar", "usuarios.activar");
+                .contains("usuarios.crearCuenta", "usuarios.listar", "usuarios.desactivar", "usuarios.activar",
+                        "ayuda");
     }
 
     @Test
@@ -46,5 +49,27 @@ class UsersWiringTest {
     void noTestAccountIsCreatedWithoutTheLocalProfile() {
         assertThat(context.getBeansOfType(LocalTestAccounts.class)).isEmpty();
         assertThat(users.getByEmail("director@test.local")).isEmpty();
+    }
+
+    /**
+     * Every command except the help command describes itself for the help reply (FR-066), with its own
+     * action and as many arguments in its syntax as it requires.
+     */
+    @Test
+    void everyCommandButHelpIsDocumented() {
+        assertThat(handlers).filteredOn(handler -> !(handler instanceof ShowHelpQueryHandler)).isNotEmpty()
+                .allSatisfy(handler -> {
+                    assertThat(handler).isInstanceOf(DocumentedCommand.class);
+                    var guide = ((DocumentedCommand) handler).guide();
+                    assertThat(guide.action()).isEqualTo(handler.actionKey());
+                    assertThat(argumentCount(guide.syntax())).as(guide.syntax()).isEqualTo(handler.requiredArgs());
+                });
+        assertThat(handlers).filteredOn(ShowHelpQueryHandler.class::isInstance)
+                .singleElement().isNotInstanceOf(DocumentedCommand.class);
+    }
+
+    private static int argumentCount(String syntax) {
+        String inside = syntax.substring(syntax.indexOf('[') + 1, syntax.lastIndexOf(']'));
+        return inside.isBlank() ? 0 : inside.split(";", -1).length;
     }
 }

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
+import bo.org.tecnoweb.cpms.users.domain.RolePermission;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -48,5 +49,22 @@ class DegreeProcedureCommandHandlersTest {
         assertThat(handler.requiredArgs()).isEqualTo(1);
         assertThat(handler.requiredFiles()).isEqualTo(1);
         verify(useCase).replaceRequirement("secretaria@cpms.test", new ReplaceOpeningRequirementCommand("2026-2-123456", id));
+    }
+
+    /** Both commands describe themselves for the help reply, with their attachments (FR-066). */
+    @Test
+    void describeTheCommandsForTheHelpReply() {
+        var useCase = mock(DegreeProcedureUseCase.class);
+        var open = new OpenDegreeProcedureCommandHandler(useCase).guide();
+        var replace = new ReplaceOpeningRequirementCommandHandler(useCase).guide();
+
+        assertThat(open.action()).isEqualTo(OpenDegreeProcedureCommandHandler.ACTION);
+        assertThat(open.syntax()).isEqualTo("tramites.abrirTramite[registro]");
+        assertThat(open.notes()).contains("4 PDF");
+        assertThat(open.permissions()).containsExactly(RolePermission.OPEN_DEGREE_PROCEDURE);
+        assertThat(replace.action()).isEqualTo(ReplaceOpeningRequirementCommandHandler.ACTION);
+        assertThat(replace.syntax()).isEqualTo("tramites.reemplazarDocumento[referencia]");
+        assertThat(replace.notes()).contains("1 PDF");
+        assertThat(replace.permissions()).containsExactly(RolePermission.REPLACE_OPENING_REQUIREMENT);
     }
 }

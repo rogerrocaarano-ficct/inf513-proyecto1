@@ -3,7 +3,10 @@ package bo.org.tecnoweb.cpms.users.application.usermanagement;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
+import bo.org.tecnoweb.cpms.users.domain.Role;
+import bo.org.tecnoweb.cpms.users.domain.RolePermission;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -54,5 +57,19 @@ class ChangeUserStatusCommandHandlersTest {
         assertThat(calls).containsExactly(
                 "disable director@uagrm.bo luis@uagrm.bo",
                 "enable director@uagrm.bo luis@uagrm.bo");
+    }
+
+    @Test
+    void bothDescribeTheirCommandForTheHelpReply() {
+        var permissions = Arrays.stream(Role.values()).map(RolePermission::toChangeStatus).toList();
+        var disable = new DisableUserCommandHandler(useCase).guide();
+        var enable = new EnableUserCommandHandler(useCase).guide();
+
+        assertThat(disable.action()).isEqualTo(DisableUserCommandHandler.ACTION);
+        assertThat(disable.syntax()).isEqualTo("usuarios.desactivar[correo]");
+        assertThat(disable.permissions()).containsExactlyElementsOf(permissions);
+        assertThat(enable.action()).isEqualTo(EnableUserCommandHandler.ACTION);
+        assertThat(enable.syntax()).isEqualTo("usuarios.activar[correo]");
+        assertThat(enable.permissions()).containsExactlyElementsOf(permissions);
     }
 }

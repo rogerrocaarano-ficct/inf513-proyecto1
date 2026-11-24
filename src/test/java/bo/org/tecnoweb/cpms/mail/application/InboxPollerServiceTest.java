@@ -175,7 +175,7 @@ class InboxPollerServiceTest {
         }
 
         @Test
-        void unknownCommandIsDiscardedAndListsTheAvailableCommands() {
+        void unknownCommandIsDiscardedAndPointsToTheHelpCommandWithoutListingCommands() {
             inbox.add("uid-1", "ana@uagrm.bo", "usuarios.borrarTodo[]");
 
             service(new TestHandler("usuarios.listar", 0, 0), new TestHandler("usuarios.crearCuenta", 4, 0))
@@ -183,9 +183,10 @@ class InboxPollerServiceTest {
 
             assertThat(repository.state("uid-1")).isEqualTo(ReceivedEmailState.DISCARDED);
             assertThat(sender.only().body)
-                    .contains("\"usuarios.borrartodo\" no existe")
-                    .contains("- usuarios.listar")
-                    .contains("- usuarios.crearcuenta");
+                    .isEqualTo("El comando \"usuarios.borrartodo\" no existe. Envíe ayuda[] para ver los comandos "
+                            + "que puede usar.")
+                    .doesNotContain("usuarios.listar")
+                    .doesNotContain("usuarios.crearcuenta");
         }
 
         @Test

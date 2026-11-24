@@ -16,7 +16,7 @@ context: |
 
 rules:
   proposal:
-    - Name the use case (UC-xxx in README.md) or the shared work the change belongs to
+    - Name the use case (UC-xxx in docs/README.md) or the shared work the change belongs to
     - List the EA elements and diagrams the change is based on, or say that the use case has no design in EA
   design:
     - Follow the EA design; names of classes, interfaces and operations come from the model. Without a design in EA, follow the Reference Architecture of AGENTS.md

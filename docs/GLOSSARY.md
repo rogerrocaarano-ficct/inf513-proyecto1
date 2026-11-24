@@ -5,6 +5,7 @@
 | Acta de graduación | Documento oficial que registra la calificación final de la defensa final y la conclusión de la titulación de un estudiante | |
 | Adjunto | Archivo que llega con un correo recibido o que se envía con una respuesta o notificación. Se guarda como archivo almacenado y el correo conserva solo su referencia, en su orden; no tiene identidad propia | `Attachment` |
 | Administrador | Rol técnico que crea y mantiene las cuentas de usuario y sus roles | `Role.SYSTEM_ADMIN` (etiqueta `administrador`) |
+| Ayuda | Respuesta por correo con los comandos que el rol del usuario le permite usar, con su sintaxis y para qué sirve cada uno; se pide con el comando `ayuda[]` | `CommandHelpUseCase` (comando `ayuda`) |
 | Archivo almacenado | Archivo que el sistema guarda en su carpeta de almacenamiento, con su nombre original, tipo, tamaño y fecha; cada versión de un documento es un archivo almacenado distinto, y la numera el registro dueño del documento (por ejemplo, las versiones del perfil de proyecto); el enlace entre versiones dentro del almacenamiento está en desuso. No confundir con la versión del documento, que es la entrega del estudiante con sus revisiones | `StoredFile` |
 | Biblioteca | Biblioteca de la universidad que recibe uno de los dos ejemplares físicos del proyecto | |
 | Calendario académico | Todas las fechas que establece la facultad: los semestres y las evaluaciones programadas, como las predefensas y defensas finales | `AcademicCalendar` (por ahora solo da el semestre vigente) |
@@ -31,11 +32,11 @@
 | Evaluación del perfil | Decisión del docente de Taller de Grado sobre la viabilidad de un perfil de proyecto pendiente: lo aprueba, lo observa o lo rechaza, con sus observaciones y su fecha | `DegreeProject.approveProfile`, `observeProfile`, `rejectProfile` |
 | Expediente de titulación | Registro de todos los documentos, designaciones, evaluaciones y resultados de un trámite de titulación, que se abre con la solicitud y se archiva al cerrar el trámite | |
 | Foto de perfil | Imagen que identifica a un usuario en su cuenta de usuario | |
+| Guía de comando | Descripción de un comando para la ayuda: su sintaxis, para qué sirve, los adjuntos o el texto del cuerpo que pide y los permisos con que se puede usar | `CommandGuide` |
 | Miembro del tribunal | Docente designado como uno de los tres integrantes del tribunal evaluador de un estudiante | |
 | Modalidad de Graduación | Forma por la que el estudiante obtiene el título; en este sistema, Proyecto de Grado | |
 | Observación | Corrección o cambio que un docente pide al estudiante sobre su perfil de proyecto o su documento del proyecto, y que el estudiante debe subsanar. Las del perfil se escriben en el cuerpo del correo | `ProjectProfile.observations` (perfil) |
 | Perfil de proyecto | Documento breve con la propuesta del proyecto que el estudiante presenta para que el docente de Taller de Grado evalúe su viabilidad. Si lo observan o lo rechazan, el estudiante presenta una versión nueva; cada versión se numera en orden desde 1 y las anteriores se conservan con su evaluación | `ProjectProfile` (cada versión, en `DegreeProject.profiles`; su número, `ProjectProfile.version`) |
-| Plazo de revisión | Tiempo del que disponen el tribunal evaluador y el tutor para revisar una versión del documento del proyecto | |
 | Predefensa | Defensa interna del proyecto de grado y revisión del prototipo ante el tribunal evaluador, que habilita la defensa final | |
 | Procedimientos | Subsistema que gestiona los flujos de la facultad referidos al trámite de titulación | paquete `procedures` |
 | Proyecto de Grado | Proyecto que el estudiante desarrolla y defiende para titularse en la Modalidad de Graduación del mismo nombre; nace con el perfil de proyecto y avanza con las versiones del documento del proyecto hasta la defensa final | `DegreeProject` |
