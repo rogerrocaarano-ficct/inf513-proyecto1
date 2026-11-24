@@ -4,6 +4,7 @@ import bo.org.tecnoweb.cpms.users.application.DocumentedCommand;
 import bo.org.tecnoweb.cpms.users.application.commandhelp.CommandHelpNotifier;
 import bo.org.tecnoweb.cpms.users.application.commandhelp.CommandHelpUseCase;
 import bo.org.tecnoweb.cpms.users.application.commandhelp.ShowHelpQueryHandler;
+import bo.org.tecnoweb.cpms.users.application.usermanagement.ChangeUserRoleCommandHandler;
 import bo.org.tecnoweb.cpms.users.application.usermanagement.DisableUserCommandHandler;
 import bo.org.tecnoweb.cpms.users.application.usermanagement.EnableUserCommandHandler;
 import bo.org.tecnoweb.cpms.users.application.usermanagement.ListUsersQueryHandler;
@@ -76,6 +77,17 @@ class UsersConfiguration {
     @Bean
     EnableUserCommandHandler enableUserCommandHandler(UserManagementUseCase useCase) {
         return new EnableUserCommandHandler(useCase);
+    }
+
+    /**
+     * Creates the handler of {@code usuarios.cambiarRol} (UC-001 A1, FR-031).
+     *
+     * @param useCase the use case it runs
+     * @return the handler
+     */
+    @Bean
+    ChangeUserRoleCommandHandler changeUserRoleCommandHandler(UserManagementUseCase useCase) {
+        return new ChangeUserRoleCommandHandler(useCase);
     }
 
     /**

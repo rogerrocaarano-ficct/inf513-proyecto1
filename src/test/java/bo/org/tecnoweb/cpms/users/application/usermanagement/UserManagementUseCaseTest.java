@@ -10,6 +10,7 @@ import bo.org.tecnoweb.cpms.users.domain.UserDisabledEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserEnabledEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserNotAuthorizedException;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
+import bo.org.tecnoweb.cpms.users.domain.UserRoleChangedEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserSignedUpEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -295,10 +296,162 @@ class UserManagementUseCaseTest {
         assertNothingChanged();
     }
 
+    @Test
+    void administratorChangesAProfessorToDirector() {
+        existing("admin@uagrm.bo", Role.SYSTEM_ADMIN);
+        User luis = existing("luis@uagrm.bo", Role.PROFESSOR);
+
+        useCase.changeUserRole("Admin@uagrm.bo", new ChangeUserRoleCommand(" Luis@UAGRM.bo ", "Director"));
+
+        assertThat(luis.getRole()).isEqualTo(Role.DIRECTOR);
+        assertThat(users.updated).containsExactly(luis);
+        assertThat(notifier.roleChanged).singleElement().satisfies(e -> {
+            assertThat(e.changedUserEmail()).isEqualTo("luis@uagrm.bo");
+            assertThat(e.previousRole()).isEqualTo("docente");
+            assertThat(e.newRole()).isEqualTo("director");
+            assertThat(e.requesterUserEmail()).isEqualTo("admin@uagrm.bo");
+        });
+    }
+
+    @Test
+    void unknownNewRoleIsAValidationError() {
+        existing("director@uagrm.bo", Role.DIRECTOR);
+        existing("luis@uagrm.bo", Role.PROFESSOR);
+
+        assertThatThrownBy(() -> useCase.changeUserRole("director@uagrm.bo",
+                new ChangeUserRoleCommand("luis@uagrm.bo", "decano")))
+                .isInstanceOfSatisfying(DomainValidationException.class,
+                        e -> assertThat(e.getErrors()).containsOnlyKeys(Role.FIELD));
+        assertNothingChanged();
+    }
+
+    @Test
+    void accountWhoseRoleChangesMustExist() {
+        existing("director@uagrm.bo", Role.DIRECTOR);
+
+        assertThatThrownBy(() -> useCase.changeUserRole("director@uagrm.bo",
+                new ChangeUserRoleCommand("nadie@uagrm.bo", "docente")))
+                .isInstanceOfSatisfying(DomainValidationException.class, e -> assertThat(e.getErrors())
+                        .containsExactly(Map.entry(User.EMAIL, "No existe una cuenta con el correo nadie@uagrm.bo.")));
+        assertNothingChanged();
+    }
+
+    @Test
+    void directorMayNotChangeTheRoleOfAnotherDirector() {
+        existing("director@uagrm.bo", Role.DIRECTOR);
+        User carla = existing("carla@uagrm.bo", Role.DIRECTOR);
+
+        assertThatThrownBy(() -> useCase.changeUserRole("director@uagrm.bo",
+                new ChangeUserRoleCommand("carla@uagrm.bo", "docente")))
+                .isInstanceOf(UserNotAuthorizedException.class)
+                .hasMessageContaining("cambiar el rol de cuentas de director");
+        assertThat(carla.getRole()).isEqualTo(Role.DIRECTOR);
+        assertNothingChanged();
+    }
+
+    @Test
+    void administrativeMayNotChangeTheRoleOfAStudent() {
+        existing("secretaria@uagrm.bo", Role.ADMINISTRATIVE);
+        existing("ana@uagrm.bo", Role.STUDENT);
+
+        assertThatThrownBy(() -> useCase.changeUserRole("secretaria@uagrm.bo",
+                new ChangeUserRoleCommand("ana@uagrm.bo", "docente")))
+                .isInstanceOf(UserNotAuthorizedException.class)
+                .hasMessageContaining("cambiar el rol de cuentas de estudiante");
+        assertNothingChanged();
+    }
+
+    @Test
+    void directorMayNotGiveTheDirectorRole() {
+        existing("director@uagrm.bo", Role.DIRECTOR);
+        User luis = existing("luis@uagrm.bo", Role.PROFESSOR);
+
+        assertThatThrownBy(() -> useCase.changeUserRole("director@uagrm.bo",
+                new ChangeUserRoleCommand("luis@uagrm.bo", "director")))
+                .isInstanceOf(UserNotAuthorizedException.class)
+                .hasMessageContaining("cambiar el rol de cuentas de director");
+        assertThat(luis.getRole()).isEqualTo(Role.PROFESSOR);
+        assertNothingChanged();
+    }
+
+    @Test
+    void administratorMayNotChangeItsOwnRole() {
+        existing("admin@uagrm.bo", Role.SYSTEM_ADMIN);
+        existing("admin2@uagrm.bo", Role.SYSTEM_ADMIN);
+
+        assertThatThrownBy(() -> useCase.changeUserRole("admin@uagrm.bo",
+                new ChangeUserRoleCommand("admin@uagrm.bo", "docente")))
+                .isInstanceOfSatisfying(DomainValidationException.class, e -> assertThat(e.getErrors())
+                        .containsExactly(Map.entry(User.EMAIL, "No puede cambiar el rol de su propia cuenta.")));
+        assertNothingChanged();
+    }
+
+    @Test
+    void onlyActiveAdministratorMayNotLoseThatRole() {
+        existing("admin@uagrm.bo", Role.SYSTEM_ADMIN, false);
+        User admin2 = existing("admin2@uagrm.bo", Role.SYSTEM_ADMIN);
+
+        assertThatThrownBy(() -> useCase.changeUserRole("admin2@uagrm.bo",
+                new ChangeUserRoleCommand("admin2@uagrm.bo", "docente")))
+                .isInstanceOfSatisfying(DomainValidationException.class, e -> assertThat(e.getErrors())
+                        .containsExactly(Map.entry(User.EMAIL,
+                                "No se puede quitar el rol de administrador a la única cuenta de administrador activa.")));
+        assertThat(admin2.getRole()).isEqualTo(Role.SYSTEM_ADMIN);
+        assertNothingChanged();
+    }
+
+    @Test
+    void administratorMayChangeAnotherAdministratorWhenTwoAreActive() {
+        existing("admin@uagrm.bo", Role.SYSTEM_ADMIN);
+        User admin2 = existing("admin2@uagrm.bo", Role.SYSTEM_ADMIN);
+
+        useCase.changeUserRole("admin@uagrm.bo", new ChangeUserRoleCommand("admin2@uagrm.bo", "director"));
+
+        assertThat(admin2.getRole()).isEqualTo(Role.DIRECTOR);
+        assertThat(notifier.roleChanged).hasSize(1);
+    }
+
+    @Test
+    void roleOfADisabledAccountMayChange() {
+        existing("director@uagrm.bo", Role.DIRECTOR);
+        User luis = existing("luis@uagrm.bo", Role.PROFESSOR, false);
+
+        useCase.changeUserRole("director@uagrm.bo", new ChangeUserRoleCommand("luis@uagrm.bo", "docente_taller"));
+
+        assertThat(luis.getRole()).isEqualTo(Role.CAPSTONE_PROJECT_PROFESSOR);
+        assertThat(luis.isActive()).isFalse();
+        assertThat(notifier.roleChanged).hasSize(1);
+    }
+
+    @Test
+    void sameRoleIsRejectedWithoutNotice() {
+        existing("director@uagrm.bo", Role.DIRECTOR);
+        existing("luis@uagrm.bo", Role.PROFESSOR);
+
+        assertThatThrownBy(() -> useCase.changeUserRole("director@uagrm.bo",
+                new ChangeUserRoleCommand("luis@uagrm.bo", "docente")))
+                .isInstanceOfSatisfying(DomainValidationException.class, e -> assertThat(e.getErrors())
+                        .containsExactly(Map.entry(Role.FIELD, "La cuenta luis@uagrm.bo ya tiene el rol docente.")));
+        assertNothingChanged();
+    }
+
+    @Test
+    void accountWithoutStudentDataMayNotBecomeAStudent() {
+        existing("director@uagrm.bo", Role.DIRECTOR);
+        existing("luis@uagrm.bo", Role.PROFESSOR);
+
+        assertThatThrownBy(() -> useCase.changeUserRole("director@uagrm.bo",
+                new ChangeUserRoleCommand("luis@uagrm.bo", "estudiante")))
+                .isInstanceOfSatisfying(DomainValidationException.class,
+                        e -> assertThat(e.getErrors()).containsOnlyKeys(User.CI, User.CODE, User.PHONE));
+        assertNothingChanged();
+    }
+
     private void assertNothingChanged() {
         assertThat(users.updated).isEmpty();
         assertThat(notifier.disabled).isEmpty();
         assertThat(notifier.enabled).isEmpty();
+        assertThat(notifier.roleChanged).isEmpty();
     }
 
     static class InMemoryUsers implements UserRepository {
@@ -350,6 +503,12 @@ class UserManagementUseCaseTest {
         final List<ListUsersQueryResult> lists = new ArrayList<>();
         final List<UserDisabledEvent> disabled = new ArrayList<>();
         final List<UserEnabledEvent> enabled = new ArrayList<>();
+        final List<UserRoleChangedEvent> roleChanged = new ArrayList<>();
+
+        @Override
+        public void notifyUserRoleChanged(UserRoleChangedEvent event) {
+            roleChanged.add(event);
+        }
 
         @Override
         public void notifyUserSignedUp(UserSignedUpEvent event) {

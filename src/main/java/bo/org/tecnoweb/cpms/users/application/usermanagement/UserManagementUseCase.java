@@ -8,13 +8,15 @@ import bo.org.tecnoweb.cpms.users.domain.UserDisabledEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserEnabledEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserNotAuthorizedException;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
+import bo.org.tecnoweb.cpms.users.domain.UserRoleChangedEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserSignedUpEvent;
 import java.util.List;
 import java.util.Map;
 
 /**
  * UC-001 Gestión de usuarios. Each flow of the use case is one method: {@link #signUpUser} (basic
- * flow), {@link #listUsers} (A3), {@link #disableUser} and {@link #enableUser} (A2).
+ * flow), {@link #changeUserRole} (A1, role only), {@link #listUsers} (A3), {@link #disableUser} and
+ * {@link #enableUser} (A2).
  *
  * <p>In every flow the requester must have an account and it must be active (E1, FR-032).
  */
@@ -113,10 +115,11 @@ public class UserManagementUseCase {
      */
     public void disableUser(String requesterEmail, String userEmail) {
         User requester = requireActiveRequester(requesterEmail);
-        User user = requireAffectedUser(requester, userEmail);
+        User user = requireUser(userEmail);
+        requirePermission(requester, RolePermission.toChangeStatus(user.getRole()));
         // Only an active administrator may disable an administrator, so the only active one can only be
         // disabled by itself: FR-038 goes first so that case gets its own message.
-        if (user.getRole() == Role.SYSTEM_ADMIN && user.isActive() && activeAdmins() == 1) {
+        if (isOnlyActiveAdmin(user)) {
             throw emailError("No se puede desactivar la única cuenta de administrador activa.");
         }
         if (user.getId().equals(requester.getId())) {
@@ -146,13 +149,56 @@ public class UserManagementUseCase {
      */
     public void enableUser(String requesterEmail, String userEmail) {
         User requester = requireActiveRequester(requesterEmail);
-        User user = requireAffectedUser(requester, userEmail);
+        User user = requireUser(userEmail);
+        requirePermission(requester, RolePermission.toChangeStatus(user.getRole()));
 
         user.enable(requester);
         users.update(user);
         user.pullEvents().forEach(event -> {
             if (event instanceof UserEnabledEvent enabled) {
                 notifier.notifyUserEnabled(enabled);
+            }
+        });
+    }
+
+    /**
+     * Changes the role of an account (alternate flow A1 "Modificar una cuenta", role only, {@code
+     * usuarios.cambiarRol}, FR-031).
+     *
+     * <p>The requester needs the permission of the account's current role and of the new one. The account
+     * keeps its data and its status. The notifier tells the requester and the account after the commit
+     * (FR-035).
+     *
+     * @param requesterEmail email address of the sender of the command
+     * @param command        the affected account and its new role
+     * @throws UserNotAuthorizedException if the sender has no account, its account is disabled, or its
+     *                                    role may not change the role of accounts of the current or the
+     *                                    new role (E1)
+     * @throws DomainValidationException  if the role is unknown, no account has that address (E4), the
+     *                                    account is the only active administrator and loses that role (E5,
+     *                                    FR-038), it is the requester's own account (E6), it already has
+     *                                    that role, or it lacks the data of a student (FR-026)
+     */
+    public void changeUserRole(String requesterEmail, ChangeUserRoleCommand command) {
+        User requester = requireActiveRequester(requesterEmail);
+        Role newRole = Role.fromLabel(command.role());
+        User user = requireUser(command.userEmail());
+        requirePermission(requester, RolePermission.toChangeRole(user.getRole()));
+        requirePermission(requester, RolePermission.toChangeRole(newRole));
+        // As in disableUser, the only active administrator can only be changed by itself: FR-038 goes
+        // first so that case gets its own message.
+        if (isOnlyActiveAdmin(user) && newRole != Role.SYSTEM_ADMIN) {
+            throw emailError("No se puede quitar el rol de administrador a la única cuenta de administrador activa.");
+        }
+        if (user.getId().equals(requester.getId())) {
+            throw emailError("No puede cambiar el rol de su propia cuenta.");
+        }
+
+        user.changeRole(requester, newRole);
+        users.update(user);
+        user.pullEvents().forEach(event -> {
+            if (event instanceof UserRoleChangedEvent changed) {
+                notifier.notifyUserRoleChanged(changed);
             }
         });
     }
@@ -170,22 +216,29 @@ public class UserManagementUseCase {
     }
 
     /**
-     * Returns the account whose status changes, after checking that the requester may change the status
-     * of accounts of its role.
+     * Returns the account affected by a flow, which must exist (E4).
      */
-    private User requireAffectedUser(User requester, String userEmail) {
+    private User requireUser(String userEmail) {
         String email = userEmail == null ? "" : userEmail.strip();
-        User user = users.getByEmail(email)
+        return users.getByEmail(email)
                 .orElseThrow(() -> emailError("No existe una cuenta con el correo " + email + "."));
-        RolePermission permission = RolePermission.toChangeStatus(user.getRole());
+    }
+
+    /**
+     * Rejects the requester if its role does not hold the permission (E1).
+     */
+    private static void requirePermission(User requester, RolePermission permission) {
         if (!requester.hasPermissionTo(permission)) {
             throw new UserNotAuthorizedException(requester.getEmailAddress(), permission.getLabel());
         }
-        return user;
     }
 
-    private long activeAdmins() {
-        return users.getByRole(Role.SYSTEM_ADMIN).stream().filter(User::isActive).count();
+    /**
+     * Tells whether the account is the only active administrator account (FR-038).
+     */
+    private boolean isOnlyActiveAdmin(User user) {
+        return user.getRole() == Role.SYSTEM_ADMIN && user.isActive()
+                && users.getByRole(Role.SYSTEM_ADMIN).stream().filter(User::isActive).count() == 1;
     }
 
     private static DomainValidationException emailError(String message) {
