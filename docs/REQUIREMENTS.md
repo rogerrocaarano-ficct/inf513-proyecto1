@@ -66,6 +66,7 @@
 | FR-063 | El sistema debe notificar al estudiante, al tutor y al tribunal evaluador la programación de la defensa final | |
 | FR-064 | El sistema debe notificar al estudiante el resultado de la predefensa, con las observaciones del tribunal, y la calificación final | |
 | FR-065 | El sistema debe permitir que el director de carrera reprograme una predefensa o defensa final que todavía no tiene resultado, y notificar el cambio al estudiante, al tutor y al tribunal evaluador | |
+| FR-066 | El sistema debe responder por correo, a quien lo solicite, los comandos que su rol le permite usar, con su sintaxis y para qué sirve cada uno | |
 
 ### Notes
 

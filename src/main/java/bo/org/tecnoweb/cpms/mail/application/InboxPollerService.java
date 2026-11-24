@@ -31,6 +31,12 @@ public class InboxPollerService {
 
     private static final Logger log = LoggerFactory.getLogger(InboxPollerService.class);
 
+    /**
+     * The help command (FR-066), named only as text: the mail channel does not depend on the subsystem
+     * that serves it.
+     */
+    static final String HELP_COMMAND = "ayuda[]";
+
     private final EmailInbox inbox;
     private final Map<String, EmailCommandHandler> handlers;
     private final int batchSize;
@@ -260,13 +266,13 @@ public class InboxPollerService {
         reply(email, message);
     }
 
-    private String unknownCommandMessage(String action) {
-        if (handlers.isEmpty()) {
-            return "El comando \"" + action + "\" no existe. No hay comandos disponibles.";
-        }
-        return "El comando \"" + action + "\" no existe.\n\nComandos disponibles:\n" + handlers.keySet().stream()
-                .map(key -> "- " + key)
-                .collect(Collectors.joining("\n"));
+    /**
+     * Answer to a command no handler serves. It points to the help command instead of listing the
+     * commands, because only the help command knows which ones the sender's role may use (FR-066).
+     */
+    private static String unknownCommandMessage(String action) {
+        return "El comando \"" + action + "\" no existe. Envíe " + HELP_COMMAND
+                + " para ver los comandos que puede usar.";
     }
 
     /**

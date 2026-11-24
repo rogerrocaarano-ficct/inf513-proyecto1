@@ -215,7 +215,7 @@ class MailCommandsIntegrationTest {
     }
 
     @Test
-    void unknownCommandIsAnsweredWithTheAvailableCommands() throws Exception {
+    void unknownCommandIsAnsweredWithTheHelpCommand() throws Exception {
         receive("usuarios.borrarTodo[]");
 
         service.pollAndProcess();
@@ -223,7 +223,9 @@ class MailCommandsIntegrationTest {
         assertThat(stateOf("usuarios.borrarTodo[]")).isEqualTo(ReceivedEmailState.DISCARDED);
         assertThat(repliesToAna()).singleElement().satisfies(reply -> {
             assertThat(reply.getSubject()).isEqualTo("Re: usuarios.borrarTodo[]");
-            assertThat(GreenMailUtil.getBody(reply)).contains("prueba.saludar").contains("prueba.fallar");
+            assertThat(GreenMailUtil.getBody(reply)).contains("ayuda[]")
+                    .doesNotContain("prueba.saludar").doesNotContain("prueba.fallar")
+                    .doesNotContain("usuarios.listar");
         });
         assertThat(messagesOnServer()).isZero();
     }

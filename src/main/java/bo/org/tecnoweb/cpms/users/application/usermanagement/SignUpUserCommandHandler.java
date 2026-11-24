@@ -2,16 +2,26 @@ package bo.org.tecnoweb.cpms.users.application.usermanagement;
 
 import bo.org.tecnoweb.cpms.mail.application.EmailCommandHandler;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
+import bo.org.tecnoweb.cpms.users.application.CommandGuide;
+import bo.org.tecnoweb.cpms.users.application.DocumentedCommand;
+import bo.org.tecnoweb.cpms.users.domain.RolePermission;
 import java.util.List;
 
 /**
  * Receives the email command {@code usuarios.crearCuenta[firstName; lastName; secondLastName; ci; code;
  * email; phoneNumber; role]} and runs the basic flow of UC-001 with the sender as requester.
  */
-public class SignUpUserCommandHandler implements EmailCommandHandler {
+public class SignUpUserCommandHandler implements EmailCommandHandler, DocumentedCommand {
 
     /** Name of the command in the email subject. */
     public static final String ACTION = "usuarios.crearCuenta";
+
+    /** Description of the command for the help reply (FR-066). */
+    public static final CommandGuide GUIDE = new CommandGuide(ACTION,
+            "usuarios.crearCuenta[nombres; primerApellido; segundoApellido; ci; codigo; correo; telefono; rol]",
+            "Crear una cuenta de usuario con un rol.",
+            "",
+            CommandGuide.forEveryRole(RolePermission::toSignUp));
 
     private final UserManagementUseCase useCase;
 
@@ -60,5 +70,11 @@ public class SignUpUserCommandHandler implements EmailCommandHandler {
     @Override
     public int requiredFiles() {
         return 0;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CommandGuide guide() {
+        return GUIDE;
     }
 }

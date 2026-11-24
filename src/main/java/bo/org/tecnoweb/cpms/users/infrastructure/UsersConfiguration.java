@@ -1,5 +1,9 @@
 package bo.org.tecnoweb.cpms.users.infrastructure;
 
+import bo.org.tecnoweb.cpms.users.application.DocumentedCommand;
+import bo.org.tecnoweb.cpms.users.application.commandhelp.CommandHelpNotifier;
+import bo.org.tecnoweb.cpms.users.application.commandhelp.CommandHelpUseCase;
+import bo.org.tecnoweb.cpms.users.application.commandhelp.ShowHelpQueryHandler;
 import bo.org.tecnoweb.cpms.users.application.usermanagement.DisableUserCommandHandler;
 import bo.org.tecnoweb.cpms.users.application.usermanagement.EnableUserCommandHandler;
 import bo.org.tecnoweb.cpms.users.application.usermanagement.ListUsersQueryHandler;
@@ -7,6 +11,7 @@ import bo.org.tecnoweb.cpms.users.application.usermanagement.SignUpUserCommandHa
 import bo.org.tecnoweb.cpms.users.application.usermanagement.UserManagementNotifier;
 import bo.org.tecnoweb.cpms.users.application.usermanagement.UserManagementUseCase;
 import bo.org.tecnoweb.cpms.users.domain.UserRepository;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -71,5 +76,30 @@ class UsersConfiguration {
     @Bean
     EnableUserCommandHandler enableUserCommandHandler(UserManagementUseCase useCase) {
         return new EnableUserCommandHandler(useCase);
+    }
+
+    /**
+     * Creates the help command (FR-066).
+     *
+     * @param users    JPA adapter of the accounts
+     * @param commands every command handler that describes its command, from every subsystem
+     * @param notifier email implementation of the notifier
+     * @return the use case
+     */
+    @Bean
+    CommandHelpUseCase commandHelpUseCase(UserRepository users, List<DocumentedCommand> commands,
+            CommandHelpNotifier notifier) {
+        return new CommandHelpUseCase(users, commands, notifier);
+    }
+
+    /**
+     * Creates the handler of {@code ayuda}.
+     *
+     * @param useCase the use case it runs
+     * @return the handler
+     */
+    @Bean
+    ShowHelpQueryHandler showHelpQueryHandler(CommandHelpUseCase useCase) {
+        return new ShowHelpQueryHandler(useCase);
     }
 }

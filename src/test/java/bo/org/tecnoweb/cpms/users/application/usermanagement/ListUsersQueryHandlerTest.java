@@ -3,6 +3,9 @@ package bo.org.tecnoweb.cpms.users.application.usermanagement;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
+import bo.org.tecnoweb.cpms.users.domain.Role;
+import bo.org.tecnoweb.cpms.users.domain.RolePermission;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 class ListUsersQueryHandlerTest {
@@ -36,5 +39,13 @@ class ListUsersQueryHandlerTest {
 
         assertThat(requester).isEqualTo("secretaria@uagrm.bo");
         assertThat(received).isEqualTo(new ListUsersQuery("Estudiante"));
+    }
+
+    @Test
+    void describesTheCommandForTheHelpReply() {
+        assertThat(handler.guide().action()).isEqualTo(ListUsersQueryHandler.ACTION);
+        assertThat(handler.guide().syntax()).isEqualTo("usuarios.listar[rol]");
+        assertThat(handler.guide().permissions())
+                .containsExactlyElementsOf(Arrays.stream(Role.values()).map(RolePermission::toList).toList());
     }
 }

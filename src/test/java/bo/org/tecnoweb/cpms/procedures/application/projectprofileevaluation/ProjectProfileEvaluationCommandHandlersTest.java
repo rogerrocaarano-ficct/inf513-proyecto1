@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import bo.org.tecnoweb.cpms.mail.application.EmailCommandHandler;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmail;
 import bo.org.tecnoweb.cpms.mail.domain.ReceivedEmailState;
+import bo.org.tecnoweb.cpms.users.domain.RolePermission;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -67,5 +68,26 @@ class ProjectProfileEvaluationCommandHandlersTest {
 
         assertCounts(handler, "proyectos.rechazarPerfil", 1, 0);
         verify(useCase).rejectProfile("taller@test", new RejectProfileCommand("2026-2-123456", "El tema no es viable."));
+    }
+
+    /** The four commands describe themselves for the help reply (FR-066). */
+    @Test
+    void describeTheCommandsForTheHelpReply() {
+        var register = new RegisterProfileCommandHandler(useCase).guide();
+        var approve = new ApproveProfileCommandHandler(useCase).guide();
+        var observe = new ObserveProfileCommandHandler(useCase).guide();
+        var reject = new RejectProfileCommandHandler(useCase).guide();
+
+        assertThat(register.action()).isEqualTo(RegisterProfileCommandHandler.ACTION);
+        assertThat(register.syntax()).isEqualTo("proyectos.registrarPerfil[titulo]");
+        assertThat(register.notes()).contains("1 PDF");
+        assertThat(register.permissions()).containsExactly(RolePermission.REGISTER_PROJECT_PROFILE);
+        assertThat(approve.action()).isEqualTo(ApproveProfileCommandHandler.ACTION);
+        assertThat(observe.action()).isEqualTo(ObserveProfileCommandHandler.ACTION);
+        assertThat(observe.notes()).contains("Cuerpo del correo");
+        assertThat(reject.action()).isEqualTo(RejectProfileCommandHandler.ACTION);
+        assertThat(reject.notes()).contains("Cuerpo del correo");
+        assertThat(List.of(approve, observe, reject)).allSatisfy(guide -> assertThat(guide.permissions())
+                .containsExactly(RolePermission.EVALUATE_PROJECT_PROFILE));
     }
 }
