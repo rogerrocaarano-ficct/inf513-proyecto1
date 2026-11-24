@@ -10,12 +10,14 @@ names it.
 
 | Path | Content |
 | --- | --- |
-| `README.md` | Vision: problem, process flow, approved use cases (`UC-xxx`), scope, and the project plan: team, milestones, iterations and risks (`RSK-xxx`); and the development environment: requirements and how to run the project |
-| `use-cases/UC-xxx.md` | Business description of each use case: goal, actors, preconditions, basic and alternative flows, exceptions, postconditions and business rules. It cites requirements by ID; commands and design stay out. Linked from the use case table of `README.md` |
-| `USER-GUIDE.md` | User guide: how to write email commands, every command with its arguments, and the system's replies. Update it in the same change that adds or changes a command |
-| `REQUIREMENTS.md` | Functional (`FR-xxx`) and non-functional (`NFR-xx-xxx`) requirements |
-| `GLOSSARY.md` | Domain terms, their definitions and the name each one takes in the code |
-| `USDP-FRAMEWORK.md` | Reference of the process: phases, workflows, artifacts and exit criteria |
+| `README.md` | Presentation of the project, a link to `docs/README.md`, and the development environment: requirements and how to run the project |
+| `docs/README.md` | Vision: problem, process flow, approved use cases (`UC-xxx`) and scope; the project plan: team, milestones, iterations and risks (`RSK-xxx`); and the index of the documentation: what each document holds and for whom, and the conventions of the documents |
+| `docs/use-cases/UC-xxx.md` | Business description of each use case: goal, actors, preconditions, basic and alternative flows, exceptions, postconditions and business rules. It cites requirements by ID; commands and design stay out. Linked from the use case table of `docs/README.md` |
+| `docs/user-guide/README.md` | User guide: how to write email commands, the system's replies, and a table of every command with its arguments and a link to its page. Update it in the same change that adds or changes a command |
+| `docs/user-guide/<command>.md` | One page per email command (`usuarios.crearCuenta.md`): syntax, a table of its parameters (required, type, format), attachments, who may use it, replies, rejections and an example. Linked from the command table of `docs/user-guide/README.md` |
+| `docs/REQUIREMENTS.md` | Functional (`FR-xxx`) and non-functional (`NFR-xx-xxx`) requirements |
+| `docs/GLOSSARY.md` | Domain terms, their definitions and the name each one takes in the code |
+| `docs/USDP-FRAMEWORK.md` | Reference of the process: phases, workflows, artifacts and exit criteria |
 | `build.gradle.kts`, `settings.gradle.kts`, `gradle/` | Gradle build of the application `cpms` |
 | `compose.yaml` | Local environment started by `./gradlew bootRun` |
 | `Dockerfile`, `.dockerignore`, `compose.staging.yaml` | Image of the application and the disposable test environment deployed with Dokploy from `develop` (profile `staging`) |
@@ -254,15 +256,15 @@ subsystem; the database keeps only their metadata (`stored_file`).
 | Documentation language | Spanish |
 | Code language | English |
 
-- **Spanish:** the content of `README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`,
-  `USER-GUIDE.md` and `use-cases/`, branch names taken from a use case, and the description
+- **Spanish:** the content of `README.md`, `docs/REQUIREMENTS.md`, `docs/GLOSSARY.md`,
+  `docs/user-guide/` and `docs/use-cases/`, branch names taken from a use case, and the description
   and body of commit messages.
 - **English:** identifiers, comments, log messages and database names in the
-  code; `AGENTS.md`, `USDP-FRAMEWORK.md` and the commit types.
+  code; `AGENTS.md`, `docs/USDP-FRAMEWORK.md` and the commit types.
 - Text the system shows to its users (mail replies, error messages) is in
   Spanish.
 - A domain term takes in the code the name in the column "Término adoptado en
-  el código" of `GLOSSARY.md`. If the column is empty, propose a name and add
+  el código" of `docs/GLOSSARY.md`. If the column is empty, propose a name and add
   it to the glossary in the same change.
 - IDs keep their format in any language: `UC-001`, `FR-001`, `RSK-001`,
   lowercase kebab-case for branch names.
@@ -270,11 +272,11 @@ subsystem; the database keeps only their metadata (`stored_file`).
 ## Working Rules
 
 - Work is driven by use cases. Before changing a document or code, know which
-  use case it belongs to (`UC-xxx` in `README.md`), or whether it is shared
+  use case it belongs to (`UC-xxx` in `docs/README.md`), or whether it is shared
   work.
 - Keep documents and code consistent in the same change: a change in behavior
-  updates `REQUIREMENTS.md` if it touches a requirement; a new domain term
-  goes to `GLOSSARY.md`.
+  updates `docs/REQUIREMENTS.md` if it touches a requirement; a new domain term
+  goes to `docs/GLOSSARY.md`.
 - Do not invent requirements or business rules. When the documents do not
   answer a question, ask the user.
 - Keep tables in their current columns. Do not add back columns that were
@@ -283,9 +285,9 @@ subsystem; the database keeps only their metadata (`stored_file`).
 ## Changes to the Code (OpenSpec)
 
 Every change to the source code (`src/`, the build files and the Flyway
-migrations) goes through an OpenSpec change. Changes that only touch the
-documents in the root (`README.md`, `REQUIREMENTS.md`, `GLOSSARY.md`,
-`USER-GUIDE.md`) and the use case descriptions (`use-cases/`) do not.
+migrations) goes through an OpenSpec change. Changes that only touch
+`README.md` and the documents in `docs/` (requirements, glossary, user guide
+and use case descriptions) do not.
 
 1. **Propose** (`/opsx:propose` or `/opsx:explore` first): create the change
    in `openspec/changes/<name>/` with its proposal, specs, design and tasks.
@@ -340,8 +342,8 @@ work goes on with the "Reference Architecture" as its design:
 - Tell the user once that the model is not available or has no design for
   the use case, and go on. Do not stop the change for that.
 - The structure comes from "Reference Architecture"; the names come from the
-  column "Término adoptado en el código" of `GLOSSARY.md` and from
-  `REQUIREMENTS.md`. Propose the names that are missing and add them to the
+  column "Término adoptado en el código" of `docs/GLOSSARY.md` and from
+  `docs/REQUIREMENTS.md`. Propose the names that are missing and add them to the
   glossary in the same change.
 - Do not invent a structure different from the reference. If the use case
   needs something the reference does not cover (a new kind of adapter, file
