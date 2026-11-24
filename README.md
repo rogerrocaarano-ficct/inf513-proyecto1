@@ -159,6 +159,8 @@ En producción corre solo la aplicación, con el perfil por defecto: usa el serv
    | `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | sí | Usuario y contraseña de la base que entrega el docente |
    | `CPMS_MAIL_POP3_HOST`, `CPMS_MAIL_SMTP_HOST` | no | Por defecto `mail.tecnoweb.org.bo` |
    | `SPRING_DATASOURCE_URL` | no | Por defecto `jdbc:postgresql://db.tecnoweb.org.bo:5432/db_grupo03sc` |
+   | `SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE` | no | Máximo de conexiones abiertas contra la base, que comparten todos los grupos; por defecto `3` |
+   | `SPRING_DATASOURCE_HIKARI_MINIMUMIDLE` | no | Conexiones que se conservan abiertas sin trabajo; por defecto `1` |
    | `CPMS_ADMIN_EMAIL` | no | Primer administrador, creado al arrancar si no existe; vacío por defecto |
    | `CPMS_CURRENT_SEMESTER` | no | Semestre vigente, por defecto `2026-2`; cambiarlo al empezar cada semestre |
 
