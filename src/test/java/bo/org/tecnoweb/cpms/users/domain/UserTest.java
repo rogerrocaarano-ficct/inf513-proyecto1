@@ -258,6 +258,68 @@ class UserTest {
         }
     }
 
+    /** UC-001 A1, role only (FR-031, FR-026). */
+    @Nested
+    class ChangeRole {
+
+        private final User director = account(Role.DIRECTOR);
+
+        private User professor() {
+            return User.rehydrate().withId(UUID.randomUUID()).withEmailAddress("luis@uagrm.bo")
+                    .withFirstName("Luis").withLastName("Rojas").withRole(Role.PROFESSOR).withActive(true);
+        }
+
+        @Test
+        void changeRoleGivesTheNewRoleAndRaisesTheEvent() {
+            User luis = professor();
+
+            luis.changeRole(director, Role.CAPSTONE_PROJECT_PROFESSOR);
+
+            assertThat(luis.getRole()).isEqualTo(Role.CAPSTONE_PROJECT_PROFESSOR);
+            assertThat(luis.pullEvents()).singleElement().isInstanceOfSatisfying(UserRoleChangedEvent.class, e -> {
+                assertThat(e.changedUserEmail()).isEqualTo("luis@uagrm.bo");
+                assertThat(e.changedUserFullName()).isEqualTo("Luis Rojas");
+                assertThat(e.previousRole()).isEqualTo("docente");
+                assertThat(e.newRole()).isEqualTo("docente_taller");
+                assertThat(e.requesterUserEmail()).isEqualTo(director.getEmailAddress());
+                assertThat(e.requesterUserFullName()).isEqualTo("Ana Rojas");
+                assertThat(e.occurredOn()).isNotNull();
+            });
+        }
+
+        @Test
+        void sameRoleIsRejectedWithoutEvents() {
+            User luis = professor();
+
+            assertThatThrownBy(() -> luis.changeRole(director, Role.PROFESSOR))
+                    .isInstanceOfSatisfying(DomainValidationException.class, e -> assertThat(e.getErrors())
+                            .containsExactly(Map.entry(Role.FIELD, "La cuenta luis@uagrm.bo ya tiene el rol docente.")));
+            assertThat(luis.pullEvents()).isEmpty();
+        }
+
+        @Test
+        void becomingAStudentWithoutCiCodeAndPhoneReportsEachAndKeepsTheRole() {
+            User luis = professor();
+
+            assertThatThrownBy(() -> luis.changeRole(director, Role.STUDENT))
+                    .isInstanceOfSatisfying(DomainValidationException.class, e -> assertThat(e.getErrors())
+                            .containsOnlyKeys(User.CI, User.CODE, User.PHONE)
+                            .containsEntry(User.CODE, "Es obligatorio para estudiantes."));
+            assertThat(luis.getRole()).isEqualTo(Role.PROFESSOR);
+            assertThat(luis.pullEvents()).isEmpty();
+        }
+
+        @Test
+        void accountWithTheStudentDataBecomesAStudent() {
+            User beto = professor().withCi("1234567").withUagrmCode("218001234").withPhoneNumber("71234567");
+
+            beto.changeRole(director, Role.STUDENT);
+
+            assertThat(beto.isStudent()).isTrue();
+            assertThat(beto.pullEvents()).singleElement().isInstanceOf(UserRoleChangedEvent.class);
+        }
+    }
+
     @Test
     void onlyAStudentAccountIsAStudent() {
         for (Role role : Role.values()) {

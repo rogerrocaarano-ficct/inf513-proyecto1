@@ -17,6 +17,9 @@ services:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db.tecnoweb.org.bo:5432/db_grupo03sc}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:?set SPRING_DATASOURCE_USERNAME, the database user}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:?set SPRING_DATASOURCE_PASSWORD, the database password}
+      # The tecnoweb database is shared by every group: keep few connections open (Hikari defaults to 10).
+      SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE: ${SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE:-3}
+      SPRING_DATASOURCE_HIKARI_MINIMUMIDLE: ${SPRING_DATASOURCE_HIKARI_MINIMUMIDLE:-1}
       CPMS_ADMIN_EMAIL: ${CPMS_ADMIN_EMAIL:-}
       CPMS_CURRENT_SEMESTER: ${CPMS_CURRENT_SEMESTER:-2026-2}
       # Folder of the cpms-storage volume; back it up together with the database.

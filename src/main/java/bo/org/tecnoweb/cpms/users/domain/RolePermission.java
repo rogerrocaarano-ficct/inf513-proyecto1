@@ -10,7 +10,8 @@ import java.util.Set;
  * <p>The {@code SIGNUP_<role>} permissions allow creating accounts of that role, and the {@code
  * LIST_<role>} permissions listing them; each {@code LIST_} is granted to the same roles as its
  * {@code SIGNUP_}. The {@code CHANGE_STATUS_<role>} permissions allow disabling and enabling accounts
- * of that role; only directors and administrators hold them.
+ * of that role, and the {@code CHANGE_ROLE_<role>} permissions changing the role of accounts of that
+ * role or giving that role; only directors and administrators hold either.
  */
 public enum RolePermission {
 
@@ -88,7 +89,26 @@ public enum RolePermission {
     CHANGE_STATUS_DIRECTORS("cambiar el estado de cuentas de director", Role.SYSTEM_ADMIN),
 
     /** Disable and enable system administrator accounts. */
-    CHANGE_STATUS_ADMINS("cambiar el estado de cuentas de administrador", Role.SYSTEM_ADMIN);
+    CHANGE_STATUS_ADMINS("cambiar el estado de cuentas de administrador", Role.SYSTEM_ADMIN),
+
+    /** Change the role of student accounts, or give the student role (UC-001 A1, FR-031). */
+    CHANGE_ROLE_STUDENTS("cambiar el rol de cuentas de estudiante", Role.DIRECTOR, Role.SYSTEM_ADMIN),
+
+    /** Change the role of administrative staff accounts, or give that role (UC-001 A1, FR-031). */
+    CHANGE_ROLE_ADMINISTRATIVES("cambiar el rol de cuentas de administrativo", Role.DIRECTOR, Role.SYSTEM_ADMIN),
+
+    /** Change the role of professor accounts, or give that role (UC-001 A1, FR-031). */
+    CHANGE_ROLE_PROFESSORS("cambiar el rol de cuentas de docente", Role.DIRECTOR, Role.SYSTEM_ADMIN),
+
+    /** Change the role of capstone project professor accounts, or give that role (UC-001 A1, FR-031). */
+    CHANGE_ROLE_CAPSTONE_PROJECT_PROFESSORS("cambiar el rol de cuentas de docente de Taller de Grado",
+            Role.DIRECTOR, Role.SYSTEM_ADMIN),
+
+    /** Change the role of director accounts, or give that role (UC-001 A1, FR-031, FR-053). */
+    CHANGE_ROLE_DIRECTORS("cambiar el rol de cuentas de director", Role.SYSTEM_ADMIN),
+
+    /** Change the role of system administrator accounts, or give that role (UC-001 A1, FR-031, FR-053). */
+    CHANGE_ROLE_ADMINS("cambiar el rol de cuentas de administrador", Role.SYSTEM_ADMIN);
 
     private final String label;
     private final Set<Role> allowedRoles;
@@ -146,6 +166,24 @@ public enum RolePermission {
             case CAPSTONE_PROJECT_PROFESSOR -> CHANGE_STATUS_CAPSTONE_PROJECT_PROFESSORS;
             case DIRECTOR -> CHANGE_STATUS_DIRECTORS;
             case SYSTEM_ADMIN -> CHANGE_STATUS_ADMINS;
+        };
+    }
+
+    /**
+     * Returns the permission needed to change the role of accounts of a role, or to give an account that
+     * role (UC-001 A1, FR-031). A role change needs the permission of the current role and of the new one.
+     *
+     * @param role the current or the new role of the affected account
+     * @return the matching {@code CHANGE_ROLE_} permission
+     */
+    public static RolePermission toChangeRole(Role role) {
+        return switch (role) {
+            case STUDENT -> CHANGE_ROLE_STUDENTS;
+            case ADMINISTRATIVE -> CHANGE_ROLE_ADMINISTRATIVES;
+            case PROFESSOR -> CHANGE_ROLE_PROFESSORS;
+            case CAPSTONE_PROJECT_PROFESSOR -> CHANGE_ROLE_CAPSTONE_PROJECT_PROFESSORS;
+            case DIRECTOR -> CHANGE_ROLE_DIRECTORS;
+            case SYSTEM_ADMIN -> CHANGE_ROLE_ADMINS;
         };
     }
 
