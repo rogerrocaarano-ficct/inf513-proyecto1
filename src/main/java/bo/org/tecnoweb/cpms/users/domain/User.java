@@ -228,7 +228,7 @@ public class User implements AggregateRoot {
         ci = blankToNull(ci);
         uagrmCode = blankToNull(uagrmCode);
         phoneNumber = blankToNull(phoneNumber);
-        validate();
+        validate(role);
 
         events.add(new UserSignedUpEvent(emailAddress, getFullName(), role.getLabel(), Instant.now(),
                 requester.getFullName(), requester.getEmailAddress()));
@@ -272,7 +272,38 @@ public class User implements AggregateRoot {
                 requester.getEmailAddress()));
     }
 
-    private void validate() {
+    /**
+     * Changes the role of this account on behalf of a requester (UC-001 A1, FR-031) and raises a {@link
+     * UserRoleChangedEvent}.
+     *
+     * <p>The account is validated with the new role before it gets it, so an account without the data a
+     * student needs (FR-026) cannot become a student. Who may change which role, the requester's own
+     * account and the last active administrator (FR-038) are checked by the use case, not here.
+     *
+     * @param requester the account that asked to change the role
+     * @param newRole   the role the account gets
+     * @throws DomainValidationException if the account already has that role, or it lacks data the new
+     *                                   role requires
+     */
+    public void changeRole(User requester, Role newRole) {
+        Objects.requireNonNull(requester, "requester");
+        Objects.requireNonNull(newRole, "newRole");
+        if (newRole == role) {
+            throw new DomainValidationException(Map.of(Role.FIELD,
+                    "La cuenta " + emailAddress + " ya tiene el rol " + role.getLabel() + "."));
+        }
+        validate(newRole);
+
+        Role previousRole = role;
+        role = newRole;
+        events.add(new UserRoleChangedEvent(emailAddress, getFullName(), previousRole.getLabel(),
+                newRole.getLabel(), Instant.now(), requester.getFullName(), requester.getEmailAddress()));
+    }
+
+    /**
+     * Validates every field as an account of the given role, reporting all the invalid ones together.
+     */
+    private void validate(Role role) {
         Map<String, String> errors = new LinkedHashMap<>();
         checkName(errors, FIRST_NAME, firstName, true);
         checkName(errors, LAST_NAME, lastName, true);

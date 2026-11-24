@@ -7,6 +7,7 @@ import bo.org.tecnoweb.cpms.users.application.usermanagement.ListUsersQueryResul
 import bo.org.tecnoweb.cpms.users.application.usermanagement.UserManagementNotifier;
 import bo.org.tecnoweb.cpms.users.domain.UserDisabledEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserEnabledEvent;
+import bo.org.tecnoweb.cpms.users.domain.UserRoleChangedEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserSignedUpEvent;
 import java.util.List;
 import org.slf4j.Logger;
@@ -220,6 +221,46 @@ class MailUserManagementNotifier implements UserManagementNotifier {
                                 + " activó nuevamente su cuenta en el sistema de trámites de titulación.\n\n"
                                 + "Desde esta dirección (" + event.enabledUserEmail()
                                 + ") puede volver a enviar solicitudes al sistema."));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void notifyUserRoleChanged(UserRoleChangedEvent event) {
+        publisher.publishEvent(event);
+    }
+
+    /**
+     * Sends the confirmation to the requester and the notice to the account whose role changed (UC-001
+     * A1, FR-035), after the commit.
+     *
+     * @param event the account, its previous and new roles, and the requester
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void onUserRoleChanged(UserRoleChangedEvent event) {
+        userRoleChangedMails(event).forEach(mail -> send(mail.to(), mail.subject(), mail.body()));
+    }
+
+    /**
+     * Emails of a role change: the confirmation to the requester and the notice to the account.
+     *
+     * @param event the account, its previous and new roles, and the requester
+     * @return the two emails
+     */
+    static List<OutgoingMail> userRoleChangedMails(UserRoleChangedEvent event) {
+        return List.of(
+                new OutgoingMail(event.requesterUserEmail(), "Rol cambiado: " + event.changedUserFullName(),
+                        "Se cambió el rol de la cuenta de " + event.changedUserFullName() + " ("
+                                + event.changedUserEmail() + ") de " + event.previousRole() + " a "
+                                + event.newRole() + "."),
+                new OutgoingMail(event.changedUserEmail(),
+                        "Su rol en el sistema de trámites de titulación cambió",
+                        "Hola, " + event.changedUserFullName() + ":\n\n"
+                                + event.requesterUserFullName() + " cambió el rol de su cuenta de "
+                                + event.previousRole() + " a " + event.newRole() + ".\n\n"
+                                + "Desde ahora puede usar los comandos de ese rol; envíe ayuda[] para verlos. "
+                                + "Si cree que es un error, comuníquese con la Dirección de Carrera."));
     }
 
     /**

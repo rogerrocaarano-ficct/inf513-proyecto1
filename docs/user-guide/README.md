@@ -72,6 +72,7 @@ No se pudo ejecutar el comando "usuarios.desactivar":
 | Usuarios (UC-001) | [`usuarios.listar`](usuarios.listar.md) | `rol` | Ninguno | Listar las cuentas de un rol |
 | Usuarios (UC-001) | [`usuarios.desactivar`](usuarios.desactivar.md) | `correo` | Ninguno | Desactivar una cuenta |
 | Usuarios (UC-001) | [`usuarios.activar`](usuarios.activar.md) | `correo` | Ninguno | Activar una cuenta desactivada |
+| Usuarios (UC-001) | [`usuarios.cambiarRol`](usuarios.cambiarRol.md) | `correo; rol` | Ninguno | Cambiar el rol de una cuenta |
 | Trámites (UC-002) | [`tramites.abrirTramite`](tramites.abrirTramite.md) | `registro` | 4 PDF | Abrir el trámite de titulación de un estudiante |
 | Trámites (UC-002) | [`tramites.reemplazarDocumento`](tramites.reemplazarDocumento.md) | `referencia` | 1 PDF | Sustituir el documento de un requisito de apertura |
 | Proyectos (UC-004) | [`proyectos.registrarPerfil`](proyectos.registrarPerfil.md) | `titulo` | 1 PDF | Presentar el perfil del proyecto o una versión nueva |

@@ -36,7 +36,7 @@ class UsersWiringTest {
     void handlersAreRegisteredInTheMailChannel() {
         assertThat(handlers).extracting(EmailCommandHandler::actionKey)
                 .contains("usuarios.crearCuenta", "usuarios.listar", "usuarios.desactivar", "usuarios.activar",
-                        "ayuda");
+                        "usuarios.cambiarRol", "ayuda");
     }
 
     @Test

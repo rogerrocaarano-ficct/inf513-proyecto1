@@ -2,6 +2,7 @@ package bo.org.tecnoweb.cpms.users.application.usermanagement;
 
 import bo.org.tecnoweb.cpms.users.domain.UserDisabledEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserEnabledEvent;
+import bo.org.tecnoweb.cpms.users.domain.UserRoleChangedEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserSignedUpEvent;
 
 /**
@@ -44,4 +45,12 @@ public interface UserManagementNotifier {
      * @param event the enabled account and its requester
      */
     void notifyUserEnabled(UserEnabledEvent event);
+
+    /**
+     * Confirms to the requester that the role of an account changed and notifies that account (UC-001
+     * A1, FR-035).
+     *
+     * @param event the account, its previous and new roles, and the requester
+     */
+    void notifyUserRoleChanged(UserRoleChangedEvent event);
 }

@@ -6,6 +6,7 @@ import bo.org.tecnoweb.cpms.users.application.usermanagement.ListUsersQueryItem;
 import bo.org.tecnoweb.cpms.users.application.usermanagement.ListUsersQueryResult;
 import bo.org.tecnoweb.cpms.users.domain.UserDisabledEvent;
 import bo.org.tecnoweb.cpms.users.domain.UserEnabledEvent;
+import bo.org.tecnoweb.cpms.users.domain.UserRoleChangedEvent;
 import bo.org.tecnoweb.cpms.users.infrastructure.MailUserManagementNotifier.OutgoingMail;
 import java.time.Instant;
 import java.util.List;
@@ -82,5 +83,22 @@ class MailUserManagementNotifierTest {
                         Carla Suárez Vaca activó nuevamente su cuenta en el sistema de trámites de titulación.
 
                         Desde esta dirección (luis@uagrm.bo) puede volver a enviar solicitudes al sistema."""));
+    }
+
+    @Test
+    void roleChangedMails() {
+        UserRoleChangedEvent event = new UserRoleChangedEvent("luis@uagrm.bo", "Luis Rojas", "docente", "director",
+                Instant.now(), "Ana Rojas", "admin@uagrm.bo");
+
+        assertThat(MailUserManagementNotifier.userRoleChangedMails(event)).containsExactly(
+                new OutgoingMail("admin@uagrm.bo", "Rol cambiado: Luis Rojas",
+                        "Se cambió el rol de la cuenta de Luis Rojas (luis@uagrm.bo) de docente a director."),
+                new OutgoingMail("luis@uagrm.bo", "Su rol en el sistema de trámites de titulación cambió", """
+                        Hola, Luis Rojas:
+
+                        Ana Rojas cambió el rol de su cuenta de docente a director.
+
+                        Desde ahora puede usar los comandos de ese rol; envíe ayuda[] para verlos. \
+                        Si cree que es un error, comuníquese con la Dirección de Carrera."""));
     }
 }

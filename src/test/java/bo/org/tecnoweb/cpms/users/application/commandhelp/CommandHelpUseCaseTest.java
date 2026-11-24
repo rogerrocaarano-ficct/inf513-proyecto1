@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import bo.org.tecnoweb.cpms.users.application.CommandGuide;
 import bo.org.tecnoweb.cpms.users.application.DocumentedCommand;
+import bo.org.tecnoweb.cpms.users.application.usermanagement.ChangeUserRoleCommandHandler;
 import bo.org.tecnoweb.cpms.users.domain.Role;
 import bo.org.tecnoweb.cpms.users.domain.RolePermission;
 import bo.org.tecnoweb.cpms.users.domain.User;
@@ -109,6 +110,28 @@ class CommandHelpUseCaseTest {
         assertThat(result.commands().get(2).allowedActions()).containsExactly("crear cuentas de estudiante",
                 "crear cuentas de administrativo", "crear cuentas de docente",
                 "crear cuentas de docente de Taller de Grado");
+    }
+
+    /** The real guide of {@code usuarios.cambiarRol} (UC-001 A1): who sees it and with which actions. */
+    @Test
+    void changeRoleCommandIsShownOnlyToWhoMayUseIt() {
+        List<ShowHelpQueryResult> replies = new ArrayList<>();
+        CommandHelpUseCase help = new CommandHelpUseCase(users, List.of(() -> ChangeUserRoleCommandHandler.GUIDE),
+                replies::add);
+        existing("admin@uagrm.bo", Role.SYSTEM_ADMIN, true);
+        existing("director@uagrm.bo", Role.DIRECTOR, true);
+        existing("secretaria@uagrm.bo", Role.ADMINISTRATIVE, true);
+
+        help.showHelp("admin@uagrm.bo");
+        help.showHelp("director@uagrm.bo");
+        help.showHelp("secretaria@uagrm.bo");
+
+        assertThat(syntaxes(replies.get(0))).containsExactly("ayuda[]", "usuarios.cambiarRol[correo; rol]");
+        assertThat(replies.get(0).commands().get(1).allowedActions()).isEmpty();
+        assertThat(replies.get(1).commands().get(1).allowedActions()).containsExactly(
+                "cambiar el rol de cuentas de estudiante", "cambiar el rol de cuentas de administrativo",
+                "cambiar el rol de cuentas de docente", "cambiar el rol de cuentas de docente de Taller de Grado");
+        assertThat(syntaxes(replies.get(2))).containsExactly("ayuda[]");
     }
 
     @Test
