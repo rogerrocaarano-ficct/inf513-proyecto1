@@ -47,7 +47,7 @@ Tipos de dato usados en las tablas:
 | --- | --- |
 | El comando se ejecutó | La respuesta propia del comando; ver cada comando |
 | El asunto no tiene la forma `comando[…]` | Recuerda la forma correcta del asunto |
-| El comando no existe | Indica que no existe y lista los comandos disponibles |
+| El comando no existe | «El comando "X" no existe. Envíe ayuda[] para ver los comandos que puede usar.»; no lista los comandos (ver [`ayuda`](ayuda.md)) |
 | Faltan o sobran parámetros o adjuntos | Indica cuántos se esperaban y cuántos llegaron |
 | Un adjunto está vacío (0 bytes) | «No se pudo procesar el correo: el adjunto "X" está vacío.»; el comando no se ejecuta |
 | La dirección no tiene cuenta | Indica que la dirección no está registrada en el sistema |
@@ -67,6 +67,7 @@ No se pudo ejecutar el comando "usuarios.desactivar":
 
 | Paquete | Comando | Argumentos | Adjuntos | Para qué sirve |
 | --- | --- | --- | --- | --- |
+| Ayuda (FR-066) | [`ayuda`](ayuda.md) | Ninguno (`ayuda[]`) | Ninguno | Ver los comandos que su rol le permite usar |
 | Usuarios (UC-001) | [`usuarios.crearCuenta`](usuarios.crearCuenta.md) | `nombres; primerApellido; segundoApellido; ci; codigo; correo; telefono; rol` | Ninguno | Crear una cuenta de usuario con un rol |
 | Usuarios (UC-001) | [`usuarios.listar`](usuarios.listar.md) | `rol` | Ninguno | Listar las cuentas de un rol |
 | Usuarios (UC-001) | [`usuarios.desactivar`](usuarios.desactivar.md) | `correo` | Ninguno | Desactivar una cuenta |
